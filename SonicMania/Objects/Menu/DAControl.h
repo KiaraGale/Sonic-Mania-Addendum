@@ -7,6 +7,13 @@
 struct ObjectDAControl {
     RSDK_OBJECT
     uint16 aniFrames;
+    int32 trackCount;
+    int32 trackID;
+    int32 activeTrack;
+    EntityUIControl *control;
+    EntityUIInfoLabel *trackSelLabel;
+    EntityUIInfoLabel *trackTitleLabel;
+    EntityMusic *trackList[64];
 };
 
 // Entity Class
@@ -40,5 +47,7 @@ void DAControl_EditorLoad(void);
 void DAControl_Serialize(void);
 
 // Extra Entity Functions
+void DAControl_WaitForInput(void);
+void DAControl_State_HandleInput(void);
 
 #endif //! OBJ_DACONTROL_H

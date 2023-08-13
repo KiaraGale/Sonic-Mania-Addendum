@@ -257,6 +257,7 @@ void Ice_Create(void *data)
 #if MANIA_USE_PLUS
                             case ID_MIGHTY: self->altContentsAnimator.frameID += 8; break;
                             case ID_RAY: self->altContentsAnimator.frameID += 9; break;
+                            case ID_AMY: self->altContentsAnimator.frameID += 10; break;
 #endif
                         }
 
@@ -371,6 +372,7 @@ void Ice_FreezePlayer(EntityPlayer *player)
             case ID_KNUCKLES: ice->animationID = ICEANI_KNUXIDLE; break;
             case ID_MIGHTY: ice->animationID = ICEANI_MIGHTYIDLE; break;
             case ID_RAY: ice->animationID = ICEANI_RAYIDLE; break;
+            case ID_AMY: ice->animationID = ICEANI_AMYIDLE; break;
             default: break;
         }
 #else
@@ -1535,6 +1537,7 @@ void Ice_EditorDraw(void)
 #if MANIA_USE_PLUS
                     case ID_MIGHTY: self->altContentsAnimator.frameID += 8; break;
                     case ID_RAY: self->altContentsAnimator.frameID += 9; break;
+                    case ID_AMY: self->altContentsAnimator.frameID += 10; break;
 #endif
                 }
 

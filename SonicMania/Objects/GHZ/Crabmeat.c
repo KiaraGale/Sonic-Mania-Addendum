@@ -203,6 +203,12 @@ void Crabmeat_State_Projectile(void)
             if (Player_CheckCollisionTouch(player, self, &Crabmeat->hitboxProjectile))
                 Player_ProjectileHurt(player, self);
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Crabmeat->hitboxProjectile))
+                Shield_State_Reflect(shield, self);
+        }
     }
 }
 

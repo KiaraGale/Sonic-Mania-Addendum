@@ -233,6 +233,12 @@ void AmoebaDroid_CheckPlayerHit(void)
                 Player_Hurt(player, self);
         }
     }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
+    }
 }
 
 void AmoebaDroid_Draw_AmoebaDroid(void)

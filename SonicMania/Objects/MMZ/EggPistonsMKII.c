@@ -212,6 +212,12 @@ void EggPistonsMKII_CheckPlayerCollisions_Ball(void)
         if (Player_CheckCollisionTouch(player, self, &self->hitbox))
             Player_ElementHurt(player, self, SHIELD_LIGHTNING);
     }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
+    }
 }
 
 void EggPistonsMKII_CheckPlayerCollisions_Solid(void)

@@ -1413,6 +1413,12 @@ void HeavyMystic_StateCork_Fired(void)
         }
     }
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (!RSDK.CheckOnScreen(self, &self->updateRange))
         destroyEntity(self);
 }
@@ -1480,6 +1486,12 @@ void HeavyMystic_State_BarkDebris(void)
 #endif
                 Player_Hurt(player, self);
         }
+    }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
     }
 
     if (!RSDK.CheckOnScreen(self, &self->updateRange))

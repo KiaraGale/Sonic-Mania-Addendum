@@ -89,7 +89,11 @@ void SSZ2Setup_StageLoad(void)
 }
 
 #if MANIA_USE_PLUS
-void SSZ2Setup_StageFinish_EndAct2(void) { CREATE_ENTITY(SSZ3Cutscene, INT_TO_VOID(true), 0, 0); }
+void SSZ2Setup_StageFinish_EndAct2(void)
+{
+    CREATE_ENTITY(SSZ3Cutscene, INT_TO_VOID(true), 0, 0);
+    Addendum_SaveProgress();
+}
 #endif
 
 void SSZ2Setup_DrawHook_PrepareDrawingFX(void)

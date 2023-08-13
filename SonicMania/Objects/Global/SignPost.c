@@ -88,6 +88,8 @@ void SignPost_Create(void *data)
                 case ID_MIGHTY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_MIGHTY, &self->facePlateAnimator, true, 0); break;
 
                 case ID_RAY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0); break;
+
+                case ID_AMY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_AMY, &self->facePlateAnimator, true, 0); break;
 #endif
             }
             RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_POST, &self->postTopAnimator, true, 0);
@@ -356,7 +358,13 @@ void SignPost_CheckTouch(void)
                                     RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_MIGHTY, &self->facePlateAnimator, true, 0);
                                     break;
 
-                                case ID_RAY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0); break;
+                                case ID_RAY:
+                                    RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0);
+                                    break;
+
+                                case ID_AMY:
+                                    RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_AMY, &self->facePlateAnimator, true, 0);
+                                    break;
 #endif
                             }
                             RSDK.PlaySfx(SignPost->sfxSignPost2P, false, 255);
@@ -402,7 +410,13 @@ void SignPost_CheckTouch(void)
                                     RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_MIGHTY, &self->facePlateAnimator, true, 0);
                                     break;
 
-                                case ID_RAY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0); break;
+                                case ID_RAY:
+                                    RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0);
+                                    break;
+
+                                case ID_AMY:
+                                    RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_AMY, &self->facePlateAnimator, true, 0);
+                                    break;
                             }
                         }
 #endif
@@ -509,6 +523,7 @@ void SignPost_State_Falling(void)
 #if MANIA_USE_PLUS
                 case ID_MIGHTY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_MIGHTY, &self->facePlateAnimator, true, 0); break;
                 case ID_RAY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_RAY, &self->facePlateAnimator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(SignPost->aniFrames, SIGNPOSTANI_AMY, &self->facePlateAnimator, true, 0); break;
 #endif
             }
         }

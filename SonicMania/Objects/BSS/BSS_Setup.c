@@ -70,7 +70,10 @@ void BSS_Setup_Create(void *data)
         self->stopMovement    = false;
 
         RSDK.SetSpriteAnimation(BSS_Setup->globeFrames, 0, &self->globeSpinAnimator, true, 0);
-        RSDK.SetSpriteAnimation(BSS_Setup->globeFrames, 1, &self->shadowAnimator, true, 0);
+        if (GET_CHARACTER_ID(2) == 0)
+            RSDK.SetSpriteAnimation(BSS_Setup->globeFrames, 1, &self->shadowAnimator, true, 0);
+        else
+            RSDK.SetSpriteAnimation(BSS_Setup->globeFrames, 1, &self->shadowAnimator, true, 1);
 
         BSS_Setup_GetStartupInfo();
 
@@ -444,9 +447,13 @@ void BSS_Setup_State_GlobeJettison(void)
         self->globeSpeed   = 8;
         BSS_Setup_SetupFinishSequence();
 
-        EntityBSS_Player *player = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
-        player->stateInput       = StateMachine_None;
-        player->jumpPress        = false;
+        EntityBSS_Player *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
+        player1->stateInput       = StateMachine_None;
+        player1->jumpPress        = false;
+
+        EntityBSS_Player *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, BSS_Player);
+        player2->stateInput       = StateMachine_None;
+        player2->jumpPress        = false;
 
         self->state = BSS_Setup_State_GlobeEmerald;
     }

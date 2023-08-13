@@ -187,7 +187,7 @@ void WarpDoor_Draw(void)
     if (self->fadeTimer > 0) {
         if (RSDK.CheckSceneFolder("FBZ")) {
             if (self->fadeOut)
-                RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
+                RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer, self->fadeTimer);
             else
                 RSDK.FillScreen(0x800080, self->fadeTimer, self->fadeTimer - 256, self->fadeTimer);
         }

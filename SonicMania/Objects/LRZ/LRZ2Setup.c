@@ -121,6 +121,12 @@ void LRZ2Setup_StageLoad(void)
     Animals->animalTypes[0] = ANIMAL_FLICKY;
     Animals->animalTypes[1] = ANIMAL_CUCKY;
 
+    uint32 colorStore[4];
+    for (int32 c = 0; c < 4; ++c) {
+        colorStore[c] = RSDK.GetPaletteEntry(1, 228 + c);
+        RSDK.SetPaletteEntry(0, 228 + c, colorStore[c]);
+    }
+
     if (!isMainGameMode() || !globals->atlEnabled || CutsceneRules_CheckStageReload()) {
         for (int32 p = 0; p < Player->playerCount; ++p) {
             Zone->cameraBoundsL[p] += 0x100;
@@ -300,6 +306,24 @@ void LRZ2Setup_GetTileInfo(int32 x, int32 y, int32 moveOffsetX, int32 moveOffset
     else if (flagsLow && tileSolidLow) {
         *tile  = tileLow;
         *flags = flagsLow;
+    }
+}
+
+void LRZ2Setup_DetermineConveyorColor(void)
+{
+    uint32 colorStore[4];
+    if (LRZ2Setup->conveyorDir == 0) {
+        for (int32 c = 0; c < 4; ++c) {
+            colorStore[c] = RSDK.GetPaletteEntry(1, 228 + c);
+            RSDK.SetPaletteEntry(0, 228 + c, colorStore[c]);
+        }
+    }
+
+    if (LRZ2Setup->conveyorDir == 1) {
+        for (int32 c = 0; c < 4; ++c) {
+            colorStore[c] = RSDK.GetPaletteEntry(2, 228 + c);
+            RSDK.SetPaletteEntry(0, 228 + c, colorStore[c]);
+        }
     }
 }
 

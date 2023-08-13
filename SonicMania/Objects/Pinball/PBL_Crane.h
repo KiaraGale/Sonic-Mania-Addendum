@@ -26,6 +26,7 @@ typedef enum {
     PBL_CRANE_PRIZE_SHIELD_ELECTRIC,
     PBL_CRANE_PRIZE_TABLE_RESTORE,
     PBL_CRANE_PRIZE_1UP,
+    PBL_CRANE_PRIZE_AMY,
 } PBL_CranePrizes;
 
 typedef enum {

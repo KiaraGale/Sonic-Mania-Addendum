@@ -79,8 +79,8 @@ void UIVsCharSelector_StaticUpdate(void) {}
 void UIVsCharSelector_Draw(void)
 {
     RSDK_THIS(UIVsCharSelector);
-
-    RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y - 0x2D0000, 0x600000, 0x600000, 0xFFFFFF, 0x7F, INK_BLEND, false);
+    
+    RSDK.DrawRect(self->position.x - 0x240000, self->position.y - 0x240000, 0x480000, 0x480000, 0xFFFFFF, 0x7F, INK_BLEND, false);
 
     UIVsCharSelector_DrawBG();
     UIVsCharSelector_DrawOutline();
@@ -90,6 +90,7 @@ void UIVsCharSelector_Draw(void)
 void UIVsCharSelector_Create(void *data)
 {
     RSDK_THIS(UIVsCharSelector);
+    UIVsCharSelector->superRun = false;
 
     self->frameID       = self->playerID;
     self->active        = ACTIVE_BOUNDS;
@@ -123,21 +124,21 @@ void UIVsCharSelector_DrawOutline(void)
     RSDK_THIS(UIVsCharSelector);
 
     if (!SceneInfo->inEditor)
-        UIWidgets_DrawRectOutline_Blended(self->position.x + 0x30000, self->position.y + 0x30000, 96, 96);
+        UIWidgets_DrawRectOutline_Blended(self->position.x + 0x30000, self->position.y + 0x30000, 72, 72);
 
     if (self->isSelected)
-        UIWidgets_DrawRectOutline_Flash(self->position.x, self->position.y, 96, 96);
+        UIWidgets_DrawRectOutline_Flash(self->position.x, self->position.y, 72, 72);
     else
-        UIWidgets_DrawRectOutline_Black(self->position.x, self->position.y, 96, 96);
+        UIWidgets_DrawRectOutline_Black(self->position.x, self->position.y, 72, 72);
 }
 
 void UIVsCharSelector_DrawBG(void)
 {
     RSDK_THIS(UIVsCharSelector);
 
-    UIWidgets_DrawRightTriangle(self->position.x - 0x2D0000, self->position.y - 0x2D0000, (self->triBounceOffset >> 11), 232, 40, 88);
-    UIWidgets_DrawRightTriangle(self->position.x + 0x2D0000, self->position.y + 0x2C0000, (-64 * self->triBounceOffset) >> 16, 96, 160, 176);
-    UIWidgets_DrawRightTriangle(self->position.x + 0x2D0000, self->position.y + 0x2C0000, (-44 * self->triBounceOffset) >> 16, 88, 112, 224);
+    UIWidgets_DrawRightTriangle(self->position.x - 0x210000, self->position.y - 0x210000, (self->triBounceOffset >> 12), 232, 40, 88);
+    UIWidgets_DrawRightTriangle(self->position.x + 0x210000, self->position.y + 0x100000, (-44 * self->triBounceOffset) >> 16, 96, 160, 176);
+    UIWidgets_DrawRightTriangle(self->position.x + 0x210000, self->position.y + 0x100000, (-24 * self->triBounceOffset) >> 16, 88, 112, 224);
 }
 
 void UIVsCharSelector_DrawPlayer(void)
@@ -145,19 +146,16 @@ void UIVsCharSelector_DrawPlayer(void)
     RSDK_THIS(UIVsCharSelector);
 
     Vector2 drawPos;
-    drawPos.x = self->position.x - 0x2D0000;
-    drawPos.y = self->position.y + 0x180000;
-    RSDK.DrawRect(drawPos.x, drawPos.y, 0x5A0000, 0x100000, 0, 255, INK_NONE, false);
 #if MANIA_USE_PLUS
     RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 14, &self->edgeAnimator, true, 1);
 
-    drawPos.x = self->position.x + 0x2D0000;
+    drawPos.x = self->position.x + 0x210000;
 #else
     RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 14, &self->edgeAnimator, true, self->playerID);
 
     drawPos.x = self->position.x + (self->playerID ? 0x2D0000 : -0x2D0000);
 #endif
-    drawPos.y = self->position.y - 0x2D0000;
+    drawPos.y = self->position.y - 0x210000;
     RSDK.DrawSprite(&self->edgeAnimator, &drawPos, false);
 
 #if MANIA_USE_PLUS
@@ -182,10 +180,10 @@ void UIVsCharSelector_DrawPlayer(void)
             frameID++;
 #endif
 
-        RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 1, &self->playerAnimator, true, frameID);
-        RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 2, &self->shadowAnimator, true, frameID);
-        drawPos.x = self->position.x;
-        drawPos.y = self->position.y - 0x80000;
+        RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 24, &self->playerAnimator, true, frameID);
+        RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 25, &self->shadowAnimator, true, frameID);
+        drawPos.x = self->position.x + 0x50000;
+        drawPos.y = self->position.y + 0x10000;
         drawPos.x += 4 * self->playerBounceOffset;
         drawPos.y += 4 * self->playerBounceOffset;
         RSDK.DrawSprite(&self->shadowAnimator, &drawPos, false);
@@ -194,14 +192,18 @@ void UIVsCharSelector_DrawPlayer(void)
         drawPos.y -= 8 * self->playerBounceOffset;
         RSDK.DrawSprite(&self->playerAnimator, &drawPos, false);
 
+        drawPos.x = self->position.x - 0x210000;
+        drawPos.y = self->position.y + 0x110000;
+        RSDK.DrawRect(drawPos.x, drawPos.y, 0x420000, 0x100000, 0, 255, INK_NONE, false);
+
         drawPos.x = self->position.x;
-        drawPos.y = self->position.y + 0x200000;
+        drawPos.y = self->position.y + 0x180000;
         RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, false);
     }
 
     if (!self->ready && self->state != UIVsCharSelector_State_WaitingForPlayer) {
         drawPos.x = self->position.x;
-        drawPos.y = self->position.y + 0x200000;
+        drawPos.y = self->position.y + 0x180000;
 
         if (RSDK.Sin256(2 * UIControl->timer) < 0)
             UIWidgets_DrawLeftRightArrows(drawPos.x, drawPos.y, (-RSDK.Sin256(2 * UIControl->timer) + 0x880) << 11);
@@ -239,7 +241,7 @@ void UIVsCharSelector_ProcessButtonCB(void)
         }
 
 #if MANIA_USE_PLUS
-        int32 max = UICHARBUTTON_KNUX + (API.CheckDLC(DLC_PLUS) ? 2 : 0);
+        int32 max = UICHARBUTTON_KNUX + (API.CheckDLC(DLC_PLUS) ? 3 : 0);
 #else
     int32 max = UICHARBUTTON_KNUX;
 #endif
@@ -464,6 +466,7 @@ void UIVsCharSelector_State_Selected(void)
 #if MANIA_USE_PLUS
                 case UICHARBUTTON_MIGHTY: RSDK.PlaySfx(Announcer->sfxMighty, false, 255); break;
                 case UICHARBUTTON_RAY: RSDK.PlaySfx(Announcer->sfxRay, false, 255); break;
+                case UICHARBUTTON_AMY: RSDK.PlaySfx(Announcer->sfxAmy, false, 255); break;
 #endif
                 default: break;
             }

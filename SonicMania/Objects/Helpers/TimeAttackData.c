@@ -10,7 +10,7 @@
 ObjectTimeAttackData *TimeAttackData;
 
 #if MANIA_USE_PLUS
-static const char *playerNames[] = { "Invalid", "Sonic", "Tails", "Knuckles", "Mighty", "Ray" };
+static const char *playerNames[] = { "Invalid", "Sonic", "Tails", "Knuckles", "Mighty", "Ray", "Amy" };
 static const char *actNames[]    = { "Act 1", "Act 2", "Act 3", "" };
 static const char *zoneNames[]   = { "GHZ", "CPZ", "SPZ", "FBZ", "PGZ", "SSZ", "HCZ", "MSZ", "OOZ", "LRZ", "MMZ", "TMZ", "ERZ", "AIZ" };
 static const char *modeNames[]   = { "Mania", "Encore" };
@@ -366,6 +366,7 @@ int32 TimeAttackData_GetManiaListPos(int32 zoneID, int32 act, int32 characterID)
 
         case ZONE_MMZ:
         case ZONE_TMZ: listPos = act + (2 * zoneID + 3); break;
+        case ZONE_ERZ: listPos = act + (2 * zoneID + 4); break;
 
         default: break;
     }
@@ -714,7 +715,7 @@ void TimeAttackData_AddLeaderboardEntry(uint8 zoneID, uint8 act, uint8 character
 LeaderboardID *TimeAttackData_GetLeaderboardInfo(uint8 zoneID, uint8 act, uint8 characterID, bool32 isEncore)
 {
     LeaderboardID *info = NULL;
-    if (zoneID < 12 && act < 2 && characterID <= 5) {
+    if (zoneID < 12 && act < 2 && characterID <= 6) {
         int32 id = 10 * zoneID + 5 * act + (characterID - 1);
         if (isEncore)
             id += 120;

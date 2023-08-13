@@ -256,6 +256,14 @@ void Bomb_State_Shrapnel(void)
                 }
             }
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (self->planeFilter <= 0 || shield->collisionPlane == ((self->planeFilter - 1) & 1)) {
+                if (Shield_CheckCollisionTouch(shield, self, &Bomb->hitboxShrapnel))
+                    Shield_State_Reflect(shield, self);
+            }
+        }
     }
     else {
         destroyEntity(self);

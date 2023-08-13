@@ -16,6 +16,7 @@ typedef enum {
 struct ObjectUIVsCharSelector {
     RSDK_OBJECT
     uint16 aniFrames;
+    bool32 superRun;
 };
 
 // Entity Class

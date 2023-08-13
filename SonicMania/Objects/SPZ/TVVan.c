@@ -699,6 +699,7 @@ void TVVan_StateRadio_HandleMovement(void)
 #if MANIA_USE_PLUS
                             case ID_MIGHTY: RSDK.SetSpriteAnimation(TVVan->aniFrames, 22, &van->playerAnimator, true, 0); break;
                             case ID_RAY: RSDK.SetSpriteAnimation(TVVan->aniFrames, 23, &van->playerAnimator, true, 0); break;
+                            case ID_AMY: RSDK.SetSpriteAnimation(TVVan->aniFrames, 24, &van->playerAnimator, true, 0); break;
 #endif
                         }
 

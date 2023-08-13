@@ -7,6 +7,7 @@
 struct ObjectSuperSparkle {
     RSDK_OBJECT
     uint16 aniFrames;
+    uint16 superFrames;
 };
 
 // Entity Class

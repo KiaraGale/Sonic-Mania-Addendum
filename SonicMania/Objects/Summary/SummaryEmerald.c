@@ -26,6 +26,7 @@ void SummaryEmerald_Draw(void)
 void SummaryEmerald_Create(void *data)
 {
     RSDK_THIS(SummaryEmerald);
+    int32 playerID = GET_CHARACTER_ID(1);
 
     self->active        = ACTIVE_NORMAL;
     self->drawGroup     = 3;
@@ -35,7 +36,12 @@ void SummaryEmerald_Create(void *data)
 
     if (!SceneInfo->inEditor) {
         if (SaveGame_GetEmerald(self->emeraldID))
-            RSDK.SetSpriteAnimation(SummaryEmerald->aniFrames, 0, &self->animator, true, self->emeraldID % 7);
+            if (playerID == ID_AMY)
+                RSDK.SetSpriteAnimation(SummaryEmerald->aniFrames, 1, &self->animator, true, self->emeraldID % 7);
+            else
+                RSDK.SetSpriteAnimation(SummaryEmerald->aniFrames, 0, &self->animator, true, self->emeraldID % 7);
+        else if (playerID == ID_AMY)
+            RSDK.SetSpriteAnimation(SummaryEmerald->aniFrames, 1, &self->animator, true, 7);
         else
             RSDK.SetSpriteAnimation(SummaryEmerald->aniFrames, 0, &self->animator, true, 7);
     }

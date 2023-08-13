@@ -418,6 +418,12 @@ void KingAttack_State_OrbitLaunched(void)
 
     KingAttack_CheckPlayerCollisions();
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (!RSDK.CheckOnScreen(self, NULL))
         destroyEntity(self);
 }
@@ -531,6 +537,12 @@ void KingAttack_State_LargeBullet_TwinShot(void)
 
         if (!self->scale.x)
             destroyEntity(self);
+    }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
     }
 }
 

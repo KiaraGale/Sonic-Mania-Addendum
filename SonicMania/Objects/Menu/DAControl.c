@@ -92,6 +92,56 @@ void DAControl_Create(void *data)
 
 void DAControl_StageLoad(void) { DAControl->aniFrames = RSDK.LoadSpriteAnimation("UI/DAGarden.bin", SCOPE_STAGE); }
 
+void DAControl_WaitForInput(void)
+{
+    RSDK_THIS(DAControl);
+
+}
+
+void DAControl_State_HandleInput(void)
+{
+    RSDK_THIS(DAControl);
+    int32 prevTrack = DAControl->trackID;
+    if (UIControl->anyRightPress)
+        DAControl->trackID++;
+    else if (UIControl->anyLeftPress)
+        DAControl->trackID--;
+    else if (UIControl->anyUpPress)
+        DAControl->trackID += 10;
+    else if (UIControl->anyDownPress)
+        DAControl->trackID -= 10;
+
+    if (DAControl->trackID < 0)
+        DAControl->trackID += DAControl->trackCount;
+    if (DAControl->trackID >= DAControl->trackCount)
+        DAControl->trackID -= DAControl->trackCount;
+
+    if (prevTrack != DAControl->trackID) {
+        RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
+        DASetup_DisplayTrack(DAControl->trackID);
+    }
+
+    if (UIControl->anyConfirmPress) {
+        if (DAControl->activeTrack == DAControl->trackID) {
+            Music_Stop();
+            DAControl->activeTrack = TRACK_NONE;
+        }
+        else {
+            EntityMusic *track = DAControl->trackList[DAControl->trackID];
+            if (!DASetup_HandleMedallionDebug()) {
+                if (track->trackFile.length) {
+                    DAControl->activeTrack = DAControl->trackID;
+                    Music_PlayTrackPtr(track);
+                }
+                else {
+                    DAControl->activeTrack = TRACK_NONE;
+                    Music_Stop();
+                }
+            }
+        }
+    }
+}
+
 #if GAME_INCLUDE_EDITOR
 void DAControl_EditorDraw(void)
 {

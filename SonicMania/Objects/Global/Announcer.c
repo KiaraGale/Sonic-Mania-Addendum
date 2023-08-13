@@ -53,6 +53,7 @@ void Announcer_StageLoad(void)
 #if MANIA_USE_PLUS
         Announcer->sfxMighty = RSDK.GetSfx("VO/Mighty.wav");
         Announcer->sfxRay    = RSDK.GetSfx("VO/Ray.wav");
+        Announcer->sfxAmy    = RSDK.GetSfx("VO/Amy.wav");
 #endif
         Announcer->sfxTheWinnerIs = RSDK.GetSfx("VO/TheWinnerIs.wav");
         Announcer->sfxPlayer1     = RSDK.GetSfx("VO/Player1.wav");
@@ -67,6 +68,7 @@ void Announcer_StageLoad(void)
 #if MANIA_USE_PLUS
         Announcer->sfxMightyWins = RSDK.GetSfx("VO/MightyWins.wav");
         Announcer->sfxRayWins    = RSDK.GetSfx("VO/RayWins.wav");
+        Announcer->sfxAmyWins    = RSDK.GetSfx("VO/AmyWins.wav");
         Announcer->sfxDrawRound  = RSDK.GetSfx("VO/ItsADraw.wav");
         Announcer->sfxDrawSet    = RSDK.GetSfx("VO/ItsADraw_Set.wav");
         LogHelpers_Print("sfxDrawRound = %d", Announcer->sfxDrawRound);
@@ -136,6 +138,7 @@ void Announcer_Draw_Countdown(void)
 #if MANIA_USE_PLUS
             case ID_MIGHTY: frame = 3; break;
             case ID_RAY: frame = 4; break;
+            case ID_AMY: frame = 5; break;
 #endif
         }
         RSDK.SetSpriteAnimation(Announcer->aniFrames, 2, &self->playerIconAnimator, true, frame);
@@ -312,6 +315,7 @@ void Announcer_State_AnnounceWinPlayer(void)
 #if MANIA_USE_PLUS
             case ID_MIGHTY: RSDK.PlaySfx(Announcer->sfxMightyWins, false, 255); break;
             case ID_RAY: RSDK.PlaySfx(Announcer->sfxRayWins, false, 255); break;
+            case ID_AMY: RSDK.PlaySfx(Announcer->sfxAmyWins, false, 255); break;
 #endif
             default: break;
         }

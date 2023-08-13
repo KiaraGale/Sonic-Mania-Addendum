@@ -109,7 +109,7 @@ void PauseMenu_Draw(void)
     RSDK_THIS(PauseMenu);
 
     if (self->paused)
-        RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
+        RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer, self->fadeTimer);
 
     if (RSDK.GetVideoSetting(VIDEOSETTING_SCREENCOUNT) <= 1) {
         StateMachine_Run(self->stateDraw);
@@ -177,13 +177,6 @@ void PauseMenu_SetupMenu(void)
 
     control->position.x = (ScreenInfo->position.x + ScreenInfo->center.x) << 16;
     control->position.y = (ScreenInfo->position.y + ScreenInfo->center.y) << 16;
-
-    // Bug Details:
-    // control->rowCount is slightly bugged, if `pauseMenu->disableRestart` is enabled then wrapping by pressing down is broken and wont work
-    // this is due to rowCount being 3, while control->buttonCount is only 2
-    // Fix:
-    // set control->rowCount to control->buttonCount once it's been initialized, instead of using a constant value
-    control->rowCount    = PAUSEMENU_BUTTON_COUNT;
     control->columnCount = 1;
     control->buttonID    = 0;
     self->manager        = control;
@@ -197,6 +190,7 @@ void PauseMenu_SetupMenu(void)
         control->buttons[i]    = button;
     }
     control->buttonCount = i;
+    control->rowCount    = control->buttonCount;
 }
 
 void PauseMenu_SetupTintTable(void)

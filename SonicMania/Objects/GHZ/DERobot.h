@@ -61,6 +61,7 @@ struct EntityDERobot {
     int32 timer;
     int32 invincibilityTimer;
     int32 health;
+    int32 maxHealth;
     int32 armExtend;
     int32 destroyedTerrainX;
     int32 kneeAngleVel;

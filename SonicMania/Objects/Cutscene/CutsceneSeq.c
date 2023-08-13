@@ -80,7 +80,7 @@ void CutsceneSeq_Draw(void)
         RSDK.FillScreen(0xFFF0F0, self->fadeWhite, self->fadeWhite - 256, self->fadeWhite - 256);
 
     if (self->fadeBlack > 0)
-        RSDK.FillScreen(0x000000, self->fadeBlack, self->fadeBlack - 128, self->fadeBlack - 256);
+        RSDK.FillScreen(0x000000, self->fadeBlack, self->fadeBlack, self->fadeBlack);
 }
 
 void CutsceneSeq_Create(void *data)

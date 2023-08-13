@@ -22,8 +22,10 @@ struct ObjectUIControl {
     bool32 confirmPress[PLAYER_COUNT];
     bool32 yPress[PLAYER_COUNT];
     bool32 xPress[PLAYER_COUNT];
+    bool32 zPress[PLAYER_COUNT];
 #if MANIA_USE_PLUS
     bool32 startPress[PLAYER_COUNT];
+    bool32 selectPress[PLAYER_COUNT];
 #endif
     bool32 anyUpPress;
     bool32 anyDownPress;
@@ -33,8 +35,10 @@ struct ObjectUIControl {
     bool32 anyBackPress;
     bool32 anyYPress;
     bool32 anyXPress;
+    bool32 anyZPress;
 #if MANIA_USE_PLUS
     bool32 anyStartPress;
+    bool32 anySelectPress;
 #endif
     bool32 forceBackPress;
     bool32 hasTouchInput;

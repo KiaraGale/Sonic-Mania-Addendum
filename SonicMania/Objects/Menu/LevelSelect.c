@@ -168,8 +168,8 @@ void LevelSelect_Cheat_SwapGameMode(void)
         }
         else {
             globals->gameMode = MODE_ENCORE;
-            if (globals->medalMods & MEDAL_ANDKNUCKLES) 
-                globals->medalMods &= ~MEDAL_ANDKNUCKLES;
+            if (globals->medalMods & MEDAL_P2SONIC || MEDAL_P2TAILS || MEDAL_P2KNUX || MEDAL_P2MIGHTY || MEDAL_P2RAY || MEDAL_P2AMY)
+                globals->medalMods &= MEDAL_P2NONE;
         }
     }
 }
@@ -190,7 +190,7 @@ void LevelSelect_Cheat_UnlockAllMedals(void)
 void LevelSelect_Draw_Fade(void)
 {
     RSDK_THIS(LevelSelect);
-    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
 }
 
 void LevelSelect_State_Init(void)
@@ -522,7 +522,7 @@ void LevelSelect_ManagePlayerIcon(void)
         case LSELECT_PLAYER_TAILS:
             // Bug Details(?):
             if (self->sidekickCharacterID == LSELECT_PLAYER_TAILS) // if leader is sonic or tails, and the sidekick is tails... change to knux...?
-                self->leaderCharacterID = LSELECT_PLAYER_KNUCKLES;
+                self->leaderCharacterID = LSELECT_PLAYER_TAILS;
             // playerID 3 may have been meant to be "S&T" before it was rearranged?
             // v4 support this, with the player ids being: Sonic, Tails, Knux, Sonic & Tails
 
@@ -534,6 +534,7 @@ void LevelSelect_ManagePlayerIcon(void)
 #if MANIA_USE_PLUS
         case LSELECT_PLAYER_MIGHTY:
         case LSELECT_PLAYER_RAY:
+        case LSELECT_PLAYER_AMY:
             if (!API.CheckDLC(DLC_PLUS))
                 self->leaderCharacterID = LSELECT_PLAYER_SONIC;
 

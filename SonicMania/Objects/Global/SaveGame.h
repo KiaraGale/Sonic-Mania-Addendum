@@ -47,6 +47,18 @@ typedef struct {
 #endif
 } SaveRAM;
 
+#if MANIA_USE_PLUS
+typedef struct {
+    uint8 padding[0x62];
+
+    int32 actID;
+    int32 collectedTimeStones;
+    int32 nextSpecialStage;
+    int32 addendumMods;
+    int32 saveState;
+} AddendumData;
+#endif
+
 // Object Class
 struct ObjectSaveGame {
 #if !MANIA_USE_PLUS
@@ -62,6 +74,7 @@ struct ObjectSaveGame {
     void (*saveCallback)(bool32 success);
 #endif
     SaveRAM *saveRAM;
+    AddendumData *addendumData;
     int32 unused1;
 };
 
@@ -71,6 +84,7 @@ struct EntitySaveGame {
     // padding to match whatever it would be normally
     // not required, but its for safety :)
     uint8 padding[sizeof(SaveRAM) - sizeof(Entity)];
+    uint8 paddingA[sizeof(AddendumData) - sizeof(Entity)];
 };
 
 extern ObjectSaveGame *SaveGame;
@@ -91,29 +105,62 @@ void SaveGame_Serialize(void);
 // Funcs
 SaveRAM *SaveGame_GetSaveRAM(void);
 #if MANIA_USE_PLUS
+AddendumData *Addendum_GetSaveRAM(void);
+#endif
+#if MANIA_USE_PLUS
 int32 *SaveGame_GetDataPtr(int32 slot, bool32 encore);
 #else
 int32 *SaveGame_GetDataPtr(int32 slot);
 #endif
+#if MANIA_USE_PLUS
+int32 *Addendum_GetDataPtr(int32 slot, bool32 encore);
+#endif
 void SaveGame_LoadSaveData(void);
+#if MANIA_USE_PLUS
+void Addendum_LoadSaveData(void);
+#endif
 void SaveGame_LoadFile(void (*callback)(bool32 success));
+#if MANIA_USE_PLUS
+void Addendum_LoadFile(void (*callback)(bool32 success));
+#endif
 #if MANIA_USE_PLUS
 void SaveGame_SaveFile(void (*callback)(bool32 success));
 #else
 void SaveGame_SaveFile(void (*callback)(void));
 #endif
+#if MANIA_USE_PLUS
+void Addendum_SaveFile(void (*callback)(bool32 success));
+#endif
 void SaveGame_SaveLoadedCB(bool32 success);
+#if MANIA_USE_PLUS
+void Addendum_SaveLoadedCB(bool32 success);
+#endif
 void SaveGame_SaveGameState(void);
 void SaveGame_SaveProgress(void);
+#if MANIA_USE_PLUS
+void Addendum_SaveProgress(void);
+#endif
 void SaveGame_ClearRestartData(void);
 void SaveGame_SavePlayerState(void);
 void SaveGame_LoadPlayerState(void);
 void SaveGame_ResetPlayerState(void);
 void SaveGame_LoadFile_CB(int32 status);
+#if MANIA_USE_PLUS
+void Addendum_LoadFile_CB(int32 status);
+#endif
 void SaveGame_SaveFile_CB(int32 status);
 bool32 SaveGame_AllChaosEmeralds(void);
+#if MANIA_USE_PLUS
+bool32 Addendum_AllTimeStones(void);
+#endif
 bool32 SaveGame_GetEmerald(uint8 emeraldID);
+#if MANIA_USE_PLUS
+bool32 Addendum_GetTimeStone(uint8 timeStoneID);
+#endif
 void SaveGame_SetEmerald(uint8 emeraldID);
+#if MANIA_USE_PLUS
+void Addendum_SetTimeStone(uint8 timeStoneID);
+#endif
 void SaveGame_ClearCollectedSpecialRings(void);
 bool32 SaveGame_GetCollectedSpecialRing(uint8 id);
 void SaveGame_SetCollectedSpecialRing(uint8 id);

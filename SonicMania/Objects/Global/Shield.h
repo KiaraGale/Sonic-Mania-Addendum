@@ -15,6 +15,7 @@ typedef enum {
     SHIELDANI_BUBBLEATTACKD,
     SHIELDANI_BUBBLEATTACKUPADD,
     SHIELDANI_INSTA,
+    SHIELDANI_SUPERINSTA,
 } ShieldAniIDs;
 
 // Object Class
@@ -42,6 +43,7 @@ struct EntityShield {
     bool32 forceVisible;
     Animator shieldAnimator;
     Animator fxAnimator;
+    Hitbox *outerbox;
 };
 
 // Object Struct
@@ -67,5 +69,7 @@ void Shield_State_BubbleBounced(void);
 void Shield_State_FireDash(void);
 void Shield_State_LightningSparks(void);
 void Shield_State_Insta(void);
+bool32 Shield_State_Reflect(EntityShield *shield, void *p);
+bool32 Shield_CheckCollisionTouch(EntityShield *shield, void *e, Hitbox *entityHitbox);
 
 #endif //! OBJ_SHIELD_H

@@ -86,15 +86,15 @@ void BSS_Player_Draw(void)
 
     Vector2 drawPos;
     drawPos.x = TO_FIXED(ScreenInfo->center.x);
-    drawPos.y = self->position.y;
+    drawPos.y = self->position.y + (SceneInfo->entitySlot * 0x10000);
     RSDK.DrawSprite(&self->animator, &drawPos, true);
 
-    // if we're tails, draw his tail
-    if (CHECK_CHARACTER_ID(ID_TAILS, 1) && self->animator.animationID == 1)
+    // if we're tails, draw his tails
+    if (CHECK_CHARACTER_ID(ID_TAILS, SceneInfo->entitySlot + 1))
         RSDK.DrawSprite(&self->tailAnimator, &drawPos, true);
 #if MANIA_USE_PLUS
     // if we're ray, draw his tail
-    else if (CHECK_CHARACTER_ID(ID_RAY, 1) && self->animator.animationID == 1)
+    else if (CHECK_CHARACTER_ID(ID_RAY, SceneInfo->entitySlot + 1))
         RSDK.DrawSprite(&self->tailAnimator, &drawPos, true);
 #endif
 }
@@ -102,6 +102,8 @@ void BSS_Player_Draw(void)
 void BSS_Player_Create(void *data)
 {
     RSDK_THIS(BSS_Player);
+    if (data)
+        self->playerID = VOID_TO_INT(data);
 
     if (!SceneInfo->inEditor) {
         self->active        = ACTIVE_NORMAL;
@@ -110,7 +112,7 @@ void BSS_Player_Create(void *data)
         self->updateRange.x = TO_FIXED(128);
         self->updateRange.y = TO_FIXED(128);
 
-        switch (GET_CHARACTER_ID(1)) {
+        switch (GET_CHARACTER_ID(self->playerID)) {
             default:
             case ID_SONIC: self->aniFrames = BSS_Player->sonicFrames; break;
 
@@ -128,18 +130,21 @@ void BSS_Player_Create(void *data)
                 self->aniFrames = BSS_Player->rayFrames;
                 RSDK.SetSpriteAnimation(self->aniFrames, 4, &self->tailAnimator, true, 0);
                 break;
+
+            case ID_AMY: self->aniFrames = BSS_Player->amyFrames; break;
 #endif
         }
 
-        // The BSS Player gets reset into P1 slot, no other player entities ever get set, so sidekick BSS player behaviour goes unused...
-        if (SceneInfo->entitySlot) {
-            self->stateInput = BSS_Player_Input_P2;
-            self->sidekick   = true;
-        }
-        else {
+        if (self->playerID == 1) {
             self->stateInput   = BSS_Player_Input_P1;
             self->controllerID = CONT_P1;
             self->sidekick     = false;
+        }
+
+        if (self->playerID == 2) {
+            self->stateInput   = BSS_Player_Input_P2;
+            self->controllerID = CONT_P2;
+            self->sidekick     = true;
         }
 
         RSDK.SetSpriteAnimation(self->aniFrames, 0, &self->animator, true, 0);
@@ -153,11 +158,14 @@ void BSS_Player_StageLoad(void)
     BSS_Player->knuxFrames   = RSDK.LoadSpriteAnimation("SpecialBS/Knuckles.bin", SCOPE_STAGE);
     BSS_Player->mightyFrames = RSDK.LoadSpriteAnimation("SpecialBS/Mighty.bin", SCOPE_STAGE);
     BSS_Player->rayFrames    = RSDK.LoadSpriteAnimation("SpecialBS/Ray.bin", SCOPE_STAGE);
+    BSS_Player->amyFrames    = RSDK.LoadSpriteAnimation("SpecialBS/Amy.bin", SCOPE_STAGE);
 
     if (globals->playerID == ID_NONE)
         globals->playerID = ID_DEFAULT_PLAYER;
 
-    RSDK.ResetEntitySlot(SLOT_PLAYER1, BSS_Player->classID, NULL);
+    RSDK.ResetEntitySlot(SLOT_PLAYER1, BSS_Player->classID, ((void *)1));
+    if (GET_CHARACTER_ID(2) != 0)
+        RSDK.ResetEntitySlot(SLOT_PLAYER2, BSS_Player->classID, ((void *)2));
 
     BSS_Player->sfxJump = RSDK.GetSfx("Global/Jump.wav");
 }
@@ -214,16 +222,18 @@ void BSS_Player_Input_P1(void)
 void BSS_Player_Input_P2(void)
 {
     RSDK_THIS(BSS_Player);
+    EntityBSS_Player *player1       = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
+    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+    RSDKAnalogState *stick          = &AnalogStickInfoL[self->controllerID];
 
-    // Bug Details:
-    // this uses "self->jumpPress" for the state rather than "player1->jumpPress" as intended
-    // this results in P2 never actually jumping
-    // Fix:
-    // replace "BSS_Player->jumpPressState |= self->jumpPress;" with "BSS_Player->jumpPressState |= player1->jumpPress;"
+    BSS_Player->upPressState <<= 1;
+    BSS_Player->upPressState |= controller->keyUp.down || stick->keyUp.down || stick->vDelta > 0.3;
+    BSS_Player->upPressState &= 0xFFFF;
 
-    // EntityBSS_Player *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
+    self->up = BSS_Player->upPressState >> 15;
+
     BSS_Player->jumpPressState <<= 1;
-    BSS_Player->jumpPressState |= self->jumpPress;
+    BSS_Player->jumpPressState |= player1->jumpPress;
     BSS_Player->jumpPressState &= 0xFFFF;
 
     self->jumpPress = BSS_Player->jumpPressState >> 15;

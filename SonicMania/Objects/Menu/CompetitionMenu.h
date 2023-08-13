@@ -19,6 +19,7 @@ struct ObjectCompetitionMenu {
     EntityUIControl *compTotalControl;
     EntityUIInfoLabel *resultsLabel_Total;
     int32 timer;
+    EntityUIVsCharSelector *superRun;
 };
 
 // Entity Class

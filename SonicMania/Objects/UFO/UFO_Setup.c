@@ -40,7 +40,7 @@ void UFO_Setup_Draw(void)
 {
     RSDK_THIS(UFO_Setup);
 
-    RSDK.FillScreen(self->fadeColor, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(self->fadeColor, self->timer, self->timer, self->timer);
 }
 
 void UFO_Setup_Create(void *data)
@@ -76,6 +76,7 @@ void UFO_Setup_StageLoad(void)
     UFO_Setup->sfxBlueSphere = RSDK.GetSfx("Special/BlueSphere2.wav");
     UFO_Setup->sfxSSExit     = RSDK.GetSfx("Special/SSExit.wav");
     UFO_Setup->sfxEmerald    = RSDK.GetSfx("Special/Emerald.wav");
+    UFO_Setup->sfxTimeStone  = RSDK.GetSfx("Special/TimeStone.wav");
     UFO_Setup->sfxEvent      = RSDK.GetSfx("Special/Event.wav");
 
     RSDK.CopyPalette(0, 0, 7, 0, 128);
@@ -169,7 +170,6 @@ void UFO_Setup_StageLoad(void)
 
 #if MANIA_USE_PLUS
     if (UFO_Setup->specialStageID >= 7) {
-        UFO_Setup->specialStageID = UFO_Setup->specialStageID % 7;
         UFO_Setup->encoreStage    = true;
     }
 #endif
@@ -299,11 +299,22 @@ void UFO_Setup_Finish_Win(void)
 {
     EntityUFO_Setup *setup = RSDK_GET_ENTITY(SLOT_UFO_SETUP, UFO_Setup);
 
-    SaveGame_SetEmerald(UFO_Setup->specialStageID);
+    if (UFO_Setup->specialStageID <= 6)
+        SaveGame_SetEmerald(UFO_Setup->specialStageID);
+    else if (UFO_Setup->specialStageID > 6)
+        Addendum_SetTimeStone((UFO_Setup->specialStageID) - 7);
 
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
-    if (globals->saveSlotID != NO_SAVE_SLOT)
-        GameProgress_GiveEmerald(saveRAM->nextSpecialStage);
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    if (globals->saveSlotID != NO_SAVE_SLOT) {
+        if (UFO_Setup->specialStageID <= 6) {
+            GameProgress_GiveEmerald(saveRAM->nextSpecialStage);
+        }
+
+        if (UFO_Setup->specialStageID > 6) {
+            Addendum_GiveTimeStone((saveRAM->nextSpecialStage) - 7);
+        }
+    }
 
     foreach_all(UFO_Player, player)
     {
@@ -311,7 +322,7 @@ void UFO_Setup_Finish_Win(void)
         player->interaction = false;
     }
 
-    saveRAM->nextSpecialStage = (saveRAM->nextSpecialStage + 1) % 7;
+    saveRAM->nextSpecialStage = (saveRAM->nextSpecialStage + 1) % 14;
     setup->visible            = true;
     setup->state              = UFO_Setup_State_FinishFadeout;
 

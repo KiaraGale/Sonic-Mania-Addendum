@@ -478,6 +478,7 @@ void InitPublicFunctions()
 #if MANIA_USE_PLUS
     ADD_PUBLIC_FUNC(CPZ1Intro_CheckMightyAnimFinish);
     ADD_PUBLIC_FUNC(CPZ1Intro_CheckRayAnimFinish);
+    ADD_PUBLIC_FUNC(CPZ1Intro_CheckAmyAnimFinish);
     ADD_PUBLIC_FUNC(CPZ1Intro_Cutscene_RubyWarp);
 #endif
     ADD_PUBLIC_FUNC(CPZ1Intro_Cutscene_PostWarpDrop);
@@ -1775,6 +1776,8 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(HUD_MoveOut);
     ADD_PUBLIC_FUNC(HUD_EnableRingFlash);
     ADD_PUBLIC_FUNC(HUD_CharacterIndexFromID);
+    ADD_PUBLIC_FUNC(HUD_HandleInputViewer);
+    ADD_PUBLIC_FUNC(HUD_HandleItemsHUD);
 
     // Global/InvisibleBlock
     ADD_PUBLIC_FUNC(InvisibleBlock_DrawSprites);
@@ -1888,6 +1891,7 @@ void InitPublicFunctions()
 #if MANIA_USE_PLUS
     ADD_PUBLIC_FUNC(Player_BlendSuperMightyColors);
     ADD_PUBLIC_FUNC(Player_BlendSuperRayColors);
+    ADD_PUBLIC_FUNC(Player_BlendSuperAmyColors);
     ADD_PUBLIC_FUNC(Player_HandleSuperForm);
 #endif
     ADD_PUBLIC_FUNC(Player_CheckP2KeyPress);
@@ -1925,8 +1929,10 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Player_Action_Jump);
     ADD_PUBLIC_FUNC(Player_Action_Roll);
     ADD_PUBLIC_FUNC(Player_Action_Spindash);
+    ADD_PUBLIC_FUNC(Player_Action_Spindash_CD);
     ADD_PUBLIC_FUNC(Player_Action_Peelout);
 #if MANIA_USE_PLUS
+    ADD_PUBLIC_FUNC(Player_Action_TallJump);
     ADD_PUBLIC_FUNC(Player_SwapMainPlayer);
 #endif
     ADD_PUBLIC_FUNC(Player_HandleRollDeceleration);
@@ -1944,7 +1950,9 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Player_State_LookUp);
     ADD_PUBLIC_FUNC(Player_State_Crouch);
     ADD_PUBLIC_FUNC(Player_State_Spindash);
+    ADD_PUBLIC_FUNC(Player_State_Spindash_CD);
     ADD_PUBLIC_FUNC(Player_State_Peelout);
+    ADD_PUBLIC_FUNC(Player_State_TallJump);
     ADD_PUBLIC_FUNC(Player_State_OuttaHere);
     ADD_PUBLIC_FUNC(Player_State_Transform);
     ADD_PUBLIC_FUNC(Player_State_Hurt);
@@ -1954,6 +1962,7 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Player_State_BubbleBounce);
     ADD_PUBLIC_FUNC(Player_State_TailsFlight);
     ADD_PUBLIC_FUNC(Player_State_FlyCarried);
+    ADD_PUBLIC_FUNC(Player_State_FlightCancel);
     ADD_PUBLIC_FUNC(Player_State_KnuxGlideLeft);
     ADD_PUBLIC_FUNC(Player_State_KnuxGlideRight);
     ADD_PUBLIC_FUNC(Player_State_KnuxGlideDrop);
@@ -1966,8 +1975,10 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Player_SpawnMightyHammerdropDust);
     ADD_PUBLIC_FUNC(Player_CheckMightyUnspin);
     ADD_PUBLIC_FUNC(Player_State_RayGlide);
-    ADD_PUBLIC_FUNC(Player_State_FlyToPlayer);
+    ADD_PUBLIC_FUNC(Player_State_AmyHeliHammer_Left);
+    ADD_PUBLIC_FUNC(Player_State_AmyHeliHammer_Right);
 #endif
+    ADD_PUBLIC_FUNC(Player_State_FlyToPlayer);
     ADD_PUBLIC_FUNC(Player_State_ReturnToPlayer);
     ADD_PUBLIC_FUNC(Player_State_HoldRespawn);
     ADD_PUBLIC_FUNC(Player_FinishedReturnToPlayer);
@@ -1984,6 +1995,8 @@ void InitPublicFunctions()
 #if MANIA_USE_PLUS
     ADD_PUBLIC_FUNC(Player_JumpAbility_Mighty);
     ADD_PUBLIC_FUNC(Player_JumpAbility_Ray);
+    ADD_PUBLIC_FUNC(Player_JumpAbility_Amy);
+    ADD_PUBLIC_FUNC(Player_State_AmyDoubleJump);
     ADD_PUBLIC_FUNC(Player_SfxCheck_RayDive);
     ADD_PUBLIC_FUNC(Player_SfxCheck_RaySwoop);
     ADD_PUBLIC_FUNC(Player_SfxUpdate_RayDive);
@@ -2101,6 +2114,8 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Shield_State_FireDash);
     ADD_PUBLIC_FUNC(Shield_State_LightningSparks);
     ADD_PUBLIC_FUNC(Shield_State_Insta);
+    ADD_PUBLIC_FUNC(Shield_State_Reflect);
+    ADD_PUBLIC_FUNC(Shield_CheckCollisionTouch);
 
     // Global/SignPost
     ADD_PUBLIC_FUNC(SignPost_DebugSpawn);
@@ -3148,6 +3163,10 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(CompetitionMenu_CompZones_BackPressCB);
     ADD_PUBLIC_FUNC(CompetitionMenu_GotoPuyoVS);
 #endif
+
+    // Menu/DAControl
+    ADD_PUBLIC_FUNC(DAControl_WaitForInput);
+    ADD_PUBLIC_FUNC(DAControl_State_HandleInput);
 
     // Menu/DASetup
     ADD_PUBLIC_FUNC(DASetup_DisplayTrack);
@@ -6454,7 +6473,8 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(SpecialClear_State_TallyScore);
     ADD_PUBLIC_FUNC(SpecialClear_State_ShowTotalScore_Continues);
     ADD_PUBLIC_FUNC(SpecialClear_State_ShowTotalScore_NoContinues);
-    ADD_PUBLIC_FUNC(SpecialClear_State_ExitFinishMessage);
+    ADD_PUBLIC_FUNC(SpecialClear_State_ExitFinishMessageSuper);
+    ADD_PUBLIC_FUNC(SpecialClear_State_ExitFinishMessageMiracle);
     ADD_PUBLIC_FUNC(SpecialClear_State_EnterSuperMessage);
     ADD_PUBLIC_FUNC(SpecialClear_State_ShowSuperMessage);
     ADD_PUBLIC_FUNC(SpecialClear_State_ExitFadeOut);

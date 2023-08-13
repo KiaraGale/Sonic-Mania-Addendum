@@ -124,7 +124,11 @@ void SizeLaser_StageLoad(void)
     SizeLaser->aniFrames = RSDK.LoadSpriteAnimation("MMZ/SizeLaser.bin", SCOPE_STAGE);
 
     switch (GET_CHARACTER_ID(1)) {
-        case ID_SONIC: SizeLaser->sonicFrames = RSDK.LoadSpriteAnimation("Players/ChibiSonic.bin", SCOPE_STAGE); break;
+        case ID_SONIC:
+            SizeLaser->sonicFrames   = RSDK.LoadSpriteAnimation("Players/ChibiSonic.bin", SCOPE_STAGE);
+            SizeLaser->superFrames   = RSDK.LoadSpriteAnimation("Players/ChibiSuperSonic.bin", SCOPE_STAGE);
+            SizeLaser->miracleFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleSonic.bin", SCOPE_STAGE);
+            break;
 
         case ID_TAILS:
             SizeLaser->tailsFrames = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
@@ -137,13 +141,22 @@ void SizeLaser_StageLoad(void)
         case ID_MIGHTY: SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE); break;
 
         case ID_RAY: SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE); break;
+
+        case ID_AMY:
+            SizeLaser->amyFrames        = RSDK.LoadSpriteAnimation("Players/ChibiAmy.bin", SCOPE_STAGE);
+            SizeLaser->miracleAmyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleAmy.bin", SCOPE_STAGE);
+            break;
 #endif
 
         default: break;
     }
 
     switch (GET_CHARACTER_ID(2)) {
-        case ID_SONIC: SizeLaser->sonicFrames = RSDK.LoadSpriteAnimation("Players/ChibiSonic.bin", SCOPE_STAGE); break;
+        case ID_SONIC:
+            SizeLaser->sonicFrames   = RSDK.LoadSpriteAnimation("Players/ChibiSonic.bin", SCOPE_STAGE);
+            SizeLaser->superFrames   = RSDK.LoadSpriteAnimation("Players/ChibiSuperSonic.bin", SCOPE_STAGE);
+            SizeLaser->miracleFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleSonic.bin", SCOPE_STAGE);
+            break;
 
         case ID_TAILS:
             SizeLaser->tailsFrames = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
@@ -156,6 +169,11 @@ void SizeLaser_StageLoad(void)
         case ID_MIGHTY: SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE); break;
 
         case ID_RAY: SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE); break;
+
+        case ID_AMY:
+            SizeLaser->amyFrames        = RSDK.LoadSpriteAnimation("Players/ChibiAmy.bin", SCOPE_STAGE);
+            SizeLaser->miracleAmyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleAmy.bin", SCOPE_STAGE);
+            break;
 #endif
 
         default: break;
@@ -191,7 +209,14 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
         switch (player->characterID) {
             default:
             case ID_SONIC:
-                player->aniFrames  = SizeLaser->sonicFrames;
+                if (player->superState == SUPERSTATE_SUPER) {
+                    if (player->miracleState)
+                        player->aniFrames = SizeLaser->miracleFrames;
+                    else
+                        player->aniFrames = SizeLaser->superFrames;
+                }
+                else
+                    player->aniFrames = SizeLaser->sonicFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -220,6 +245,15 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
+
+            case ID_AMY:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = SizeLaser->miracleAmyFrames;
+                else
+                    player->aniFrames = SizeLaser->amyFrames;
+                player->tailFrames = -1;
+                player->isChibi    = isChibi;
+                break;
 #endif
         }
     }
@@ -227,7 +261,14 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
         switch (player->characterID) {
             default:
             case ID_SONIC:
-                player->aniFrames  = Player->sonicFrames;
+                if (player->superState == SUPERSTATE_SUPER) {
+                    if (player->miracleState)
+                        player->aniFrames = Player->miracleFrames;
+                    else
+                        player->aniFrames = Player->superFrames;
+                }
+                else
+                    player->aniFrames = Player->sonicFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -253,6 +294,15 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
 
             case ID_RAY:
                 player->aniFrames  = Player->rayFrames;
+                player->tailFrames = -1;
+                player->isChibi    = isChibi;
+                break;
+
+            case ID_AMY:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = Player->miracleAmyFrames;
+                else
+                    player->aniFrames  = Player->amyFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -354,7 +404,14 @@ void SizeLaser_PlayerState_ShrinkChibi(void)
         switch (self->characterID) {
             default:
             case ID_SONIC:
-                self->aniFrames  = SizeLaser->sonicFrames;
+                if (self->superState == SUPERSTATE_SUPER) {
+                    if (self->miracleState)
+                        self->aniFrames = SizeLaser->miracleFrames;
+                    else
+                        self->aniFrames = SizeLaser->superFrames;
+                }
+                else
+                    self->aniFrames = SizeLaser->sonicFrames;
                 self->tailFrames = -1;
                 break;
 
@@ -376,6 +433,14 @@ void SizeLaser_PlayerState_ShrinkChibi(void)
 
             case ID_RAY:
                 self->aniFrames  = SizeLaser->rayFrames;
+                self->tailFrames = -1;
+                break;
+
+            case ID_AMY:
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    self->aniFrames = SizeLaser->miracleAmyFrames;
+                else
+                    self->aniFrames  = SizeLaser->amyFrames;
                 self->tailFrames = -1;
                 break;
 #endif
@@ -517,8 +582,12 @@ void SizeLaser_CheckPlayerCollisions(void)
                     switch (player->characterID) {
                         default:
                         case ID_SONIC:
-                            if (player->superState == SUPERSTATE_SUPER)
-                                player->aniFrames = Player->superFrames;
+                            if (player->superState == SUPERSTATE_SUPER) {
+                                if (player->miracleState)
+                                    player->aniFrames = Player->miracleFrames;
+                                else
+                                    player->aniFrames = Player->superFrames;
+                            }
                             else
                                 player->aniFrames = Player->sonicFrames;
                             player->tailFrames = -1;
@@ -542,6 +611,14 @@ void SizeLaser_CheckPlayerCollisions(void)
 
                         case ID_RAY:
                             player->aniFrames  = Player->rayFrames;
+                            player->tailFrames = -1;
+                            break;
+
+                        case ID_AMY:
+                            if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                                player->aniFrames = Player->miracleAmyFrames;
+                            else
+                                player->aniFrames  = Player->amyFrames;
                             player->tailFrames = -1;
                             break;
 #endif

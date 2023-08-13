@@ -40,7 +40,7 @@ void SuperSparkle_Update(void)
             self->timer = 0;
         }
 
-        if (player->characterID == ID_SONIC && !(Zone->timer & 7)) {
+        if (!(Zone->timer & 7)) {
             int32 x = player->position.x + RSDK.Rand(-TO_FIXED(12), TO_FIXED(12));
             int32 y = player->position.y + RSDK.Rand(-TO_FIXED(18), TO_FIXED(18));
 
@@ -51,7 +51,14 @@ void SuperSparkle_Update(void)
             sparkle->visible    = false;
             sparkle->velocity.y = -TO_FIXED(1);
             sparkle->drawGroup  = player->drawGroup;
-            RSDK.SetSpriteAnimation(Ring->aniFrames, Zone->timer % 3 + 2, &sparkle->animator, true, 0);
+            switch (player->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3, &sparkle->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 3, &sparkle->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 6, &sparkle->animator, true, 0); break;
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 9, &sparkle->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 12, &sparkle->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 15, &sparkle->animator, true, 0); break;
+            }
             int32 cnt = sparkle->animator.frameCount;
             if (sparkle->animator.animationID == 2) {
                 sparkle->alpha = 0xE0;
@@ -82,7 +89,11 @@ void SuperSparkle_Create(void *data)
     }
 }
 
-void SuperSparkle_StageLoad(void) { SuperSparkle->aniFrames = RSDK.LoadSpriteAnimation("Global/SuperSparkle.bin", SCOPE_STAGE); }
+void SuperSparkle_StageLoad(void)
+{
+    SuperSparkle->aniFrames   = RSDK.LoadSpriteAnimation("Global/SuperSparkle.bin", SCOPE_STAGE);
+    SuperSparkle->superFrames = RSDK.LoadSpriteAnimation("Global/SuperParticles.bin", SCOPE_STAGE);
+}
 
 #if GAME_INCLUDE_EDITOR
 void SuperSparkle_EditorDraw(void)
@@ -93,7 +104,11 @@ void SuperSparkle_EditorDraw(void)
     RSDK.DrawSprite(&animator, NULL, false);
 }
 
-void SuperSparkle_EditorLoad(void) { SuperSparkle->aniFrames = RSDK.LoadSpriteAnimation("Global/SuperSparkle.bin", SCOPE_STAGE); }
+void SuperSparkle_EditorLoad(void)
+{
+    SuperSparkle->aniFrames   = RSDK.LoadSpriteAnimation("Global/SuperSparkle.bin", SCOPE_STAGE);
+    SuperSparkle->superFrames = RSDK.LoadSpriteAnimation("Global/SuperParticles.bin", SCOPE_STAGE);
+}
 #endif
 
 void SuperSparkle_Serialize(void) {}

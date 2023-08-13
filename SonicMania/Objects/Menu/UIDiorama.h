@@ -14,12 +14,55 @@ typedef enum {
     UIDIORAMA_OPTIONS,
     UIDIORAMA_EXTRAS,
     UIDIORAMA_EXIT,
+    UIDIORAMA_ADDENDUM,
 } UIDioramaIDs;
 
 typedef enum {
     UIDIORAMA_ALT_RUN,
     UIDIORAMA_ALT_JOG,
     UIDIORAMA_ALT_LOOP,
+    UIDIORAMA_ADD_LIFESYSTEM1,
+    UIDIORAMA_ADD_LIFESYSTEM2,
+    UIDIORAMA_ADD_LIFESYSTEM3,
+    UIDIORAMA_ADD_SPRITESTYLE1,
+    UIDIORAMA_ADD_SPRITESTYLE2,
+    UIDIORAMA_ADD_SHIELDCONFIG1,
+    UIDIORAMA_ADD_SHIELDCONFIG2,
+    UIDIORAMA_ADD_SHIELDCONFIG3,
+    UIDIORAMA_ADD_SHIELDCONFIG4,
+    UIDIORAMA_ADD_SHIELDCONFIG5,
+    UIDIORAMA_ADD_SHIELDCONFIG6,
+    UIDIORAMA_ADD_SHIELDCONFIG7,
+    UIDIORAMA_ADD_SHIELDCONFIG8,
+    UIDIORAMA_ADD_PEELOUTANIM1,
+    UIDIORAMA_ADD_PEELOUTANIM2,
+    UIDIORAMA_ADD_PEELOUTANIM3,
+    UIDIORAMA_ADD_PEELOUTUSE1,
+    UIDIORAMA_ADD_PEELOUTUSE2,
+    UIDIORAMA_ADD_PEELOUTUSE3,
+    UIDIORAMA_ADD_SHIELDUSE1,
+    UIDIORAMA_ADD_SHIELDUSE2,
+    UIDIORAMA_ADD_SHIELDUSE3,
+    UIDIORAMA_ADD_P2CAMERA1,
+    UIDIORAMA_ADD_P2CAMERA2,
+    UIDIORAMA_ADD_P2ENCORE1,
+    UIDIORAMA_ADD_P2ENCORE2,
+    UIDIORAMA_ADD_P2SHIELD1,
+    UIDIORAMA_ADD_P2SHIELD2,
+    UIDIORAMA_ADD_P2INVSPEED1,
+    UIDIORAMA_ADD_P2INVSPEED2,
+    UIDIORAMA_ADD_P2SUPERFORM1,
+    UIDIORAMA_ADD_P2SUPERFORM2,
+    UIDIORAMA_ADD_P2BREAKITEMS1,
+    UIDIORAMA_ADD_P2BREAKITEMS2,
+    UIDIORAMA_ADD_SHIELDSWAP1,
+    UIDIORAMA_ADD_SHIELDSWAP2,
+    UIDIORAMA_ADD_P2SHIELDLOSS1,
+    UIDIORAMA_ADD_P2SHIELDLOSS2,
+    UIDIORAMA_ADD_P2ERZ1,
+    UIDIORAMA_ADD_P2ERZ2,
+    UIDIORAMA_ADD_MANIABUDDYSWAP1,
+    UIDIORAMA_ADD_MANIABUDDYSWAP2,
 } UIDioramaAlts;
 
 //=======================
@@ -110,6 +153,7 @@ typedef struct {
     Vector2 knuxPos;
     Vector2 rayPos;
     Vector2 mightyPos;
+    Vector2 amyPos;
     Vector2 vectorsPadding[10];
 
     Animator dioramaAnimator;
@@ -119,6 +163,7 @@ typedef struct {
     Animator knuxAnimator;
     Animator rayAnimator;
     Animator mightyAnimator;
+    Animator amyAnimator;
     Animator animatorsPadding[9];
 } UIDiorama_StateInfo_Competition;
 
@@ -175,6 +220,36 @@ typedef struct {
     Animator animatorsPadding[14];
 } UIDiorama_StateInfo_Exit;
 
+typedef struct {
+    Vector2 sonicPos;
+    Vector2 tailsPos;
+    Vector2 knuxPos;
+    Vector2 mightyPos;
+    Vector2 rayPos;
+    Vector2 amyPos;
+    Vector2 itemPos;
+    Vector2 invincibilityPos;
+    Vector2 trailPos;
+    Vector2 hudPos;
+    Vector2 debrisPos;
+
+    Animator dioramaAnimator;
+    Animator terrainAnimator;
+    Animator altTerrainAnimator;
+    Animator bgAnimator;
+    Animator sonicAnimator;
+    Animator tailsAnimator;
+    Animator knuxAnimator;
+    Animator mightyAnimator;
+    Animator rayAnimator;
+    Animator amyAnimator;
+    Animator itemAnimator;
+    Animator invincibleAnimator;
+    Animator trailAnimator;
+    Animator hudAnimator;
+    Animator debrisAnimator; // used for Chaos Emeralds/Time Stones for the P2 ERZ option
+} UIDiorama_StateInfo_Addendum;
+
 //=======================
 // STATE-STRUCTS END
 //=======================
@@ -186,10 +261,19 @@ struct ObjectUIDiorama {
     uint16 capsuleFrames;
     uint16 sonicFrames;
     uint16 tailsFrames;
+    uint16 knuxFrames;
     uint16 knuxFramesAIZ;
     uint16 knuxFramesHCZ;
     uint16 mightyFrames;
     uint16 rayFrames;
+    uint16 sonicCEFrames;
+    uint16 tailsCEFrames;
+    uint16 knuxCEFrames;
+    uint16 knuxCEFramesAIZ;
+    uint16 knuxCEFramesHCZ;
+    uint16 mightyCEFrames;
+    uint16 rayCEFrames;
+    uint16 amyFrames;
     uint16 ringFrames;
     uint16 speedGateFrames;
     uint16 bssSonicFrames;
@@ -249,6 +333,7 @@ void UIDiorama_State_Competition(void);
 void UIDiorama_State_Options(void);
 void UIDiorama_State_Extras(void);
 void UIDiorama_State_Exit(void);
+void UIDiorama_State_Addendum(void);
 
 void UIDiorama_Draw_ManiaMode(void);
 void UIDiorama_Draw_PlusUpsell(void);
@@ -258,6 +343,7 @@ void UIDiorama_Draw_Competition(void);
 void UIDiorama_Draw_Options(void);
 void UIDiorama_Draw_Extras(void);
 void UIDiorama_Draw_Exit(void);
+void UIDiorama_Draw_Addendum(void);
 
 #endif
 

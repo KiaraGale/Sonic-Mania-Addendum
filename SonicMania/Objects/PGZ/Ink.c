@@ -28,15 +28,8 @@ void Ink_Update(void)
 
                 switch (player->characterID) {
                     default: break;
-
-                    // Bug Details:
-                    // This actually wont work on sonic specifically, it uses the "old" sonic palette
-                    // This palette starts at index 2, instead of index 64 like usual
-                    // Fix:
-                    // to fix this up to work as "intended", simply replace the "PLAYER_PALETTE_INDEX_SONIC_OLD"s with "PLAYER_PALETTE_INDEX_SONIC"
                     case ID_SONIC:
-                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_SONIC_OLD, 0, PLAYER_PALETTE_INDEX_SONIC_OLD,
-                                         PLAYER_PRIMARY_COLOR_COUNT);
+                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_SONIC, 0, PLAYER_PALETTE_INDEX_SONIC, PLAYER_PRIMARY_COLOR_COUNT);
                         break;
 
                     case ID_TAILS:
@@ -44,14 +37,20 @@ void Ink_Update(void)
                         break;
 
                     case ID_KNUCKLES:
-                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_KNUX, 0, PLAYER_PALETTE_INDEX_KNUX, 6);
+                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_KNUX, 0, PLAYER_PALETTE_INDEX_KNUX, PLAYER_PRIMARY_COLOR_COUNT);
                         break;
 
-                        // This is an unused object that was scrapped before plus was created, so there's no mighty/ray code
-                        // I've created a mock-up of what mighty/ray code could've looked like, had it been implemented:
-                        // case ID_MIGHTY: RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_MIGHTY, 0, PLAYER_PALETTE_INDEX_MIGHTY,
-                        // PLAYER_PRIMARY_COLOR_COUNT); break; case ID_RAY: RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_RAY, 0,
-                        // PLAYER_PALETTE_INDEX_RAY, PLAYER_PRIMARY_COLOR_COUNT); break;
+                    case ID_MIGHTY:
+                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_MIGHTY, 0, PLAYER_PALETTE_INDEX_MIGHTY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
+
+                    case ID_RAY:
+                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_RAY, 0, PLAYER_PALETTE_INDEX_RAY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
+
+                    case ID_AMY:
+                        RSDK.CopyPalette(3 + self->type, PLAYER_PALETTE_INDEX_AMY, 0, PLAYER_PALETTE_INDEX_AMY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
                 }
 
                 Ink->playerColors[playerID] = 1 + self->type;

@@ -156,6 +156,7 @@ bool32 PSZ2Intro_Cutscene_RunToAct2(EntityCutsceneSeq *host)
         return true;
     }
     else {
+        player1->direction = FLIP_NONE;
         player1->right = true;
     }
 
@@ -168,10 +169,6 @@ bool32 PSZ2Intro_Cutscene_JogIntoPlace(EntityCutsceneSeq *host)
     UNUSED(camera);
 
     if (ScreenInfo->position.x < Zone->cameraBoundsL[0]) {
-        // Bug Details:
-        // groundVel is set here, but the game doesn't make sure you're facing that direction
-        // meaning you can be moving right but facing left, a simple player->direction = FLIP_NONE would fix this
-        // though it'd be best to place it up where player->right = true; is set
         if (player1->groundVel < 0x20000)
             player1->groundVel = 0x20000;
 

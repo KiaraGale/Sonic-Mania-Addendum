@@ -47,6 +47,43 @@ void Debris_Draw(void)
     RSDK_THIS(Debris);
 
     RSDK.DrawSprite(&self->animator, NULL, false);
+
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+
+        for (int32 c = 0; c < 36; ++c) {
+            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
+            RSDK.SetPaletteEntry(0, c + 128, Debris->emeraldColors[c]);
+        }
+
+        RSDK.DrawSprite(&self->emeraldsAnimator, NULL, false);
+
+        for (int32 c = 0; c < 36; ++c) {
+            RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage[c]);
+        }
+
+        for (int32 c = 0; c < 36; ++c) {
+            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 176);
+            RSDK.SetPaletteEntry(0, c + 176, Debris->stoneColors[c]);
+        }
+
+        RSDK.DrawSprite(&self->stonesAnimator, NULL, false);
+
+        for (int32 c = 0; c < 36; ++c) {
+            RSDK.SetPaletteEntry(0, c + 176, Debris->colorStorage[c]);
+        }
+
+        for (int32 c = 0; c < 96; ++c) {
+            Debris->colorStorage2[c] = RSDK.GetPaletteEntry(0, c + 128);
+            RSDK.SetPaletteEntry(0, c + 128, Debris->powerColors[c]);
+        }
+
+        RSDK.DrawSprite(&self->powerAnimator, NULL, false);
+
+        for (int32 c = 0; c < 96; ++c) {
+            RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage2[c]);
+        }
+    }
 }
 
 void Debris_Create(void *data)
@@ -58,7 +95,12 @@ void Debris_Create(void *data)
     self->state   = (Type_StateMachine)data;
 }
 
-void Debris_StageLoad(void) {}
+void Debris_StageLoad(void)
+{
+    Debris->emeraldFrames = RSDK.LoadSpriteAnimation("Cutscene/Emeralds.bin", SCOPE_STAGE);
+    Debris->stoneFrames   = RSDK.LoadSpriteAnimation("Cutscene/Stones.bin", SCOPE_STAGE);
+    Debris->powerFrames   = RSDK.LoadSpriteAnimation("Cutscene/Power.bin", SCOPE_STAGE);
+}
 
 void Debris_CreateFromEntries(int32 aniFrames, int32 *entries, int32 animationID)
 {
@@ -154,6 +196,19 @@ void Debris_State_FallAndFlicker(void)
     Debris_State_Fall(); // is this cheating
 
     self->visible = Zone->timer & 1;
+}
+
+void Debris_State_Rotate(void)
+{
+    RSDK_THIS(Debris);
+
+    self->angle += self->groundVel;
+    self->position.x = self->radius * RSDK.Cos256(self->angle >> 8) + self->originPos.x;
+    self->position.y = self->radius * RSDK.Sin256(self->angle >> 8) + self->originPos.y;
+    self->radius -= 976;
+
+    if (self->radius <= 0)
+        destroyEntity(self);
 }
 
 #if GAME_INCLUDE_EDITOR

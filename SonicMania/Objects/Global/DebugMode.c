@@ -15,9 +15,6 @@ void DebugMode_Update(void)
 
     API_SetAchievementsEnabled(false);
 
-    if (Zone)
-        Zone->stageFinishCallback = StateMachine_None;
-
     bool32 moved = false;
 
 #if MANIA_USE_PLUS

@@ -321,6 +321,7 @@ void PhantomKing_SetupKing(EntityPhantomKing *king)
 void PhantomKing_Draw_Body(void)
 {
     RSDK_THIS(PhantomKing);
+    EntityPhantomRuby *ruby = ERZStart->ruby;
 
     if (self->typeChangeTimer <= 0) {
         if (self->invincibilityTimer & 1)
@@ -352,8 +353,15 @@ void PhantomKing_Draw_Body(void)
         }
     }
 
-    if (self->drawRuby)
+    if (self->drawFlash) {
+        ruby->inkEffect = INK_ADD;
         RSDK.DrawSprite(&self->rubyAnimator, &self->rubyPos, false);
+    }
+
+    if (self->drawRuby) {
+        ruby->inkEffect = INK_NONE;
+        RSDK.DrawSprite(&ruby->rubyAnimator, &self->rubyPos, false);
+    }
 
     if (self->typeChangeTimer <= 0) {
         if (self->invincibilityTimer & 1)

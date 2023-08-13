@@ -146,6 +146,16 @@ void PBL_Player_StageLoad(void)
             PBL_Player->innerBox.top    = -10;
             PBL_Player->innerBox.bottom = 10;
             break;
+
+        case ID_AMY:
+            PBL_Player->jumpFrames = RSDK.LoadMesh("Special/AmyJump.bin", SCOPE_STAGE);
+            PBL_Player->ballFrames = RSDK.LoadMesh("Special/AmyBall.bin", SCOPE_STAGE);
+
+            PBL_Player->outerBox.top    = -12;
+            PBL_Player->outerBox.bottom = 12;
+            PBL_Player->innerBox.top    = -12;
+            PBL_Player->innerBox.bottom = 12;
+            break;
     }
 
     PBL_Player->outerBox.left  = -10;

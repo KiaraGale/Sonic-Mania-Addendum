@@ -200,6 +200,12 @@ void Blastoid_State_Projectile(void)
                     Player_ProjectileHurt(player, self);
                 player->shield = shield;
             }
+
+            foreach_active(Shield, shield)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Blastoid->hitboxProjectile))
+                    Shield_State_Reflect(shield, self);
+            }
         }
     }
 }

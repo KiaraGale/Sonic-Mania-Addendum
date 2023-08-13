@@ -14,6 +14,7 @@ struct ObjectFarPlane {
     Vector2 originPos;
     Vector2 position;
     Vector2 positionList[0x200];
+    Vector2 positionListSidekick[0x200];
     int32 unused1;
     int32 unused2;
     int32 unused3;

@@ -136,6 +136,7 @@ bool32 GHZ2Outro_Cutscene_JumpIntoHole(EntityCutsceneSeq *host)
 bool32 GHZ2Outro_Cutscene_HoleSceneFadeIn(EntityCutsceneSeq *host)
 {
     RSDK_THIS(GHZ2Outro);
+    CutsceneHBH_StorePalette();
 
     if (host->timer >= 8) {
         CutsceneSeq_LockAllPlayerControl();
@@ -242,9 +243,11 @@ bool32 GHZ2Outro_Cutscene_BreakupGroup(EntityCutsceneSeq *host)
     RSDK_THIS(GHZ2Outro);
 
     EntityEggman *eggman = self->eggman;
+    EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     switch (host->timer) {
         default: break;
+        // case 0: RSDK.SetSpriteAnimation(player->aniFrames, ANI_PEER, &player->animator, false, 0); break;
 
         case 90:
             RSDK.SetSpriteAnimation(Eggman->aniFrames, 5, &eggman->animator, true, 2);
@@ -307,6 +310,7 @@ bool32 GHZ2Outro_Cutscene_BreakupGroup(EntityCutsceneSeq *host)
         }
 
         case 320: {
+            RSDK.SetSpriteAnimation(player->aniFrames, ANI_IDLE, &player->animator, false, 0);
             EntityCutsceneHBH *gunner = CutsceneHBH_GetEntity(HBH_GUNNER);
             if (gunner) {
                 RSDK.SetSpriteAnimation(gunner->aniFrames, 4, &gunner->mainAnimator, true, 0);

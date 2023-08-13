@@ -62,6 +62,8 @@ void ContinuePlayer_Create(void *data)
                     RSDK.SetSpriteAnimation(ContinuePlayer->aniFrames, CONTPLR_ANI_IDLE_RAY, &self->animator, true, 0);
                     self->position.y += 0x40000;
                     break;
+
+                case ID_AMY: RSDK.SetSpriteAnimation(ContinuePlayer->aniFrames, CONTPLR_ANI_IDLE_AMY, &self->animator, true, 0); break;
 #endif
             }
 
@@ -95,6 +97,7 @@ void ContinuePlayer_StageLoad(void)
 #if MANIA_USE_PLUS
         case ID_MIGHTY: ContinuePlayer->playerAniFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE); break;
         case ID_RAY: ContinuePlayer->playerAniFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE); break;
+        case ID_AMY: ContinuePlayer->playerAniFrames = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE); break;
 #endif
     }
 

@@ -1798,6 +1798,12 @@ void Gachapandora_StateSpark_Detatched(void)
         }
     }
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &Gachapandora->hitboxSpark))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x40000, true)) {
         RSDK.SetSpriteAnimation(Gachapandora->aniFrames, 16, &self->mainAnimator, true, 0);
         self->velocity.x = 0;

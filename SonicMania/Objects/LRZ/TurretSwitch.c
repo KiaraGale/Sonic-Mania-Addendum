@@ -177,6 +177,12 @@ void TurretSwitch_State_Projectile(void)
                 if (Player_CheckCollisionTouch(player, self, &TurretSwitch->hitboxProjectile))
                     Player_ProjectileHurt(player, self);
             }
+
+            foreach_active(Shield, shield)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &TurretSwitch->hitboxProjectile))
+                    Shield_State_Reflect(shield, self);
+            }
         }
     }
 }

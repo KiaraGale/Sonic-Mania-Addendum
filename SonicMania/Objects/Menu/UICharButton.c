@@ -142,7 +142,7 @@ void UICharButton_DrawPlayers(void)
     if (self->state != UICharButton_State_Selected || !(self->timer & 2)) {
         int32 frame = self->characterID;
 #if MANIA_USE_PLUS
-        if (self->characterID >= UICHARBUTTON_MIGHTY)
+        if (self->characterID >= UICHARBUTTON_MIGHTY) // avoid drawing the S+T sprite, that's not a solo character choice!
             frame = self->characterID + 1;
 #endif
         RSDK.SetSpriteAnimation(UICharButton->aniFrames, 1, &self->playerAnimator, true, frame);
@@ -242,6 +242,7 @@ void UICharButton_State_Selected(void)
 #if MANIA_USE_PLUS
                 case UICHARBUTTON_MIGHTY: RSDK.PlaySfx(Announcer->sfxMighty, false, 255); break;
                 case UICHARBUTTON_RAY: RSDK.PlaySfx(Announcer->sfxRay, false, 255); break;
+                case UICHARBUTTON_AMY: RSDK.PlaySfx(Announcer->sfxAmy, false, 255); break;
 #endif
                 default: break;
             }
@@ -272,6 +273,7 @@ void UICharButton_EditorLoad(void)
 #if MANIA_USE_PLUS
     RSDK_ENUM_VAR("Mighty", UICHARBUTTON_MIGHTY);
     RSDK_ENUM_VAR("Ray", UICHARBUTTON_RAY);
+    RSDK_ENUM_VAR("Amy", UICHARBUTTON_AMY);
 #endif
 }
 #endif

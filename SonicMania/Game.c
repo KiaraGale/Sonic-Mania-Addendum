@@ -13,7 +13,7 @@ ModFunctionTable Mod;
 
 DLLExport ModVersionInfo modInfo = { RETRO_REVISION, GAME_VERSION, RETRO_MOD_LOADER_VER };
 
-const char *modID = "SonicMania";
+const char *modID = "Addendum";
 #endif
 
 int32 RSDKRevision = RETRO_REVISION;
@@ -64,6 +64,19 @@ void GlobalVariables_InitCB(GlobalVariables *globals)
 
     globals->superMusicEnabled = true;
 #endif
+}
+#endif
+
+// -------------------------
+// ADDENDUM VARIABLES
+// -------------------------
+
+AddendumVariables *addendum;
+
+#if MANIA_USE_PLUS
+void AddendumVariables_InitCB(AddendumVariables *addendum)
+{
+    memset(addendum, 0, sizeof(AddendumVariables));
 }
 #endif
 
@@ -141,8 +154,10 @@ void InitGameLogic(void)
 {
 #if RETRO_REV0U
     RSDK.RegisterGlobalVariables((void **)&globals, sizeof(GlobalVariables), (void(*)(void*))GlobalVariables_InitCB);
+    RSDK.RegisterGlobalVariables((void **)&addendum, sizeof(AddendumVariables), (void(*)(void*))AddendumVariables_InitCB);
 #else
     RSDK.RegisterGlobalVariables((void **)&globals, sizeof(GlobalVariables));
+    RSDK.RegisterGlobalVariables((void **)&addendum, sizeof(AddendumVariables));
 #endif
 
     RSDK_REGISTER_OBJECT(Acetone);

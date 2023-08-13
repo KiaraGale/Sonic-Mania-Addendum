@@ -129,13 +129,10 @@ void AIZSetup_StageLoad(void)
 
 #if MANIA_USE_PLUS
     if (RSDK.GetTileLayerID("Background 4") >= DRAWGROUP_COUNT) {
-        // Bug Details:
-        // AIZ->background4 doesn't get cleared here, so coming from AIZ Intro to AIZ Encore (same folder so object structs aren't reset)
-        // leaves background4's tileLayer pointer intact, though pointing to the wrong layers
-        // it also enables the behaviour in StaticUpdate that should only play in AIZ Intro
-        // Fix:
-        // AIZSetup->background4 = NULL;
-        // (though you should prolly clear the other 3 as well)
+        AIZSetup->background1 = NULL;
+        AIZSetup->background2 = NULL;
+        AIZSetup->background3 = NULL;
+        AIZSetup->background4 = NULL;
 
         for (int32 i = Zone->fgLayer[0]; i <= Zone->fgLayer[1]; ++i) {
             int32 *deformData = RSDK.GetTileLayer(i)->deformationDataW;
@@ -310,6 +307,7 @@ void AIZSetup_GetCutsceneSetupPtr(void)
 #if MANIA_USE_PLUS
         case ID_MIGHTY:
         case ID_RAY:
+        case ID_AMY:
 #endif
             AIZSetup_CutsceneST_Setup();
             break;

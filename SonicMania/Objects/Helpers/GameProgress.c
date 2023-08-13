@@ -45,6 +45,7 @@ void GameProgress_Create(void *data) {}
 void GameProgress_StageLoad(void) {}
 
 ProgressRAM *GameProgress_GetProgressRAM(void) { return (ProgressRAM *)&globals->saveRAM[0x900]; }
+AddendumProgress *Addendum_GetProgressRAM(void) { return (AddendumProgress *)&addendum->saveRAM[0x900]; }
 
 int32 GameProgress_GetNotifStringID(int32 type)
 {
@@ -156,6 +157,23 @@ float GameProgress_GetCompletionPercent(ProgressRAM *progress)
     return zonePercent + medalPercent + specialPercent + endingPercent;
 }
 
+float Addendum_GetCompletionPercent(AddendumProgress *progress)
+{
+    int32 timeStonesGotten = 0;
+
+    for (int32 i = 0; i < 7; ++i) {
+        if (i < ADDENDUMPROGRESS_TIMESTONE_COUNT)
+            timeStonesGotten += progress->timeStoneObtained[i] == 1;
+    }
+
+    // get the count of the unlock
+    // then multiply by its completion weight (in this case zones are worth 55% of completion percent)
+    // then finally divide by the maximum count to normalize it
+
+    float specialPercent = ((MIN(timeStonesGotten, ADDENDUMPROGRESS_TIMESTONE_COUNT)) / (float)ADDENDUMPROGRESS_TIMESTONE_COUNT);
+    return specialPercent;
+}
+
 #if MANIA_USE_PLUS
 void GameProgress_TrackGameProgress(void (*callback)(bool32 success))
 #else
@@ -192,6 +210,33 @@ void GameProgress_TrackGameProgress(void (*callback)(void))
         callback();
 #endif
 }
+#if MANIA_USE_PLUS
+void Addendum_TrackGameProgress(void (*callback)(bool32 success))
+{
+    if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {
+        LogHelpers_Print("WARNING GameProgress Attempted to track progress before loading SaveGame file");
+    }
+    else {
+        AddendumProgress *progress = Addendum_GetProgressRAM();
+        if (!progress->allSpecialCleared) {
+            float percent = Addendum_GetCompletionPercent(progress);
+
+            StatInfo stat;
+            memset(&stat, 0, sizeof(StatInfo));
+            stat.statID  = 3;
+            stat.name    = "GAME_PROGRESS";
+            stat.data[0] = FLOAT_TO_VOID(percent);
+            API.TryTrackStat(&stat);
+
+            Addendum_SaveFile(callback);
+            return;
+        }
+    }
+
+    if (callback)
+        callback(false);
+}
+#endif
 void GameProgress_ClearBSSSave(void)
 {
     if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {
@@ -214,6 +259,7 @@ void GameProgress_UnlockAll(void)
     }
 
     ProgressRAM *progress = GameProgress_GetProgressRAM();
+    AddendumProgress *addendumProgress = Addendum_GetProgressRAM();
 
     progress->allSpecialCleared   = true;
     progress->allEmeraldsObtained = true;
@@ -226,6 +272,9 @@ void GameProgress_UnlockAll(void)
     for (int32 m = 0; m < GAMEPROGRESS_MEDAL_COUNT; ++m) {
         if (m < GAMEPROGRESS_EMERALD_COUNT)
             progress->emeraldObtained[m] = true;
+
+        if (m < ADDENDUMPROGRESS_TIMESTONE_COUNT)
+            addendumProgress->timeStoneObtained[m] = true;
 
         if (m < GAMEPROGRESS_ZONE_COUNT)
             progress->zoneCleared[m] = true;
@@ -252,7 +301,8 @@ void GameProgress_ClearProgress(void)
         return;
     }
 
-    ProgressRAM *progress = GameProgress_GetProgressRAM();
+    ProgressRAM *progress              = GameProgress_GetProgressRAM();
+    AddendumProgress *addendumProgress = Addendum_GetProgressRAM();
 
     progress->allSpecialCleared   = false;
     progress->allEmeraldsObtained = false;
@@ -265,6 +315,9 @@ void GameProgress_ClearProgress(void)
     for (int32 m = 0; m < GAMEPROGRESS_MEDAL_COUNT; ++m) {
         if (m < GAMEPROGRESS_EMERALD_COUNT)
             progress->emeraldObtained[m] = false;
+
+        if (m < ADDENDUMPROGRESS_TIMESTONE_COUNT)
+            addendumProgress->timeStoneObtained[m] = false;
 
         if (m < GAMEPROGRESS_ZONE_COUNT)
             progress->zoneCleared[m] = false;
@@ -334,6 +387,27 @@ void GameProgress_GiveEmerald(int32 emeraldID)
     if (allEmeralds)
         progress->allEmeraldsObtained = true;
 }
+
+#if MANIA_USE_PLUS
+void Addendum_GiveTimeStone(int32 timeStoneID)
+{
+    if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {
+        LogHelpers_Print("WARNING GameProgress Attempted to get time stone before loading SaveGame file");
+        return;
+    }
+
+    AddendumProgress *progress = Addendum_GetProgressRAM();
+
+    progress->timeStoneObtained[timeStoneID] = true;
+    bool32 allTimeStones                     = true;
+    for (int32 i = 0; i < GAMEPROGRESS_EMERALD_COUNT; ++i) {
+        allTimeStones = allTimeStones && progress->timeStoneObtained[i];
+    }
+
+    if (allTimeStones)
+        progress->allTimeStonesObtained = true;
+}
+#endif
 
 void GameProgress_GiveMedal(uint8 medalID, uint8 type)
 {
@@ -442,6 +516,35 @@ void GameProgress_PrintSaveProgress(void)
 
     LogHelpers_Print("\n=========================");
 }
+
+#if MANIA_USE_PLUS
+void Addendum_PrintSaveProgress(void)
+{
+    if (SceneInfo->inEditor || API_GetNoSave() || addendum->saveLoaded != STATUS_OK) {
+        LogHelpers_Print("WARNING GameProgress Attempted to dump before loading AddendumData file");
+        return;
+    }
+
+    AddendumProgress *progress = Addendum_GetProgressRAM();
+
+    LogHelpers_Print("=========================");
+    LogHelpers_Print("Addendum Progress:\n");
+
+    for (int32 e = 0; e < ADDENDUMPROGRESS_TIMESTONE_COUNT; ++e) {
+        if (progress->timeStoneObtained[e])
+            LogHelpers_Print("Time Stone %d => TRUE", e);
+        else
+            LogHelpers_Print("Time Stone %d => FALSE", e);
+    }
+
+    if (progress->allTimeStonesObtained)
+        LogHelpers_Print("YOU'RE TOO COOL!\n");
+    else
+        LogHelpers_Print("YOU'VE NOT ENOUGH TIME STONES!\n");
+
+    LogHelpers_Print("\n=========================");
+}
+#endif
 int32 GameProgress_CountUnreadNotifs(void)
 {
     if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {

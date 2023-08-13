@@ -33,7 +33,7 @@ void BSS_Message_Draw(void)
     RSDK.DrawSprite(&self->rightAnimator, &drawPos, true);
 
     if (self->fadeEnabled)
-        RSDK.FillScreen(self->color, self->timer, self->timer - 128, self->timer - 256);
+        RSDK.FillScreen(self->color, self->timer, self->timer, self->timer);
 }
 
 void BSS_Message_Create(void *data)
@@ -102,25 +102,28 @@ void BSS_Message_State_GetBSWait(void)
     RSDK_THIS(BSS_Message);
 
     EntityBSS_Setup *setup   = RSDK_GET_ENTITY(SLOT_BSS_SETUP, BSS_Setup);
-    EntityBSS_Player *player = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
+    EntityBSS_Player *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, BSS_Player);
+    EntityBSS_Player *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, BSS_Player);
 
     if (!setup->speedupLevel) {
-        if (player->up) {
+        if (player1->up) {
             setup->speedupLevel  = 16;
             setup->globeSpeed    = 16;
             setup->globeSpeedInc = 2;
 
-            if (player->onGround)
-                RSDK.SetSpriteAnimation(player->aniFrames, 1, &player->animator, false, 0);
+            if (player1->onGround)
+                RSDK.SetSpriteAnimation(player1->aniFrames, 1, &player1->animator, false, 0);
+            if (player2->onGround)
+                RSDK.SetSpriteAnimation(player2->aniFrames, 1, &player2->animator, false, 0);
 
             self->state = BSS_Message_State_WaitPerfect;
         }
 
         if (!setup->globeTimer && setup->state == BSS_Setup_State_GlobeMoveZ) {
-            if (player->left)
+            if (player1->left)
                 setup->state = BSS_Setup_State_GlobeTurnLeft;
 
-            if (player->right)
+            if (player1->right)
                 setup->state = BSS_Setup_State_GlobeTurnRight;
         }
     }
@@ -132,8 +135,10 @@ void BSS_Message_State_GetBSWait(void)
         setup->globeSpeed    = 16;
         setup->globeSpeedInc = 2;
 
-        if (player->onGround)
-            RSDK.SetSpriteAnimation(player->aniFrames, 1, &player->animator, false, 0);
+        if (player1->onGround)
+            RSDK.SetSpriteAnimation(player1->aniFrames, 1, &player1->animator, false, 0);
+        if (player2->onGround)
+            RSDK.SetSpriteAnimation(player2->aniFrames, 1, &player2->animator, false, 0);
 
         self->state = BSS_Message_State_MsgFinished;
     }

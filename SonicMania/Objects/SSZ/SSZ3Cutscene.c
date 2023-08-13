@@ -125,6 +125,11 @@ bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
 {
     RSDK_THIS(SSZ3Cutscene);
 
+    foreach_active(Ring, ring)
+    {
+        destroyEntity(ring);
+    }
+
     foreach_active(Player, player)
     {
         player->state = Player_State_Ground;
@@ -153,7 +158,7 @@ bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
     }
 
     Zone->playerBoundActiveR[0] = false;
-    RSDK.CopyTileLayer(Zone->fgLayer[0], screenBoundsR, 16, Zone->fgLayer[0], 187, 160, 36, 14);
+    RSDK.CopyTileLayer(Zone->fgLayer[0], screenBoundsR, 16, Zone->fgLayer[0], 187, 238, 36, 14);
 
 #if MANIA_USE_PLUS
     CREATE_ENTITY(MonarchPlans, NULL, (cutscenePos << 20) + 0xF00000, 0x1A80000);

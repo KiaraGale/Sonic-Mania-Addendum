@@ -304,6 +304,12 @@ void Blaster_State_Shot(void)
                 Player_ProjectileHurt(player, self);
             }
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Blaster->hitboxProjectile))
+                Shield_State_Reflect(shield, self);
+        }
     }
     else {
         destroyEntity(self);

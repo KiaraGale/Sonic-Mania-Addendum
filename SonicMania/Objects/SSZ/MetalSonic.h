@@ -49,6 +49,7 @@ struct ObjectMetalSonic {
 #if MANIA_USE_PLUS
     uint16 sfxMSTransform;
     uint16 sfxTransform2;
+    uint16 sfxAmySqueal;
 #endif
     Hitbox hitboxHover;
     Hitbox hitboxDash;

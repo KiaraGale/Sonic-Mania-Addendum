@@ -349,6 +349,12 @@ void Clucker_State_Egg(void)
                 Player_ProjectileHurt(player, self);
         }
 
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Clucker->hitboxEgg))
+                Shield_State_Reflect(shield, self);
+        }
+
         if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0, false))
             destroyEntity(self);
     }

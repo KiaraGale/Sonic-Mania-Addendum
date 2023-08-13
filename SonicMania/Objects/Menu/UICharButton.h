@@ -10,6 +10,7 @@ typedef enum {
 #if MANIA_USE_PLUS
     UICHARBUTTON_MIGHTY,
     UICHARBUTTON_RAY,
+    UICHARBUTTON_AMY,
 #endif
 } UICharButtonCharacterIDs;
 

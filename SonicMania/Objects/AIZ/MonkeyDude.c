@@ -435,6 +435,12 @@ void MonkeyDude_State_Coconut(void)
             if (Player_CheckCollisionTouch(player, self, &MonkeyDude->hitboxCoconut))
                 Player_ProjectileHurt(player, self);
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &MonkeyDude->hitboxCoconut))
+                Shield_State_Reflect(shield, self);
+        }
     }
     else {
         destroyEntity(self);

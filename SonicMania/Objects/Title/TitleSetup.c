@@ -387,7 +387,7 @@ void TitleSetup_Draw_FadeBlack(void)
 {
     RSDK_THIS(TitleSetup);
 
-    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
 }
 
 void TitleSetup_Draw_DrawRing(void)
@@ -405,7 +405,7 @@ void TitleSetup_Draw_Flash(void)
 {
     RSDK_THIS(TitleSetup);
 
-    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer, self->timer);
 }
 
 #if GAME_INCLUDE_EDITOR

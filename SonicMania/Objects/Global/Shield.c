@@ -8,6 +8,8 @@
 #include "Game.h"
 
 ObjectShield *Shield;
+Hitbox Insta_Hitbox  = { -24, -24, 24, 24 };
+Hitbox Shield_Hitbox = { -16, -16, 16, 16 };
 
 void Shield_Update(void)
 {
@@ -246,6 +248,10 @@ void Shield_State_Insta(void)
 {
     RSDK_THIS(Shield);
 
+    if (self->player->superState == SUPERSTATE_SUPER)
+        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_SUPERINSTA, &self->shieldAnimator, false, 0);
+    else
+        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_INSTA, &self->shieldAnimator, false, 0);
     RSDK.ProcessAnimation(&self->shieldAnimator);
 
     if (self->player)
@@ -253,6 +259,35 @@ void Shield_State_Insta(void)
 
     if (self->shieldAnimator.frameID == self->shieldAnimator.frameCount - 1)
         destroyEntity(self);
+}
+
+bool32 Shield_State_Reflect(EntityShield *shield, void *p)
+{
+    RSDK_THIS(Shield);
+    bool32 deflected = false;
+    if (shield->state == Shield_State_Insta) {
+        Entity *projectile = (Entity *)p;
+
+        RSDK.PlaySfx(Player->sfxMightyDeflect, false, 0xFE);
+        int32 angle             = RSDK.ATan2(shield->position.x - projectile->position.x, shield->position.y - projectile->position.y);
+        projectile->velocity.x  = -0x800 * RSDK.Cos256(angle);
+        projectile->velocity.y  = -0x800 * RSDK.Sin256(angle);
+        projectile->interaction = false;
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool32 Shield_CheckCollisionTouch(EntityShield *shield, void *e, Hitbox *entityHitbox)
+{
+    RSDK_THIS(Shield);
+    Hitbox *shieldHitbox = &Insta_Hitbox;
+    Entity *entity       = (Entity *)e;
+
+    return RSDK.CheckObjectCollisionTouchBox(entity, entityHitbox, shield, shieldHitbox);
 }
 
 #if GAME_INCLUDE_EDITOR

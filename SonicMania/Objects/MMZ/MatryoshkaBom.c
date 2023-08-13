@@ -448,6 +448,14 @@ void MatryoshkaBom_State_Shrapnel(void)
                 }
             }
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (self->planeFilter <= 0 || shield->collisionPlane == ((uint8)(self->planeFilter - 1) & 1)) {
+                if (Shield_CheckCollisionTouch(shield, self, &MatryoshkaBom->hitboxShrapnel))
+                    Shield_State_Reflect(shield, self);
+            }
+        }
     }
     else {
         destroyEntity(self);

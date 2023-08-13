@@ -148,6 +148,15 @@ bool32 CPZ1Intro_CheckRayAnimFinish(void)
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
 }
+
+bool32 CPZ1Intro_CheckAmyAnimFinish(void)
+{
+    MANIA_GET_PLAYER(player1, player2, camera);
+    UNUSED(player2);
+    UNUSED(camera);
+
+    return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
+}
 #endif
 
 bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)

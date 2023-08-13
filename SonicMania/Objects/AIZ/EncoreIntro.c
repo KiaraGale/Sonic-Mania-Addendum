@@ -53,11 +53,16 @@ void EncoreIntro_Draw(void) {}
 void EncoreIntro_Create(void *data)
 {
     RSDK_THIS(EncoreIntro);
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     if (!SceneInfo->inEditor) {
         INIT_ENTITY(self);
         CutsceneRules_SetupEntity(self, &self->size, &self->hitbox);
         EncoreIntro_SetupEntities();
+
+        globals->characterFlags = ID_AMY;
+        Player_ChangeCharacter(player1, ID_AMY);
+
         self->active = ACTIVE_NORMAL;
 
         if (globals->enableIntro) {
@@ -202,9 +207,7 @@ bool32 EncoreIntro_Cutscene_SetupAIZEncore(EntityCutsceneSeq *host)
     }
     else {
         if (!host->timer) {
-            globals->stock          = ID_NONE;
-            globals->characterFlags = ID_SONIC;
-            Player_ChangeCharacter(player1, ID_SONIC);
+            globals->stock      = ID_NONE;
             destroyEntity(RSDK_GET_ENTITY(SLOT_PLAYER2, Player));
             player1->alpha      = 0;
             player1->inkEffect  = INK_ALPHA;

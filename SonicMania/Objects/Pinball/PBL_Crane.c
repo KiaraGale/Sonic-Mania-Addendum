@@ -118,9 +118,12 @@ void PBL_Crane_HandlePrizes(void)
         case PBL_CRANE_PRIZE_TAILS:
         case PBL_CRANE_PRIZE_KNUCKLES:
         case PBL_CRANE_PRIZE_MIGHTY:
-        case PBL_CRANE_PRIZE_RAY: {
+        case PBL_CRANE_PRIZE_RAY:
+        case PBL_CRANE_PRIZE_AMY: {
             int32 playerID = 1 << self->displayAnimator.frameID;
-            globals->characterFlags |= playerID;
+            if (self->displayAnimator.frameID == PBL_CRANE_PRIZE_AMY) {
+                playerID = 1 << 5;
+            }
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_BUDDY;
 
             if (!GET_CHARACTER_ID(1))
@@ -133,6 +136,8 @@ void PBL_Crane_HandlePrizes(void)
                 globals->stock |= playerID << 8;
             else if (!GET_STOCK_ID(3))
                 globals->stock |= playerID << 16;
+            else if (!GET_STOCK_ID(4))
+                globals->stock |= playerID << 24;
 
             break;
         }
@@ -280,11 +285,16 @@ void PBL_Crane_State_CreatePrizes(void)
     int32 spawnY = 0x600000 + self->position.y;
     self->state  = PBL_Crane_State_DisplayPrizes;
 
-    for (int32 i = 1; i < 6; ++i) {
+    for (int32 i = 0; i < 6; ++i) {
         EntityPBL_Crane *prize = CREATE_ENTITY(PBL_Crane, INT_TO_VOID(PBL_CRANE_PRIZEDISPLAY), spawnX, spawnY);
         if (globals->gameMode == MODE_ENCORE) {
-            if (!((1 << i) & globals->characterFlags) || i == PBL_CRANE_PRIZE_EGGMAN) {
-                prize->displayAnimator.frameID = i;
+            if ((!((1 << i) & globals->characterFlags) && !GET_STOCK_ID(4)) || i == PBL_CRANE_PRIZE_EGGMAN) {
+                if ((!((1 << i) & globals->characterFlags) && !GET_STOCK_ID(4)) && i == PBL_CRANE_PRIZE_EGGMAN) {
+                    prize->displayAnimator.frameID = PBL_CRANE_PRIZE_AMY;
+                }
+                else {
+                    prize->displayAnimator.frameID = i;
+                }
             }
             else {
                 prize->displayAnimator.frameID = RSDK.Rand(PBL_CRANE_PRIZE_RINGS, PBL_CRANE_PRIZE_TABLE_RESTORE + 1);

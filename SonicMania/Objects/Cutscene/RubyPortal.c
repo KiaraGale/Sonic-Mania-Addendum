@@ -133,10 +133,10 @@ void RubyPortal_HandleTileDestruction(void)
     RSDK_THIS(RubyPortal);
 
     if (!(Zone->timer & 1)) {
-        int32 tx     = ((self->position.x - 0x180000) >> 20);
+        int32 tx     = ((self->position.x - 0x180000 * 3) >> 20);
         int32 spawnX = (tx << 20) + 0x80000;
 
-        for (int32 x = 0; x < 4; ++x) {
+        for (int32 x = 0; x < 7; ++x) {
             int32 ty     = (self->position.y >> 20) - 8;
             int32 spawnY = (ty << 20) + 0x80000;
 
@@ -184,9 +184,11 @@ void RubyPortal_HandleTileDestruction(void)
                 }
 
                 spawnY += 0x100000;
+                ty++;
             }
 
             spawnX += 0x100000;
+            tx++;
         }
     }
 }

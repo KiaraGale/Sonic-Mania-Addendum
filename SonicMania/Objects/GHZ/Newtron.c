@@ -303,6 +303,12 @@ void Newtron_State_Projectile(void)
             if (Player_CheckCollisionTouch(player, self, &Newtron->hitboxProjectile))
                 Player_ProjectileHurt(player, self);
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Newtron->hitboxProjectile))
+                Shield_State_Reflect(shield, self);
+        }
     }
 }
 

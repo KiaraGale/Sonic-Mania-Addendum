@@ -91,6 +91,7 @@ void UIVsResults_SetupSprites(void)
 #if MANIA_USE_PLUS
             case ID_MIGHTY: self->characterID = UICHARBUTTON_MIGHTY; break;
             case ID_RAY: self->characterID = UICHARBUTTON_RAY; break;
+            case ID_AMY: self->characterID = UICHARBUTTON_AMY; break;
 #endif
             default: break;
         }

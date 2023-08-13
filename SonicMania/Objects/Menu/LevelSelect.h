@@ -11,6 +11,7 @@ typedef enum {
 #if MANIA_USE_PLUS
     LSELECT_PLAYER_MIGHTY,
     LSELECT_PLAYER_RAY,
+    LSELECT_PLAYER_AMY,
 #endif
 } LevelSelectPlayerIDs;
 

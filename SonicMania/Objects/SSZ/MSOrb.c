@@ -66,6 +66,12 @@ void MSOrb_CheckPlayerCollisions(void)
         if (Player_CheckCollisionTouch(player, self, &MSOrb->hitboxOrb))
             Player_Hurt(player, self);
     }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &MSOrb->hitboxOrb))
+            Shield_State_Reflect(shield, self);
+    }
 }
 
 void MSOrb_State_Orb(void)

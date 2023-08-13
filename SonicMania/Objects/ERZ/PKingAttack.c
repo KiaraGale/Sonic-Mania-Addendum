@@ -234,6 +234,12 @@ void PKingAttack_State_OrbitLaunched(void)
 
     if (!RSDK.CheckOnScreen(self, NULL))
         destroyEntity(self);
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+            Shield_State_Reflect(shield, self);
+    }
 }
 
 void PKingAttack_State_Trail(void)

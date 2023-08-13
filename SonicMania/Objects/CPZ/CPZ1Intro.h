@@ -47,6 +47,7 @@ bool32 CPZ1Intro_CheckKnuxAnimFinish(void);
 #if MANIA_USE_PLUS
 bool32 CPZ1Intro_CheckMightyAnimFinish(void);
 bool32 CPZ1Intro_CheckRayAnimFinish(void);
+bool32 CPZ1Intro_CheckAmyAnimFinish(void);
 #endif
 
 bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host);

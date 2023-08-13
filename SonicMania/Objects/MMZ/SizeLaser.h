@@ -23,12 +23,16 @@ struct ObjectSizeLaser {
     Vector2 playerPositions[PLAYER_COUNT];
     uint16 aniFrames;
     uint16 sonicFrames;
+    uint16 superFrames;
+    uint16 miracleFrames;
     uint16 tailsFrames;
     uint16 tailFrames;
     uint16 knuxFrames;
 #if MANIA_USE_PLUS
     uint16 mightyFrames;
     uint16 rayFrames;
+    uint16 amyFrames;
+    uint16 miracleAmyFrames;
 #endif
     uint16 sfxShrink2;
     uint16 sfxGrow2;

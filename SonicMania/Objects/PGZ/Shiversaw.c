@@ -480,6 +480,9 @@ void Shiversaw_State_Entry(void)
 #if MANIA_USE_PLUS
         foreach_active(Player, player)
         {
+            if (player->state == ERZStart_State_PlayerSuperFly)
+                player->state = Player_State_Air;
+
             if (player->velocity.x <= 0) {
                 Player_CheckCollisionBox(player, self, &Shiversaw->hitboxEntryTrigger);
                 if (player->velocity.x < 0)

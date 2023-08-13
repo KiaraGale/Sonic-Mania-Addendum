@@ -297,6 +297,12 @@ void Spiny_State_Shot(void)
             if (Player_CheckCollisionTouch(player, self, &Spiny->hitboxShot))
                 Player_ProjectileHurt(player, self);
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Spiny->hitboxShot))
+                Shield_State_Reflect(shield, self);
+        }
     }
     else {
         destroyEntity(self);

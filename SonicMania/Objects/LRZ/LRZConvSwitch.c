@@ -45,6 +45,7 @@ void LRZConvSwitch_Update(void)
                         self->conveyorDir      = 1;
                         LRZ2Setup->conveyorDir = self->calibration ^ 1;
                         self->dir              = 1;
+                        LRZ2Setup_DetermineConveyorColor();
                     }
                 }
                 if (dir > 0 && collided && self->conveyorDir == 1) {
@@ -53,6 +54,7 @@ void LRZConvSwitch_Update(void)
                     self->conveyorDir      = 0;
                     LRZ2Setup->conveyorDir = self->calibration;
                     self->dir              = 1;
+                    LRZ2Setup_DetermineConveyorColor();
                 }
             }
         }
@@ -113,10 +115,21 @@ void LRZConvSwitch_Calibrate(void)
 
     self->conveyorDir = self->calibration ^ LRZ2Setup->conveyorDir;
 
-    if (!self->conveyorDir)
+    uint32 colorStore[4];
+    if (!self->conveyorDir) {
+        for (int32 c = 0; c < 4; ++c) {
+            colorStore[c] = RSDK.GetPaletteEntry(2, 228 + c);
+            RSDK.SetPaletteEntry(0, 228 + c, colorStore[c]);
+        }
         RSDK.SetSpriteAnimation(LRZConvSwitch->aniFrames, 0, &self->animator, true, 0);
-    else if (self->conveyorDir == 1)
+    }
+    else if (self->conveyorDir == 1) {
+        for (int32 c = 0; c < 4; ++c) {
+            colorStore[c] = RSDK.GetPaletteEntry(1, 228 + c);
+            RSDK.SetPaletteEntry(0, 228 + c, colorStore[c]);
+        }
         RSDK.SetSpriteAnimation(LRZConvSwitch->aniFrames, 2, &self->animator, true, 0);
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -160,6 +160,12 @@ void Cactula_State_DropBomb(void)
             projectile->hurtDelay        = 16;
             RSDK.SetSpriteAnimation(Cactula->aniFrames, 2, &projectile->animator, true, 0);
             self->droppedBomb = true;
+
+            foreach_active(Shield, shield)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
+                    Shield_State_Reflect(shield, self);
+            }
         }
 
         if (RSDK.GetTile(Zone->fgLayer[1], self->position.x >> 20, self->position.y >> 20) == (uint16)-1)

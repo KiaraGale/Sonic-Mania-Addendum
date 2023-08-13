@@ -11,6 +11,7 @@ typedef enum {
 #if MANIA_USE_PLUS
     CHAR_MIGHTY,
     CHAR_RAY,
+    CHAR_AMY,
 #endif
 } CharacterIDs;
 

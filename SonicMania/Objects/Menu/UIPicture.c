@@ -25,13 +25,9 @@ void UIPicture_Draw(void)
     RSDK_THIS(UIPicture);
 
 #if MANIA_USE_PLUS
-    // Bug Details:
-    // This should use zoneID in the CopyPalette params right?
-    // using zonePalette would just be 0 or 1 instead of 0-12 or so that you'd expect...
     if (self->zonePalette)
-        RSDK.CopyPalette((self->zonePalette >> 3) + 1, 32 * self->zonePalette, 0, 224, 32);
+        RSDK.CopyPalette((self->zonePalette >> 3) + 1, 32 * self->zoneID, 0, 224, 32);
 #else
-    // And from the looks of it, this is actually how Pre-Plus Mania handles this?
     if (self->zonePalette)
         RSDK.CopyPalette((self->zoneID >> 3) + 1, 32 * self->zoneID, 0, 224, 32);
 #endif
@@ -51,15 +47,11 @@ void UIPicture_Create(void *data)
             self->visible   = true;
             self->drawGroup = 2;
         }
-        // Uncomment this to fix the "Thanks for playing screen"
-        // Not sure what happened, but sometime during dev this must've been shuffled around
-        // setting it to ACTIVE_NORMAL fixes the sonic ball sprites
-        // setting the draw order to 8 fixes the thanks for playing sprite
-        // else if (RSDK.CheckSceneFolder("Thanks")) {
-        //     self->active    = ACTIVE_NORMAL;
-        //     self->visible   = true;
-        //     self->drawGroup = 8;
-        // }
+        else if (RSDK.CheckSceneFolder("Thanks")) {
+           self->active    = ACTIVE_NORMAL;
+           self->visible   = true;
+           self->drawGroup = 8;
+        }
         else {
             if (RSDK.CheckSceneFolder("Logos") || RSDK.CheckSceneFolder("LSelect") || RSDK.CheckSceneFolder("Summary"))
                 self->active = ACTIVE_NORMAL;

@@ -47,6 +47,7 @@ void DialogRunner_StageLoad(void)
     DialogRunner->activeCallback = NULL;
 
     SaveGame_LoadSaveData();
+    Addendum_LoadSaveData();
     TimeAttackData->loaded          = false;
     TimeAttackData->uuid            = 0;
     TimeAttackData->rowID           = -1;
@@ -262,24 +263,7 @@ bool32 DialogRunner_CheckUnreadNotifs(void)
 
     return true;
 }
-bool32 DialogRunner_NotifyAutosave(void)
-{
-    if (globals->notifiedAutosave) {
-        if (!DialogRunner->isAutoSaving && !DialogRunner->activeCallback)
-            return false;
-    }
-    else if (!DialogRunner->isAutoSaving || !DialogRunner->activeCallback) {
-        UIWaitSpinner_StartWait();
-        DialogRunner->isAutoSaving = true;
-        globals->notifiedAutosave  = false;
-        LogHelpers_Print("DUMMY NotifyAutosave()");
-        EntityDialogRunner *dialogRunner = CREATE_ENTITY(DialogRunner, DialogRunner_NotifyAutoSave, 0, 0);
-        dialogRunner->active             = ACTIVE_ALWAYS;
-        DialogRunner->activeCallback     = dialogRunner;
-    }
-
-    return true;
-}
+bool32 DialogRunner_NotifyAutosave(void) { return false; }
 void DialogRunner_GetUserAuthStatus(void)
 {
     if (API.GetUserAuthStatus() == STATUS_FORBIDDEN) {

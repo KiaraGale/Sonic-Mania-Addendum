@@ -1206,6 +1206,12 @@ void SpiderMobile_StateOrb_Fired(void)
             Player_Hurt(player, self);
     }
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &SpiderMobile->hitboxOrb))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (!RSDK.CheckOnScreen(self, NULL))
         destroyEntity(self);
 }

@@ -52,6 +52,9 @@ void UISubHeading_HandleUnlocks(void);
 void UISubHeading_SetupActions(void);
 void UISubHeading_HandleMenuReturn(int32 slot);
 int32 UISubHeading_GetMedalMods(void);
+#if MANIA_USE_PLUS
+int32 UISubHeading_GetAddendumMods(void);
+#endif
 void UISubHeading_SaveFileCB(bool32 success);
 void UISubHeading_SecretsTransitionCB(void);
 void UISubHeading_LeaveSecretsMenu(void);

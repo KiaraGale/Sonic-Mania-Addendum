@@ -329,17 +329,13 @@ void ActClear_Create(void *data)
 #if MANIA_USE_PLUS
             StatInfo stat;
             switch (GET_CHARACTER_ID(1)) {
+                default:
                 case ID_SONIC: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 1, time, player1->rings, player1->score); break;
                 case ID_TAILS: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 2, time, player1->rings, player1->score); break;
                 case ID_KNUCKLES: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 3, time, player1->rings, player1->score); break;
                 case ID_MIGHTY: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 4, time, player1->rings, player1->score); break;
-                default:
-                case ID_RAY:
-                    if ((GET_CHARACTER_ID(1)) == ID_RAY)
-                        TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 5, time, player1->rings, player1->score);
-                    else
-                        TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 1, time, player1->rings, player1->score);
-                    break;
+                case ID_RAY: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 5, time, player1->rings, player1->score); break;
+                case ID_AMY: TimeAttackData_TrackActClear(&stat, Zone_GetZoneID(), Zone->actID, 6, time, player1->rings, player1->score); break;
             }
             API.TryTrackStat(&stat);
 #else
@@ -424,6 +420,7 @@ void ActClear_Create(void *data)
 #if MANIA_USE_PLUS
             case ID_MIGHTY: RSDK.SetSpriteAnimation(ActClear->aniFrames, 3, &self->playerNameAnimator, true, 3); break;
             case ID_RAY: RSDK.SetSpriteAnimation(ActClear->aniFrames, 3, &self->playerNameAnimator, true, 4); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(ActClear->aniFrames, 3, &self->playerNameAnimator, true, 5); break;
 #endif
         }
         RSDK.SetSpriteAnimation(ActClear->aniFrames, 4, &self->gotThroughAnimator, true, 0);
@@ -767,6 +764,7 @@ void ActClear_State_SaveGameProgress(void)
                 if (Zone->actID > 0)
                     SaveGame_ClearCollectedSpecialRings();
                 SaveGame_SaveProgress();
+                Addendum_SaveProgress();
 #if MANIA_USE_PLUS
                 if (globals->saveSlotID != NO_SAVE_SLOT && !ActClear->forceNoSave) {
 #else
@@ -789,6 +787,7 @@ void ActClear_State_SaveGameProgress(void)
             SaveGame_ClearRestartData();
             StarPost_ResetStarPosts();
             SaveGame_SaveProgress();
+            Addendum_SaveProgress();
 
 #if MANIA_USE_PLUS
             if (globals->saveSlotID != NO_SAVE_SLOT && !ActClear->forceNoSave) {
@@ -797,6 +796,7 @@ void ActClear_State_SaveGameProgress(void)
 #endif
                 ActClear->isSavingGame = true;
                 SaveGame_SaveFile(ActClear_SaveGameCallback);
+                Addendum_SaveFile(ActClear_SaveGameCallback);
             }
         }
 

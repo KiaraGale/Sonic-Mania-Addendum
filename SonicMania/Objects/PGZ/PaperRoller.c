@@ -318,7 +318,6 @@ void PaperRoller_HandleRollerCollisions(void)
                 player->nextGroundState  = StateMachine_None;
                 player->onGround         = false;
                 player->groundVel        = 0;
-                // bug details: fixes a bug where knux can touch this without tile collisions enabled lol
 #if GAME_VERSION != VER_100
                 player->tileCollisions   = TILECOLLISION_DOWN;
 #endif
@@ -398,7 +397,6 @@ void PaperRoller_HandlePrintCollisions(void)
                     player->nextGroundState  = StateMachine_None;
                     player->onGround         = false;
                     player->groundVel        = 0;
-                    // bug details: fixes a bug where knux can touch this without tile collisions enabled lol
 #if GAME_VERSION != VER_100
                     player->tileCollisions = TILECOLLISION_DOWN;
 #endif
@@ -455,7 +453,6 @@ void PaperRoller_HandlePrintCollisions(void)
                     player->nextGroundState  = StateMachine_None;
                     player->onGround         = false;
                     player->groundVel        = 0;
-                    // bug details: fixes a bug where knux can touch this without tile collisions enabled lol
 #if GAME_VERSION != VER_100
                     player->tileCollisions = TILECOLLISION_DOWN;
 #endif

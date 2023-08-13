@@ -66,7 +66,7 @@ void Summary_State_Draw(void)
 {
     RSDK_THIS(Summary);
 
-    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
 }
 
 void Summary_State_SetupText(void)

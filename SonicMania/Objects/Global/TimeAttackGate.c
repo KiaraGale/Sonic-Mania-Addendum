@@ -518,7 +518,7 @@ void TimeAttackGate_Draw_Restarter(void)
             RSDK.DrawCircle(player->position.x, player->position.y, self->radius, 0xF0F0F0, (self->restartTimer << 8) / 35, INK_ADD, false);
 
         if (self->fadeTimer > 0)
-            RSDK.FillScreen(0xFFFFFF, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
+            RSDK.FillScreen(0xFFFFFF, self->fadeTimer, self->fadeTimer, self->fadeTimer);
     }
 }
 

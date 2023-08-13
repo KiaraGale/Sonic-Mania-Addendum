@@ -13,6 +13,8 @@ void DERobot_Update(void)
 {
     RSDK_THIS(DERobot);
     StateMachine_Run(self->state);
+
+    HUD_UpdateBossBar(DERobot);
 }
 
 void DERobot_LateUpdate(void) {}
@@ -30,6 +32,7 @@ void DERobot_Create(void *data)
     RSDK_THIS(DERobot);
     if (!SceneInfo->inEditor) {
         if (globals->gameMode < MODE_TIMEATTACK) {
+            HUD_InitializeBossBar(DERobot, 0, "DEATH EGG ROBOT");
             self->drawGroup     = Zone->objectDrawGroup[0];
             self->updateRange.x = 0x800000;
             self->updateRange.y = 0x800000;
@@ -54,6 +57,7 @@ void DERobot_Create(void *data)
                     self->arms[2]       = RSDK_GET_ENTITY(slotID + 5, DERobot);
                     self->arms[3]       = RSDK_GET_ENTITY(slotID + 6, DERobot);
                     self->health        = 8;
+                    self->maxHealth     = 8;
                     self->state         = DERobot_State_SetupArena;
                     self->stateDraw     = DERobot_Draw_Simple;
                     RSDK.SetSpriteAnimation(DERobot->aniFrames, self->aniID, &self->mainAnimator, true, self->frameID);
@@ -173,14 +177,6 @@ void DERobot_StageLoad(void)
     RSDK.SetPaletteEntry(0, 238, 0x484868);
     RSDK.SetPaletteEntry(0, 239, 0x587090);
     RSDK.SetPaletteEntry(0, 244, 0x000000);
-
-    // Bug Details:
-    // palette entry 244 is overwritten in GHZ2Cutscene during plus
-    // this is due to the additional colours in the tileset
-    // the simple fix to this should be to move DERobot above CutsceneHBH in the scene/stageconfig
-    // this will allow the CutsceneHBH object to properly store the 0x000000 colour set here when it does its palette swaps
-    // therefore fixing the orange DERobot bug
-    // alternatively, have GHZ2Outro_Cutscene_HoleSceneFadeIn call CutsceneHBH_StorePalette to store the updated palette
 }
 
 void DERobot_HandleScreenBounds(void)

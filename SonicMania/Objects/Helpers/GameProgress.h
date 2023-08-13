@@ -6,6 +6,7 @@
 #define GAMEPROGRESS_MEDAL_COUNT   (32)
 #define GAMEPROGRESS_ZONE_COUNT    (12)
 #define GAMEPROGRESS_EMERALD_COUNT (7)
+#define ADDENDUMPROGRESS_TIMESTONE_COUNT (7)
 
 typedef enum {
     GAMEPROGRESS_UNLOCK_TIMEATTACK,
@@ -80,6 +81,15 @@ typedef struct {
     int32 silverMedalCount;
 } ProgressRAM;
 
+typedef struct {
+    uint8 padding[0x56];
+
+    bool32 timeStoneObtained[ADDENDUMPROGRESS_TIMESTONE_COUNT];
+    bool32 allTimeStonesObtained;
+    bool32 specialCleared[ADDENDUMPROGRESS_TIMESTONE_COUNT];
+    bool32 allSpecialCleared;
+} AddendumProgress;
+
 // Object Class
 struct ObjectGameProgress {
     RSDK_OBJECT
@@ -91,6 +101,7 @@ struct EntityGameProgress {
     // padding to match whatever it would be normally
     // not required, but its for safety :)
     uint8 padding[sizeof(ProgressRAM) - sizeof(Entity)];
+    uint8 paddingA[sizeof(AddendumProgress) - sizeof(Entity)];
 };
 
 // Object Struct
@@ -113,12 +124,21 @@ void GameProgress_Serialize(void);
 int32 GameProgress_GetNotifStringID(int32 type);
 void GameProgress_ShuffleBSSID(void);
 ProgressRAM *GameProgress_GetProgressRAM(void);
+#if MANIA_USE_PLUS
+AddendumProgress *Addendum_GetProgressRAM(void);
+#endif
 bool32 GameProgress_GetZoneUnlocked(int32 zoneID);
 float GameProgress_GetCompletionPercent(ProgressRAM *progress);
+#if MANIA_USE_PLUS
+float Addendum_GetCompletionPercent(AddendumProgress *progress);
+#endif
 #if MANIA_USE_PLUS
 void GameProgress_TrackGameProgress(void (*callback)(bool32 success));
 #else
 void GameProgress_TrackGameProgress(void (*callback)(void));
+#endif
+#if MANIA_USE_PLUS
+void Addendum_TrackGameProgress(void (*callback)(bool32 success));
 #endif
 void GameProgress_ClearBSSSave(void);
 void GameProgress_UnlockAll(void);
@@ -127,9 +147,15 @@ void GameProgress_ClearProgress(void);
 void GameProgress_MarkZoneCompleted(int32 zoneID);
 bool32 GameProgress_CheckZoneClear(void);
 void GameProgress_GiveEmerald(int32 emeraldID);
+#if MANIA_USE_PLUS
+void Addendum_GiveTimeStone(int32 timeStoneID);
+#endif
 void GameProgress_GiveMedal(uint8 medalID, uint8 type);
 void GameProgress_GiveEnding(uint8 ending);
 void GameProgress_PrintSaveProgress(void);
+#if MANIA_USE_PLUS
+void Addendum_PrintSaveProgress(void);
+#endif
 int32 GameProgress_CountUnreadNotifs(void);
 int32 GameProgress_GetNextNotif(void);
 bool32 GameProgress_CheckUnlock(uint8 id);

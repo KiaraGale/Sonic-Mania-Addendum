@@ -25,10 +25,16 @@ typedef enum {
 #if MANIA_USE_PLUS
     ID_MIGHTY = 1 << 3,
     ID_RAY    = 1 << 4,
+    ID_AMY    = 1 << 5, // thank you troopsushi
 #endif
-    ID_TAILS_ASSIST    = ID_TAILS << 8,
-    ID_KNUCKLES_ASSIST = ID_KNUCKLES << 8, // custom-added, can be used to check if "& knux" is active
-    ID_DEFAULT_PLAYER  = ID_SONIC | ID_TAILS_ASSIST,
+    ID_SONIC_ASSIST  = ID_SONIC << 8,
+    ID_TAILS_ASSIST  = ID_TAILS << 8,
+    ID_KNUX_ASSIST   = ID_KNUCKLES << 8,
+    ID_MIGHTY_ASSIST = ID_MIGHTY << 8,
+    ID_RAY_ASSIST    = ID_RAY << 8,
+    ID_AMY_ASSIST    = ID_AMY << 8,
+
+    ID_DEFAULT_PLAYER = ID_SONIC | ID_TAILS_ASSIST,
 } PlayerIDs;
 
 #define GET_CHARACTER_ID(playerNum)                (((globals->playerID >> (8 * ((playerNum)-1))) & 0xFF))
@@ -43,12 +49,20 @@ typedef enum { ITEMS_FIXED, ITEMS_RANDOM, ITEMS_TELEPORT } ItemModes;
 
 typedef enum {
     MEDAL_DEBUGMODE   = 1 << 0,
-    MEDAL_ANDKNUCKLES = 1 << 1,
+    MEDAL_SIDEKICK    = 1 << 1,
     MEDAL_PEELOUT     = 1 << 2,
     MEDAL_INSTASHIELD = 1 << 3,
     MEDAL_NODROPDASH  = 1 << 4,
 #if MANIA_USE_PLUS
-    MEDAL_NOTIMEOVER = 1 << 5,
+    MEDAL_NOTIMEOVER  = 1 << 5,
+    MEDAL_P2NONE      = 1 << 6,
+    MEDAL_P2SONIC     = 1 << 7,
+    MEDAL_P2TAILS     = 1 << 8,
+    MEDAL_P2KNUX      = 1 << 9,
+    MEDAL_P2MIGHTY    = 1 << 10,
+    MEDAL_P2RAY       = 1 << 11,
+    MEDAL_P2AMY       = 1 << 12,
+    MEDAL_SPINDASH    = 1 << 13,
 #endif
 } MedalMods;
 
@@ -267,6 +281,21 @@ typedef struct {
 } GlobalVariables;
 
 extern GlobalVariables *globals;
+
+// =========================
+// ADDENDUM VARIABLES
+// =========================
+
+typedef struct {
+    int32 saveLoaded;
+    int32 saveRAM[0x4000];
+    int32 saveSlotID;
+    int32 noSaveSlot[0x400];
+    int32 addendumMods;
+    int32 saveActID;
+} AddendumVariables;
+
+extern AddendumVariables *addendum;
 
 // =========================
 // GAME HELPERS

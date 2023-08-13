@@ -397,7 +397,7 @@ bool32 TMZ2Outro_Cutscene_Panic(EntityCutsceneSeq *host)
         {
             player->up    = false;
             player->state = Player_State_Static;
-            RSDK.SetSpriteAnimation(player->aniFrames, ANI_BALANCE_1 + player->playerID, &player->animator, false, 0);
+            RSDK.SetSpriteAnimation(player->aniFrames, ANI_HURT, &player->animator, false, 0);
         }
 
         RSDK.PlaySfx(TMZ2Outro->sfxRumble, false, 255);
@@ -552,11 +552,11 @@ bool32 TMZ2Outro_Cutscene_OuttaHere(EntityCutsceneSeq *host)
     }
 
     if (host->timer == 300) {
-        foreach_active(PhantomRuby, ruby)
+        foreach_active(RubyPortal, portal)
         {
-            ruby->velocity.x  = 0x20000;
-            ruby->isPermanent = true;
-            ruby->active      = ACTIVE_NORMAL;
+            portal->velocity.x  = 0x20000;
+            portal->isPermanent = true;
+            portal->active      = ACTIVE_NORMAL;
         }
 
         RSDK_GET_ENTITY(SLOT_CAMERA1, Camera)->state = StateMachine_None;
@@ -600,28 +600,43 @@ bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
         player2->playerID = 1;
         Player_ChangeCharacter(player2, ID_TAILS);
 
-        EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+        EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
         RSDK.CopyEntity(player3, player1, false);
         player3->playerID = 3;
         Player_ChangeCharacter(player3, ID_KNUCKLES);
 
-        EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
+        EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_POWERUP1, Player);
         RSDK.CopyEntity(player4, player1, false);
         player4->playerID = 4;
         Player_ChangeCharacter(player4, ID_MIGHTY);
 
-        EntityPlayer *player5 = RSDK_GET_ENTITY(5, Player);
+        EntityPlayer *player5 = RSDK_GET_ENTITY(SLOT_POWERUP2, Player);
         RSDK.CopyEntity(player5, player1, false);
         player5->playerID = 5;
         Player_ChangeCharacter(player5, ID_RAY);
 
+        EntityPlayer *player6 = RSDK_GET_ENTITY(SLOT_POWERUP3, Player);
+        RSDK.CopyEntity(player6, player1, false);
+        player6->playerID = 6;
+        Player_ChangeCharacter(player6, ID_AMY);
+
         SceneInfo->timeEnabled = true;
 
-        Player_TryTransform(player1, 0xFF);
+        Player_TryTransform(player1, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        Player_TryTransform(player2, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        Player_TryTransform(player3, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        Player_TryTransform(player4, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        Player_TryTransform(player5, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        Player_TryTransform(player6, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
         EntitySuperSparkle *sparkle = RSDK_GET_ENTITY(Player->playerCount, SuperSparkle);
         RSDK.ResetEntity(sparkle, SuperSparkle->classID, player1);
+        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player2);
+        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player3);
+        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player4);
+        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player5);
+        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player6);
 
-        Player->playerCount = 6;
+        Player->playerCount = 7;
         int32 offsetX       = 0;
         for (int32 i = 0; i < Player->playerCount; ++i) {
             if (i != 2) {
@@ -734,6 +749,8 @@ bool32 TMZ2Outro_Cutscene_FinishSequence(EntityCutsceneSeq *host)
                 case ID_MIGHTY: RSDK.SetScene("Videos", "Bad End - Mighty"); break;
 
                 case ID_RAY: RSDK.SetScene("Videos", "Bad End - Ray"); break;
+
+                case ID_AMY: RSDK.SetScene("Videos", "Bad End - Amy"); break;
 #endif
             }
 #if MANIA_USE_PLUS

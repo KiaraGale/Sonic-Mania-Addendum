@@ -254,6 +254,12 @@ void Iwamodoki_State_Debris(void)
         }
     }
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &Iwamodoki->hitboxProjectile))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (!RSDK.CheckOnScreen(self, NULL))
         destroyEntity(self);
 }

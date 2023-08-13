@@ -160,6 +160,12 @@ void Sol_HandlePlayerHurt(void)
             Player_ElementHurt(player, self, SHIELD_FIRE);
         }
     }
+
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &Sol->hitboxOrb))
+            Shield_State_Reflect(shield, self);
+    }
 }
 
 void Sol_HandleRotation(void)

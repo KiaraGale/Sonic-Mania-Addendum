@@ -104,10 +104,19 @@ void UIDiorama_StageLoad(void)
     UIDiorama->capsuleFrames   = RSDK.LoadSpriteAnimation("AIZ/SchrodingersCapsule.bin", SCOPE_STAGE);
     UIDiorama->sonicFrames     = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
     UIDiorama->tailsFrames     = RSDK.LoadSpriteAnimation("Players/Tails.bin", SCOPE_STAGE);
+    UIDiorama->knuxFrames      = RSDK.LoadSpriteAnimation("Players/Knuckles.bin", SCOPE_STAGE);
     UIDiorama->knuxFramesAIZ   = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
     UIDiorama->knuxFramesHCZ   = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
     UIDiorama->mightyFrames    = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
     UIDiorama->rayFrames       = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+    UIDiorama->sonicCEFrames   = RSDK.LoadSpriteAnimation("CE/Sonic.bin", SCOPE_STAGE);
+    UIDiorama->tailsCEFrames   = RSDK.LoadSpriteAnimation("CE/Tails.bin", SCOPE_STAGE);
+    UIDiorama->knuxCEFrames    = RSDK.LoadSpriteAnimation("CE/Knuckles.bin", SCOPE_STAGE);
+    UIDiorama->knuxCEFramesAIZ = RSDK.LoadSpriteAnimation("CE/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
+    UIDiorama->knuxCEFramesHCZ = RSDK.LoadSpriteAnimation("CE/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
+    UIDiorama->mightyCEFrames  = RSDK.LoadSpriteAnimation("CE/Mighty.bin", SCOPE_STAGE);
+    UIDiorama->rayCEFrames     = RSDK.LoadSpriteAnimation("CE/Ray.bin", SCOPE_STAGE);
+    UIDiorama->amyFrames       = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
     UIDiorama->ringFrames      = RSDK.LoadSpriteAnimation("Global/Ring.bin", SCOPE_STAGE);
     UIDiorama->speedGateFrames = RSDK.LoadSpriteAnimation("Global/SpeedGate.bin", SCOPE_STAGE);
     UIDiorama->bssSonicFrames  = RSDK.LoadSpriteAnimation("SpecialBS/Sonic.bin", SCOPE_STAGE);
@@ -174,6 +183,11 @@ void UIDiorama_ChangeDiorama(uint8 dioramaID)
         case UIDIORAMA_EXIT:
             self->stateDraw = UIDiorama_Draw_Exit;
             self->state     = UIDiorama_State_Exit;
+            break;
+
+        case UIDIORAMA_ADDENDUM:
+            self->stateDraw = UIDiorama_Draw_Addendum;
+            self->state     = UIDiorama_State_Addendum;
             break;
 
         default: break;
@@ -426,6 +440,9 @@ void UIDiorama_State_Competition(void)
 
         RSDK.SetSpriteAnimation(UIDiorama->mightyFrames, ANI_LOOK_UP, &info->mightyAnimator, true, 5);
         self->needsSetup = false;
+
+        RSDK.SetSpriteAnimation(UIDiorama->amyFrames, ANI_HANG, &info->amyAnimator, true, 0);
+        self->needsSetup = false;
     }
     else {
         info->scrollPos[0] += 0x40;
@@ -466,11 +483,15 @@ void UIDiorama_State_Competition(void)
         info->mightyPos.x = info->platformPos.x + 0x100000;
         info->mightyPos.y = info->platformPos.y - 0x180000;
 
+        info->amyPos.x    = self->position.x + 0xAB0000;
+        info->amyPos.y    = self->position.y - 0x210000;
+
         RSDK.ProcessAnimation(&info->platformAnimator);
         RSDK.ProcessAnimation(&info->ringAnimator);
         RSDK.ProcessAnimation(&info->tailsAnimator);
         RSDK.ProcessAnimation(&info->knuxAnimator);
         RSDK.ProcessAnimation(&info->rayAnimator);
+        RSDK.ProcessAnimation(&info->amyAnimator);
     }
 }
 
@@ -585,6 +606,38 @@ void UIDiorama_State_Exit(void)
         }
 
         RSDK.ProcessAnimation(&info->sonicAnimator);
+    }
+}
+
+void UIDiorama_State_Addendum(void)
+{
+    RSDK_THIS(UIDiorama);
+
+    // Using this makes these states FAR more readable
+    UIDiorama_StateInfo_Addendum *info = (UIDiorama_StateInfo_Addendum *)self->values;
+
+    if (self->needsSetup) {
+        self->maskColor = 0x00FF00;
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 12, &info->terrainAnimator, true, 0);
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 12, &info->altTerrainAnimator, true, 1);
+        RSDK.SetSpriteAnimation(UIDiorama->aniFrames, 12, &info->bgAnimator, true, 2);
+        RSDK.SetSpriteAnimation(UIDiorama->sonicFrames, ANI_VICTORY, &info->sonicAnimator, true, 13);
+        RSDK.SetSpriteAnimation(UIDiorama->tailsFrames, ANI_VICTORY, &info->tailsAnimator, true, 19);
+        RSDK.SetSpriteAnimation(UIDiorama->knuxFrames, ANI_VICTORY, &info->knuxAnimator, true, 19);
+        RSDK.SetSpriteAnimation(UIDiorama->mightyFrames, ANI_VICTORY, &info->mightyAnimator, true, 10);
+        RSDK.SetSpriteAnimation(UIDiorama->rayFrames, ANI_VICTORY, &info->rayAnimator, true, 15);
+        RSDK.SetSpriteAnimation(UIDiorama->amyFrames, ANI_VICTORY, &info->amyAnimator, true, 18);
+        self->needsSetup = false;
+    }
+    else {
+        RSDK.ProcessAnimation(&info->terrainAnimator);
+        RSDK.ProcessAnimation(&info->bgAnimator);
+        RSDK.ProcessAnimation(&info->sonicAnimator);
+        RSDK.ProcessAnimation(&info->tailsAnimator);
+        RSDK.ProcessAnimation(&info->knuxAnimator);
+        RSDK.ProcessAnimation(&info->mightyAnimator);
+        RSDK.ProcessAnimation(&info->rayAnimator);
+        RSDK.ProcessAnimation(&info->amyAnimator);
     }
 }
 
@@ -836,7 +889,7 @@ void UIDiorama_Draw_Competition(void)
     if (SceneInfo->currentDrawGroup == self->drawGroup) {
         drawPos.x = self->position.x + 0xAB0000;
         drawPos.y = self->position.y - 0x190000;
-        for (int32 i = 0; i < 3; ++i) {
+        for (int32 i = 0; i < 2; ++i) {
             drawPos.x += 0x200000;
             RSDK.DrawSprite(&info->ringAnimator, &drawPos, false);
         }
@@ -867,10 +920,10 @@ void UIDiorama_Draw_Competition(void)
     }
     else {
         self->inkEffect   = INK_NONE;
-        int32 playerCount = API.CheckDLC(DLC_PLUS) ? 4 : 2;
+        int32 playerCount = API.CheckDLC(DLC_PLUS) ? 5 : 2;
 
-        Vector2 *playerPos[]        = { &info->tailsPos, &info->knuxPos, &info->rayPos, &info->mightyPos };
-        Animator *playerAnimators[] = { &info->tailsAnimator, &info->knuxAnimator, &info->rayAnimator, &info->mightyAnimator };
+        Vector2 *playerPos[]        = { &info->tailsPos, &info->knuxPos, &info->rayPos, &info->mightyPos, &info->amyPos };
+        Animator *playerAnimators[] = { &info->tailsAnimator, &info->knuxAnimator, &info->rayAnimator, &info->mightyAnimator, &info->amyAnimator };
 
         for (int32 i = 0; i < playerCount; ++i) {
             RSDK.DrawSprite(playerAnimators[i], playerPos[i], false);
@@ -975,6 +1028,23 @@ void UIDiorama_Draw_Exit(void)
     else {
         RSDK.DrawSprite(&info->dioramaAnimator, &drawPos, false);
     }
+}
+
+void UIDiorama_Draw_Addendum(void)
+{
+    RSDK_THIS(UIDiorama);
+
+    Vector2 drawPos;
+    // Using this makes these states FAR more readable
+    UIDiorama_StateInfo_Addendum *info = (UIDiorama_StateInfo_Addendum *)self->values;
+    drawPos.x = self->position.x;
+    drawPos.y = self->position.y;
+    RSDK.DrawSprite(&info->terrainAnimator, &drawPos, false);
+    drawPos.x = self->position.x + 0x380000;
+    drawPos.y = self->position.y + 0x1D0000;
+    drawPos.x = info->sonicPos.x + self->position.x + 0x380000;
+    drawPos.y = info->sonicPos.y + self->position.y + 0x1F0000;
+    RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
 }
 
 #if GAME_INCLUDE_EDITOR

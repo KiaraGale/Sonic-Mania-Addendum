@@ -26,6 +26,7 @@ struct ObjectHUD {
     uint16 superButtonFrames;
 #endif
 #if MANIA_USE_PLUS
+    uint16 bossFrames;
     uint16 sfxClick;
     uint16 sfxStarpost;
     bool32 showTAPrompt;
@@ -48,6 +49,11 @@ struct EntityHUD {
     int32 lifeFrameIDs[PLAYER_COUNT];
     int32 lives[PLAYER_COUNT];
 #endif
+    Vector2 inputPos;
+    Vector2 itemPos;
+    Vector2 bossBarPos;
+    Vector2 bossIconPos;
+    Vector2 bossNamePos;
     int32 targetPos;
 #if GAME_VERSION != VER_100
     int32 actionPromptPos;
@@ -58,6 +64,8 @@ struct EntityHUD {
     Vector2 vsTimePos[PLAYER_COUNT];
     Vector2 vsRingsPos[PLAYER_COUNT];
     Vector2 vsLifePos[PLAYER_COUNT];
+    Vector2 vsInputPos[PLAYER_COUNT];
+    Vector2 vsItemPos[PLAYER_COUNT];
     int32 vsTargetPos[PLAYER_COUNT];
     int32 screenID;
 #endif
@@ -81,6 +89,30 @@ struct EntityHUD {
     Animator thumbsUpButtonAnimator;
     Animator replayClapAnimator;
     Animator saveReplayButtonAnimator;
+#endif
+    Animator readyUpIconAnimator;
+    Animator readyUpButtonAnimator;
+    Animator inputDpadAnimator; // input viewer crap
+    Animator inputABCAnimator;
+    Animator inputXYZAnimator;
+    Animator inputUpAnimator;
+    Animator inputDownAnimator;
+    Animator inputLeftAnimator;
+    Animator inputRightAnimator;
+    Animator inputAAnimator;
+    Animator inputBAnimator;
+    Animator inputCAnimator;
+    Animator inputXAnimator;
+    Animator inputYAnimator;
+    Animator inputZAnimator;
+    Animator itemBox1Animator; // invincibility/super/miracle
+    Animator itemBox2Animator; // speed shoes
+    Animator itemBox3Animator; // shield
+#if MANIA_USE_PLUS
+    Animator bossIconAnimator;
+    Animator bossBarAnimator;
+    String bossNameString;
+    int32 timer;
 #endif
 };
 
@@ -117,5 +149,13 @@ void HUD_MoveOut(void);
 void HUD_EnableRingFlash(void);
 
 int32 HUD_CharacterIndexFromID(int32 characterID);
+
+void HUD_HandleInputViewer(void);
+void HUD_HandleItemsHUD(void);
+void HUD_Life_Miracle_Draw(void);
+
+void HUD_InitializeBossBar(void *b, int32 icon, const char *bossName);
+void HUD_UpdateBossBar(void *b);
+void HUD_HandleBossDefeat(void);
 
 #endif //! OBJ_HUD_H

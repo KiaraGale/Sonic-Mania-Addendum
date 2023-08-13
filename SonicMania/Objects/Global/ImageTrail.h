@@ -30,6 +30,18 @@ struct EntityImageTrail {
     Animator stateAnimator[IMAGETRAIL_TRACK_COUNT];
     int32 baseAlpha;
     int32 fadeoutTimer;
+    Vector2 currentTailPos;
+    Vector2 stateTailPos[IMAGETRAIL_TRACK_COUNT];
+    int32 currentTailRotation;
+    int32 stateTailRotation[IMAGETRAIL_TRACK_COUNT];
+    uint8 currentTailDirection;
+    uint8 stateTailDirection[IMAGETRAIL_TRACK_COUNT];
+    uint8 currentTailVisible;
+    uint8 stateTailVisible[IMAGETRAIL_TRACK_COUNT];
+    int32 currentTailScale;
+    int32 stateTailScale[IMAGETRAIL_TRACK_COUNT];
+    Animator curTailAnimator;
+    Animator stateTailAnimator[IMAGETRAIL_TRACK_COUNT];
 };
 
 // Object Struct
@@ -42,6 +54,7 @@ void ImageTrail_StaticUpdate(void);
 void ImageTrail_Draw(void);
 void ImageTrail_Create(void *data);
 void ImageTrail_StageLoad(void);
+void ImageTrail_Miracle_Draw(void);
 #if GAME_INCLUDE_EDITOR
 void ImageTrail_EditorDraw(void);
 void ImageTrail_EditorLoad(void);

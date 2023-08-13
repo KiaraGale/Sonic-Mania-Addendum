@@ -27,6 +27,7 @@ void SaveGame_StageLoad(void)
 }
 
 SaveRAM *SaveGame_GetSaveRAM(void) { return SaveGame->saveRAM; }
+AddendumData *Addendum_GetSaveRAM(void) { return SaveGame->addendumData; }
 
 #if MANIA_USE_PLUS
 int32 *SaveGame_GetDataPtr(int32 slot, bool32 encore)
@@ -46,6 +47,19 @@ int32 *SaveGame_GetDataPtr(int32 slot)
         return globals->noSaveSlot;
     else
         return &globals->saveRAM[0x100 * (slot % 8)];
+}
+#endif
+
+#if MANIA_USE_PLUS
+int32 *Addendum_GetDataPtr(int32 slot, bool32 encore)
+{
+    if (slot == NO_SAVE_SLOT)
+        return addendum->noSaveSlot;
+
+    if (encore)
+        return &addendum->saveRAM[0x100 * (slot % 3 + 10)];
+    else
+        return &addendum->saveRAM[0x100 * (slot % 8)];
 }
 #endif
 
@@ -168,6 +182,20 @@ void SaveGame_LoadSaveData(void)
     }
 }
 
+#if MANIA_USE_PLUS
+void Addendum_LoadSaveData(void)
+{
+    int32 slot = addendum->saveSlotID;
+
+    if (slot == NO_SAVE_SLOT)
+        SaveGame->addendumData = (AddendumData *)addendum->noSaveSlot;
+    else
+        SaveGame->addendumData = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+
+    LogHelpers_Print("dataPtr: %X", SaveGame->addendumData);
+}
+#endif
+
 void SaveGame_LoadFile(void (*callback)(bool32 success))
 {
 #if MANIA_USE_PLUS
@@ -196,8 +224,30 @@ void SaveGame_LoadFile(void (*callback)(bool32 success))
     globals->saveLoaded     = STATUS_CONTINUE;
     SaveGame->loadEntityPtr = SceneInfo->entity;
     SaveGame->loadCallback  = callback;
-    API_LoadUserFile("SaveData.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_LoadFile_CB);
+    API_LoadUserFile("SaveDataAddendum.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_LoadFile_CB);
 }
+
+#if MANIA_USE_PLUS
+void Addendum_LoadFile(void (*callback)(bool32 success))
+{
+    if (!SaveGame->addendumData || addendum->saveLoaded == STATUS_CONTINUE) {
+        if (callback)
+            callback(false);
+        return;
+    }
+
+    if (addendum->saveLoaded == STATUS_OK) {
+        if (callback)
+            callback(true);
+        return;
+    }
+
+    addendum->saveLoaded    = STATUS_CONTINUE;
+    SaveGame->loadEntityPtr = SceneInfo->entity;
+    SaveGame->loadCallback  = callback;
+    API_LoadUserFile("AddendumOptions.bin", addendum->saveRAM, sizeof(addendum->saveRAM), Addendum_LoadFile_CB);
+}
+#endif
 
 #if MANIA_USE_PLUS
 void SaveGame_SaveFile(void (*callback)(bool32 success))
@@ -218,12 +268,27 @@ void SaveGame_SaveFile(void (*callback)(void))
         SaveGame->saveEntityPtr = SceneInfo->entity;
         SaveGame->saveCallback  = callback;
 #if MANIA_USE_PLUS
-        API_SaveUserFile("SaveData.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_SaveFile_CB, false);
+        API_SaveUserFile("SaveDataAddendum.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_SaveFile_CB, false);
 #else
-        API_SaveUserFile("SaveData.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_SaveFile_CB);
+        API_SaveUserFile("SaveDataAddendum.bin", globals->saveRAM, sizeof(globals->saveRAM), SaveGame_SaveFile_CB);
 #endif
     }
 }
+
+#if MANIA_USE_PLUS
+void Addendum_SaveFile(void (*callback)(bool32 success))
+{
+    if (API_GetNoSave() || !SaveGame->addendumData || addendum->saveLoaded != STATUS_OK) {
+        if (callback)
+            callback(false);
+    }
+    else {
+        SaveGame->saveEntityPtr = SceneInfo->entity;
+        SaveGame->saveCallback  = callback;
+        API_SaveUserFile("AddendumOptions.bin", addendum->saveRAM, sizeof(addendum->saveRAM), SaveGame_SaveFile_CB, false);
+    }
+}
+#endif
 
 void SaveGame_SaveLoadedCB(bool32 success)
 {
@@ -254,6 +319,28 @@ void SaveGame_SaveLoadedCB(bool32 success)
         TimeAttackData_LoadDB(NULL);
 #endif
 }
+
+#if MANIA_USE_PLUS
+void Addendum_SaveLoadedCB(bool32 success)
+{
+    LogHelpers_Print("SaveLoadedCB(%d)", success);
+
+    if (success) {
+        foreach_all(UISaveSlot, entity)
+        {
+            if (!entity->type) {
+                Entity *store = SceneInfo->entity;
+
+                SceneInfo->entity = (Entity *)entity;
+
+                SceneInfo->entity = store;
+            }
+        }
+
+        Addendum_PrintSaveProgress();
+    }
+}
+#endif
 
 void SaveGame_SaveGameState(void)
 {
@@ -324,9 +411,9 @@ void SaveGame_SaveProgress(void)
                 if (saveRAM->zoneID < Zone_GetZoneID() + 1)
                     saveRAM->zoneID = Zone_GetZoneID() + 1;
 
-                if (saveRAM->zoneID >= ZONE_ERZ) {
+                if (saveRAM->zoneID > ZONE_ERZ) {
                     saveRAM->saveState = SAVEGAME_COMPLETE;
-                    saveRAM->zoneID    = ZONE_ERZ;
+                    saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
                 }
             }
 #if MANIA_USE_PLUS
@@ -334,6 +421,27 @@ void SaveGame_SaveProgress(void)
 #endif
     }
 }
+#if MANIA_USE_PLUS
+void Addendum_SaveProgress(void)
+{
+    int32 slot                 = addendum->saveSlotID;
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+
+    if (!AIZSetup) {
+        if (Zone_IsZoneLastAct()) {
+            if (!OOZ1Outro)
+                addendumData->actID -= Zone->actID;
+            else if (OOZ2Outro)
+                addendumData->actID = 0;
+            else
+                addendumData->actID += 1;
+        }
+        else {
+            addendumData->actID += 1;
+        }
+    }
+}
+#endif
 void SaveGame_ClearRestartData(void)
 {
     globals->recallEntities      = false;
@@ -441,6 +549,32 @@ void SaveGame_LoadFile_CB(int32 status)
         SaveGame->loadEntityPtr = NULL;
     }
 }
+#if MANIA_USE_PLUS
+void Addendum_LoadFile_CB(int32 status)
+{
+    bool32 success = false;
+    if (status == STATUS_OK || status == STATUS_NOTFOUND) {
+        success             = true;
+        addendum->saveLoaded = STATUS_OK;
+    }
+    else {
+        success             = false;
+        addendum->saveLoaded = STATUS_ERROR;
+    }
+
+    if (SaveGame->loadCallback) {
+        Entity *store = SceneInfo->entity;
+        if (SaveGame->loadEntityPtr)
+            SceneInfo->entity = SaveGame->loadEntityPtr;
+
+        SaveGame->loadCallback(success);
+        SceneInfo->entity = store;
+
+        SaveGame->loadCallback  = NULL;
+        SaveGame->loadEntityPtr = NULL;
+    }
+}
+#endif
 void SaveGame_SaveFile_CB(int32 status)
 {
     if (SaveGame->saveCallback) {
@@ -466,18 +600,38 @@ bool32 SaveGame_AllChaosEmeralds(void)
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
     return saveRAM->collectedEmeralds == 0b01111111;
 }
+#if MANIA_USE_PLUS
+bool32 Addendum_AllTimeStones(void)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    return addendumData->collectedTimeStones == 0b01111111;
+}
+#endif
 
 bool32 SaveGame_GetEmerald(uint8 emeraldID)
 {
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
     return (saveRAM->collectedEmeralds >> emeraldID) & 1;
 }
+#if MANIA_USE_PLUS
+bool32 Addendum_GetTimeStone(uint8 timeStoneID)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    return (addendumData->collectedTimeStones >> timeStoneID) & 1;
+}
+#endif
 void SaveGame_SetEmerald(uint8 emeraldID)
 {
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
     saveRAM->collectedEmeralds |= 1 << emeraldID;
 }
-
+#if MANIA_USE_PLUS
+void Addendum_SetTimeStone(uint8 timeStoneID)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->collectedTimeStones |= 1 << timeStoneID;
+}
+#endif
 void SaveGame_ClearCollectedSpecialRings(void)
 {
     SaveRAM *saveRAM               = SaveGame_GetSaveRAM();

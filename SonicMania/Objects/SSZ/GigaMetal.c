@@ -819,7 +819,7 @@ void GigaMetal_StateBody_Destroyed(void)
             ++tileX;
         }
 
-        RSDK.CopyTileLayer(Zone->fgLayer[0], 0, 30, Zone->fgLayer[0], 0, 174, 256, 2);
+        RSDK.CopyTileLayer(Zone->fgLayer[0], 0, 30, Zone->fgLayer[0], 0, 252, 256, 2);
         RSDK.CopyTileLayer(Zone->fgLayer[1], 0, 26, Zone->fgLayer[0], 0, 0, 256, 6);
     }
     else {

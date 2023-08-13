@@ -387,6 +387,12 @@ void Rexon_State_Projectile(void)
         }
     }
 
+    foreach_active(Shield, shield)
+    {
+        if (Shield_CheckCollisionTouch(shield, self, &Rexon->hitboxProjectile))
+            Shield_State_Reflect(shield, self);
+    }
+
     if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, Rexon->hitboxProjectile.bottom << 13, 4)
         || RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_LWALL, 0, Rexon->hitboxProjectile.left << 13, 0, 4)
         || RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_ROOF, 0, 0, Rexon->hitboxProjectile.top << 13, 4)

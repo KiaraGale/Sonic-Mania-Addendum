@@ -155,7 +155,8 @@ void UIControl_ClearInputs(uint8 buttonID)
         UIControl->backPress[i]    = false;
         UIControl->confirmPress[i] = false;
 #if MANIA_USE_PLUS
-        UIControl->startPress[i] = false;
+        UIControl->startPress[i]  = false;
+        UIControl->selectPress[i] = false;
 #endif
     }
 
@@ -165,8 +166,10 @@ void UIControl_ClearInputs(uint8 buttonID)
     UIControl->anyRightPress = false;
     UIControl->anyYPress     = buttonID == UIBUTTONPROMPT_BUTTON_Y;
     UIControl->anyXPress     = buttonID == UIBUTTONPROMPT_BUTTON_X;
+    UIControl->anyZPress     = buttonID == UIBUTTONPROMPT_BUTTON_SELECT;
 #if MANIA_USE_PLUS
-    UIControl->anyStartPress = buttonID == UIBUTTONPROMPT_BUTTON_SELECT;
+    UIControl->anyStartPress  = buttonID == UIBUTTONPROMPT_BUTTON_START;
+    UIControl->anySelectPress = buttonID == UIBUTTONPROMPT_BUTTON_SELECT;
 #endif
 
     if (API_GetConfirmButtonFlip()) {
@@ -209,8 +212,10 @@ void UIControl_ProcessInputs(void)
 
             UIControl->yPress[i] = ControllerInfo[CONT_P1 + i].keyY.press;
             UIControl->xPress[i] = ControllerInfo[CONT_P1 + i].keyX.press;
+            UIControl->zPress[i] = ControllerInfo[CONT_P1 + i].keyZ.press;
 #if MANIA_USE_PLUS
-            UIControl->startPress[i] = ControllerInfo[CONT_P1 + i].keyStart.press;
+            UIControl->startPress[i]  = ControllerInfo[CONT_P1 + i].keyStart.press;
+            UIControl->selectPress[i] = ControllerInfo[CONT_P1 + i].keySelect.press;
 #endif
 
             UIControl->confirmPress[i] = ControllerInfo[CONT_P1 + i].keyStart.press;
@@ -230,8 +235,10 @@ void UIControl_ProcessInputs(void)
         UIControl->anyRightPress = ControllerInfo->keyRight.press || AnalogStickInfoL->keyRight.press;
         UIControl->anyYPress     = ControllerInfo->keyY.press;
         UIControl->anyXPress     = ControllerInfo->keyX.press;
+        UIControl->anyZPress     = ControllerInfo->keyZ.press;
 #if MANIA_USE_PLUS
-        UIControl->anyStartPress = ControllerInfo->keyStart.press;
+        UIControl->anyStartPress  = ControllerInfo->keyStart.press;
+        UIControl->anySelectPress = ControllerInfo->keySelect.press;
 #endif
 
         UIControl->anyConfirmPress = ControllerInfo->keyStart.press;

@@ -163,6 +163,14 @@ void UFO_Player_StageLoad(void)
             UFO_Player->ballModel   = RSDK.LoadMesh("Special/RayBall.bin", SCOPE_STAGE);
             UFO_Player->tumbleModel = RSDK.LoadMesh("Special/RayTumble.bin", SCOPE_STAGE);
             break;
+
+        case ID_AMY:
+            UFO_Player->jogModel    = RSDK.LoadMesh("Special/AmyJog.bin", SCOPE_STAGE);
+            UFO_Player->dashModel   = RSDK.LoadMesh("Special/AmyDash.bin", SCOPE_STAGE);
+            UFO_Player->jumpModel   = RSDK.LoadMesh("Special/AmyJump.bin", SCOPE_STAGE);
+            UFO_Player->ballModel   = RSDK.LoadMesh("Special/AmyBall.bin", SCOPE_STAGE);
+            UFO_Player->tumbleModel = RSDK.LoadMesh("Special/AmyTumble.bin", SCOPE_STAGE);
+            break;
 #endif
     }
 

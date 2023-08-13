@@ -36,8 +36,20 @@ void SpecialClear_Draw(void)
         if (SaveGame_GetEmerald(i))
             frame = i;
         self->emeraldsAnimator.frameID = frame;
-        drawPos.y                      = self->emeraldPositions[i];
+        drawPos.y                      = self->emeraldPositions[i] - 0x70000;
         RSDK.DrawSprite(&self->emeraldsAnimator, &drawPos, true);
+        drawPos.x += 0x200000;
+    }
+
+    drawPos.x = centerX - 0x600000;
+    // Draw Time Stones
+    for (int32 i = 0; i < 7; ++i) {
+        int32 frame = 7;
+        if (Addendum_GetTimeStone(i))
+            frame = i;
+        self->timeStonesAnimator.frameID = frame;
+        drawPos.y                      = self->emeraldPositions[i] + 0x130000;
+        RSDK.DrawSprite(&self->timeStonesAnimator, &drawPos, true);
         drawPos.x += 0x200000;
     }
 
@@ -129,6 +141,57 @@ void SpecialClear_Draw(void)
             RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
             break;
 
+        case SC_MSG_GOTTIMESTONE:
+            self->playerNameAnimator.frameID = 1;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 2;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            drawPos.x = self->messagePos2.x;
+            drawPos.y = self->messagePos2.y;
+            drawPos.x += centerX;
+            self->playerNameAnimator.frameID = 14;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+            break;
+
+        case SC_MSG_ALLTIMESTONES:
+            self->playerNameAnimator.frameID = 4;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 5;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            drawPos.x = self->messagePos2.x;
+            drawPos.y = self->messagePos2.y;
+            drawPos.x += centerX;
+            self->playerNameAnimator.frameID = 15;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+            break;
+
+        case SC_MSG_MIRACLE:
+            self->playerNameAnimator.frameID = 7;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 8;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 9;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            drawPos.x = self->messagePos2.x;
+            drawPos.y = self->messagePos2.y;
+            drawPos.x += centerX;
+            self->playerNameAnimator.frameID = 16;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 17;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            self->playerNameAnimator.frameID = 18;
+            RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+            break;
+
         default: break;
     }
     drawPos.x = self->scoreBonusPos.x;
@@ -213,12 +276,13 @@ void SpecialClear_Draw(void)
     }
 
     if (self->showFade)
-        RSDK.FillScreen(self->fillColor, self->timer, self->timer - 128, self->timer - 256);
+        RSDK.FillScreen(self->fillColor, self->timer, self->timer, self->timer);
 }
 
 void SpecialClear_Create(void *data)
 {
     RSDK_THIS(SpecialClear);
+    int32 playerID = GET_CHARACTER_ID(1);
 
     if (!SceneInfo->inEditor) {
         self->active    = ACTIVE_NORMAL;
@@ -250,14 +314,27 @@ void SpecialClear_Create(void *data)
             if (globals->gameMode < MODE_TIMEATTACK && self->machBonus + self->ringBonus >= 10000)
                 self->hasContinues = true;
 
-            SaveRAM *saveRAM = SaveGame_GetSaveRAM();
+            SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
+            AddendumData *addendumData = Addendum_GetSaveRAM();
             self->score      = saveRAM->score;
             self->score1UP   = saveRAM->score1UP;
             self->lives      = saveRAM->lives;
-            if (SaveGame_AllChaosEmeralds())
-                self->messageType = SC_MSG_ALLEMERALDS;
-            else
-                self->messageType = !UFO_Setup->timedOut ? SC_MSG_GOTEMERALD : SC_MSG_SPECIALCLEAR;
+
+            if (saveRAM->collectedEmeralds != 0b01111111)
+                self->messageType = UFO_Setup->timedOut ? SC_MSG_SPECIALCLEAR : SC_MSG_GOTEMERALD;
+
+            if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b00000000) {
+                if (UFO_Setup->specialStageID <= 6)
+                    self->messageType = SC_MSG_ALLEMERALDS;
+                else
+                    self->messageType = SC_MSG_SPECIALCLEAR;
+            }
+
+            if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == CLAMP(addendumData->collectedTimeStones, 0b00000001, 0b00111111))
+                self->messageType = UFO_Setup->timedOut ? SC_MSG_SPECIALCLEAR : SC_MSG_GOTTIMESTONE;
+
+            if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b01111111)
+                self->messageType = SC_MSG_ALLTIMESTONES;
         }
 
         // "Player Got A"
@@ -269,7 +346,7 @@ void SpecialClear_Create(void *data)
         self->messagePos2.y = 0x700000;
 
         self->scoreBonusPos.x = 0x1E80000;
-        self->scoreBonusPos.y = 0x8C0000;
+        self->scoreBonusPos.y = 0x9C0000;
 
         self->ringBonusPos.x = 0x3080000;
         self->ringBonusPos.y = 0xAC0000;
@@ -284,15 +361,23 @@ void SpecialClear_Create(void *data)
         self->continuePos.y     = 0xCC0000;
 
         RSDK.CopyPalette(1, 0, 0, 128, 48);
+        RSDK.CopyPalette(1, 48, 0, 176, 48);
 
         for (int32 i = 0; i < 7; ++i) {
             self->emeraldPositions[i] = 0x1100000 + (i * 0x200000);
             self->emeraldSpeeds[i]    = -0xA0000 + (i * -0xA000);
         }
 
+        for (int32 i = 0; i < 7; ++i) {
+            self->timeStonePositions[i] = 0x1100000 + (i * 0x200000);
+            self->timeStoneSpeeds[i]    = -0xA0000 + (i * -0xA000);
+        }
+
         RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_BONUS, &self->bonusAnimator, true, 0);
         RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_NUMBERS, &self->numbersAnimator, true, 0);
         RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_EMERALDS, &self->emeraldsAnimator, true, 0);
+        RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_TIMESTONES, &self->timeStonesAnimator, true, 0);
+
         switch (GET_CHARACTER_ID(1)) {
             default:
             case ID_SONIC: RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_SONIC, &self->playerNameAnimator, true, 0);
@@ -322,12 +407,17 @@ void SpecialClear_Create(void *data)
 #if MANIA_USE_PLUS
             case ID_MIGHTY:
                 RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_MIGHTY, &self->playerNameAnimator, true, 0);
-                RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_CONTINUE, &self->continueAnimator, true, 3);
+                RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_CONTINUE, &self->continueAnimator, true, SC_ANI_MIGHTY);
                 break;
 
             case ID_RAY:
                 RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_RAY, &self->playerNameAnimator, true, 0);
                 RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_CONTINUE, &self->continueAnimator, true, SC_ANI_RAY);
+                break;
+
+            case ID_AMY:
+                RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_AMY, &self->playerNameAnimator, true, 0);
+                RSDK.SetSpriteAnimation(SpecialClear->aniFrames, SC_ANI_CONTINUE, &self->continueAnimator, true, (SC_ANI_RAY) + 1);
                 break;
 #endif
         }
@@ -347,6 +437,7 @@ void SpecialClear_StageLoad(void)
     SpecialClear->sfxSpecialWarp = RSDK.GetSfx("Global/SpecialWarp.wav");
     SpecialClear->sfxContinue    = RSDK.GetSfx("Special/Continue.wav");
     SpecialClear->sfxEmerald     = RSDK.GetSfx("Special/Emerald.wav");
+    SpecialClear->sfxTimeStone   = RSDK.GetSfx("Special/TimeStone.wav");
 }
 
 void SpecialClear_DrawNumbers(Vector2 *pos, int32 value)
@@ -463,15 +554,26 @@ void SpecialClear_HandleEmeraldAppear(void)
 {
     RSDK_THIS(SpecialClear);
 
-    int32 stopPos = self->messageType == SC_MSG_SPECIALCLEAR ? 0x680000 : 0x700000;
+    int32 stopPosEmerald   = self->messageType == SC_MSG_SPECIALCLEAR ? 0x680000 : 0x700000;
+    int32 stopPosTimeStone = self->messageType == SC_MSG_SPECIALCLEAR ? 0x780000 : 0x800000;
 
     for (int32 i = 0; i < 7; ++i) {
         self->emeraldSpeeds[i] += 0x4000;
         self->emeraldPositions[i] += self->emeraldSpeeds[i];
 
-        if (self->emeraldPositions[i] > stopPos && self->emeraldSpeeds[i] >= 0) {
-            self->emeraldPositions[i] = stopPos;
+        if (self->emeraldPositions[i] > stopPosEmerald && self->emeraldSpeeds[i] >= 0) {
+            self->emeraldPositions[i] = stopPosEmerald;
             self->emeraldSpeeds[i]    = -(self->emeraldSpeeds[i] >> 1);
+        }
+    }
+
+    for (int32 i = 0; i < 7; ++i) {
+        self->timeStoneSpeeds[i] += 0x4000;
+        self->timeStonePositions[i] += self->timeStoneSpeeds[i];
+
+        if (self->timeStonePositions[i] > stopPosTimeStone && self->timeStoneSpeeds[i] >= 0) {
+            self->timeStonePositions[i] = stopPosTimeStone;
+            self->timeStoneSpeeds[i]    = -(self->timeStoneSpeeds[i] >> 1);
         }
     }
 }
@@ -509,13 +611,19 @@ void SpecialClear_State_EnterBonuses(void)
 void SpecialClear_State_ScoreShownDelay(void)
 {
     RSDK_THIS(SpecialClear);
+    int32 playerID = GET_CHARACTER_ID(1);
 
     if (++self->timer == 120) {
         self->timer = 0;
         self->state = SpecialClear_State_TallyScore;
 
-        if (self->messageType != SC_MSG_SPECIALCLEAR)
+        if (self->messageType == SC_MSG_GOTEMERALD || SC_MSG_ALLEMERALDS) {
             RSDK.PlaySfx(SpecialClear->sfxEmerald, false, 0xFF);
+        }
+
+        if (self->messageType == SC_MSG_GOTTIMESTONE || SC_MSG_ALLTIMESTONES) {
+            RSDK.PlaySfx(SpecialClear->sfxTimeStone, false, 0xFF);
+        }
     }
 
     SpecialClear_HandleEmeraldAppear();
@@ -580,7 +688,8 @@ void SpecialClear_State_ShowTotalScore_Continues(void)
     if (self->timer == 360) {
         self->timer = 0;
 
-        SaveRAM *saveRAM      = SaveGame_GetSaveRAM();
+        SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
+        AddendumData *addendumData = Addendum_GetSaveRAM();
         saveRAM->score        = self->score;
         globals->restartScore = self->score;
         saveRAM->score1UP     = self->score1UP;
@@ -592,8 +701,19 @@ void SpecialClear_State_ShowTotalScore_Continues(void)
         saveRAM->playerID       = globals->playerID;
 #endif
 
-        if (SaveGame_AllChaosEmeralds()) {
-            self->state = SpecialClear_State_ExitFinishMessage;
+        if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b00000000) {
+            if (UFO_Setup->specialStageID <= 6)
+                self->state = SpecialClear_State_ExitFinishMessageSuper;
+            else {
+                self->timer    = 0;
+                self->showFade = true;
+                self->state    = SpecialClear_State_ExitResults;
+
+                RSDK.PlaySfx(SpecialClear->sfxSpecialWarp, false, 0xFF);
+            }
+        }
+        else if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b01111111) {
+            self->state = SpecialClear_State_ExitFinishMessageMiracle;
         }
         else {
             self->timer    = 0;
@@ -611,12 +731,23 @@ void SpecialClear_State_ShowTotalScore_NoContinues(void)
 
     if (++self->timer == 120) {
         self->timer           = 0;
-        SaveRAM *saveRAM      = SaveGame_GetSaveRAM();
+        SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
+        AddendumData *addendumData = Addendum_GetSaveRAM();
         saveRAM->score        = self->score;
         globals->restartScore = self->score;
 
-        if (SaveGame_AllChaosEmeralds()) {
-            self->state = SpecialClear_State_ExitFinishMessage;
+        if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b00000000) {
+            if (UFO_Setup->specialStageID <= 6)
+                self->state = SpecialClear_State_ExitFinishMessageSuper;
+            else {
+                self->timer    = 0;
+                self->showFade = true;
+                RSDK.PlaySfx(SpecialClear->sfxSpecialWarp, false, 0xFF);
+                self->state = SpecialClear_State_ExitResults;
+            }
+        }
+        else if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b01111111) {
+            self->state = SpecialClear_State_ExitFinishMessageMiracle;
         }
         else {
             self->timer    = 0;
@@ -627,7 +758,7 @@ void SpecialClear_State_ShowTotalScore_NoContinues(void)
     }
 }
 
-void SpecialClear_State_ExitFinishMessage(void)
+void SpecialClear_State_ExitFinishMessageSuper(void)
 {
     RSDK_THIS(SpecialClear);
 
@@ -637,6 +768,20 @@ void SpecialClear_State_ExitFinishMessage(void)
     if (++self->timer == 30) {
         self->timer       = 0;
         self->messageType = SC_MSG_SUPER;
+        self->state       = SpecialClear_State_EnterSuperMessage;
+    }
+}
+
+void SpecialClear_State_ExitFinishMessageMiracle(void)
+{
+    RSDK_THIS(SpecialClear);
+
+    self->messagePos1.x += 0x180000;
+    self->messagePos2.x -= 0x180000;
+
+    if (++self->timer == 30) {
+        self->timer       = 0;
+        self->messageType = SC_MSG_MIRACLE;
         self->state       = SpecialClear_State_EnterSuperMessage;
     }
 }
@@ -708,7 +853,10 @@ void SpecialClear_State_ExitResults(void)
         if (globals->gameMode < MODE_TIMEATTACK && globals->saveSlotID != NO_SAVE_SLOT) {
             self->saveInProgress = true;
             UIWaitSpinner_StartWait();
-            GameProgress_TrackGameProgress(SpecialClear_SaveCB);
+            if (UFO_Setup->specialStageID <= 6)
+                GameProgress_TrackGameProgress(SpecialClear_SaveCB);
+            else
+                Addendum_TrackGameProgress(SpecialClear_SaveCB);
         }
     }
     else {

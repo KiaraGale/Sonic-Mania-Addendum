@@ -18,6 +18,7 @@ struct ObjectAnnouncer {
 #if MANIA_USE_PLUS
     uint16 sfxMightyWins;
     uint16 sfxRayWins;
+    uint16 sfxAmyWins;
 #endif
     uint16 sfxNewRecordTop;
     uint16 sfxNewRecordMid;
@@ -27,6 +28,7 @@ struct ObjectAnnouncer {
 #if MANIA_USE_PLUS
     uint16 sfxMighty;
     uint16 sfxRay;
+    uint16 sfxAmy;
 #endif
     uint16 sfxTheWinnerIs;
     uint16 sfxPlayer1;

@@ -20,14 +20,10 @@ void IceSpring_Update(void)
 
     if (self->state) {
         if (!self->animator.speed) {
-            // Bug Details:
-            // due to this foreach loop using playerID as a variable instead of player->playerID there's a bug where if you have P2 hit the spring
-            // while P1 is in debug mode the animator will be copied into P1's slot instead of P2's one Fix: use player->playerID or playerID =
-            // RSDK.GetEntitySlot(player) instead of a manual playerID variable
-            int32 playerID = 0;
-
             foreach_active(Player, player)
             {
+                int32 playerID = RSDK.GetEntitySlot(player);
+
                 if (!self->planeFilter || player->collisionPlane == ((uint8)(self->planeFilter - 1) & 1)) {
                     int32 storeX = player->position.x;
                     int32 storeY = player->position.y;

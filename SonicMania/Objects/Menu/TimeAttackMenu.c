@@ -713,6 +713,7 @@ void TimeAttackMenu_LoadScene(void)
         case 3: globals->playerID = ID_KNUCKLES; break;
         case 4: globals->playerID = ID_MIGHTY; break;
         case 5: globals->playerID = ID_RAY; break;
+        case 6: globals->playerID = ID_AMY; break;
         default: break;
     }
 

@@ -319,6 +319,7 @@ void SeeSaw_State_OrbLaunched(void)
     self->velocity.y += 0x3800;
 
     if (self->velocity.y > 0) {
+        RSDK.SetSpriteAnimation(SeeSaw->aniFrames, 2, &self->orbAnimator, false, 0);
         SeeSaw->orbTargetPos.y += self->position.y;
 
         if (self->orbPos.y >= SeeSaw->orbTargetPos.y) {
@@ -340,6 +341,8 @@ void SeeSaw_State_OrbLaunched(void)
             self->active = ACTIVE_BOUNDS;
         }
     }
+    else
+        RSDK.SetSpriteAnimation(SeeSaw->aniFrames, 3, &self->orbAnimator, false, 0);
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -309,10 +309,10 @@ void BreakableWall_CheckBreak_Wall(void)
                     canBreak |= shield->shieldAnimator.animationID == SHIELDANI_FIREATTACK;
                 }
 
+                canBreak |= player->superState == SUPERSTATE_SUPER;
+
                 switch (player->characterID) {
                     default: break;
-
-                    case ID_SONIC: canBreak |= player->superState == SUPERSTATE_SUPER; break;
 
                     case ID_KNUCKLES: canBreak = true; break;
                 }

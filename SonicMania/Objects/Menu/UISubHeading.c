@@ -159,11 +159,19 @@ void UISubHeading_SetupActions(void)
 
 void UISubHeading_HandleMenuReturn(int32 slot)
 {
-    EntityUIControl *control = ManiaModeMenu->secretsMenu;
-    SaveRAM *saveGame        = (SaveRAM *)SaveGame_GetDataPtr(slot, false);
+    EntityUIControl *control   = ManiaModeMenu->secretsMenu;
+    SaveRAM *saveGame          = (SaveRAM *)SaveGame_GetDataPtr(slot, false);
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(slot, false);
 
-    UIButton_SetChoiceSelection(control->buttons[0], (saveGame->medalMods & MEDAL_NOTIMEOVER) != 0);
-    UIButton_SetChoiceSelection(control->buttons[1], (saveGame->medalMods & MEDAL_ANDKNUCKLES) != 0);
+    if (saveGame->medalMods & MEDAL_NOTIMEOVER)
+        UIButton_SetChoiceSelection(control->buttons[0], 1);
+    else
+        UIButton_SetChoiceSelection(control->buttons[0], 0);
+
+    if (saveGame->medalMods & MEDAL_DEBUGMODE)
+        UIButton_SetChoiceSelection(control->buttons[1], 1);
+    else
+        UIButton_SetChoiceSelection(control->buttons[1], 0);
 
     if (saveGame->medalMods & MEDAL_NODROPDASH) {
         if (saveGame->medalMods & MEDAL_PEELOUT)
@@ -175,10 +183,22 @@ void UISubHeading_HandleMenuReturn(int32 slot)
         UIButton_SetChoiceSelection(control->buttons[2], 0);
     }
 
-    if (saveGame->medalMods & MEDAL_ANDKNUCKLES)
-        UIButton_SetChoiceSelection(control->buttons[3], 1);
+    if (addendumData->addendumMods & MEDAL_SIDEKICK) {
+        switch (addendumData->addendumMods) {
+            case MEDAL_P2NONE: UIButton_SetChoiceSelection(control->buttons[3], 0); break;
+            case MEDAL_P2SONIC: UIButton_SetChoiceSelection(control->buttons[3], 1); break;
+            case MEDAL_P2TAILS: UIButton_SetChoiceSelection(control->buttons[3], 2); break;
+            case MEDAL_P2KNUX: UIButton_SetChoiceSelection(control->buttons[3], 3); break;
+            case MEDAL_P2MIGHTY: UIButton_SetChoiceSelection(control->buttons[3], 4); break;
+            case MEDAL_P2RAY: UIButton_SetChoiceSelection(control->buttons[3], 5); break;
+            case MEDAL_P2AMY: UIButton_SetChoiceSelection(control->buttons[3], 6); break;
+        }
+    }
+
+    if (addendumData->addendumMods & MEDAL_SPINDASH)
+        UIButton_SetChoiceSelection(control->buttons[4], 1);
     else
-        UIButton_SetChoiceSelection(control->buttons[3], 0);
+        UIButton_SetChoiceSelection(control->buttons[4], 0);
 }
 
 int32 UISubHeading_GetMedalMods(void)
@@ -201,11 +221,51 @@ int32 UISubHeading_GetMedalMods(void)
         mods |= MEDAL_INSTASHIELD;
     }
 
-    if (control->buttons[3]->selection == 1)
-        mods |= MEDAL_ANDKNUCKLES;
+    return mods;
+}
+#if MANIA_USE_PLUS
+int32 UISubHeading_GetAddendumMods(void)
+{
+    EntityUIControl *control = ManiaModeMenu->secretsMenu;
+
+    int32 mods = 0;
+
+    if (control->buttons[2]->selection == 3) {
+        mods |= MEDAL_PEELOUT;
+        mods |= MEDAL_INSTASHIELD;
+    }
+
+    if (control->buttons[3]->selection == 1) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2SONIC;
+    }
+    else if (control->buttons[3]->selection == 2) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2TAILS;
+    }
+    else if (control->buttons[3]->selection == 3) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2KNUX;
+    }
+    else if (control->buttons[3]->selection == 4) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2MIGHTY;
+    }
+    else if (control->buttons[3]->selection == 5) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2RAY;
+    }
+    else if (control->buttons[3]->selection == 6) {
+        mods |= MEDAL_SIDEKICK;
+        mods |= MEDAL_P2AMY;
+    }
+
+    if (control->buttons[4]->selection == 1)
+        mods |= MEDAL_SPINDASH;
 
     return mods;
 }
+#endif
 
 void UISubHeading_SaveFileCB(bool32 success)
 {
@@ -299,6 +359,7 @@ void UISubHeading_SaveButton_ActionCB(void)
     EntityUIControl *control = (EntityUIControl *)self->parent;
 
     SaveRAM *saveRAM = (SaveRAM *)SaveGame_GetDataPtr(self->slotID, self->encoreMode);
+    AddendumData *addendumRAM = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
     TimeAttackData_Clear();
 
     RSDK.GetCString(param->menuTag, &control->tag);
@@ -314,31 +375,41 @@ void UISubHeading_SaveButton_ActionCB(void)
         // so only about 1/4th of the save slot is cleared, though nothin uses the extra space so it's not a big deal
 
         memset(globals->noSaveSlot, 0, 0x400);
+        memset(addendum->noSaveSlot, 0, 0x400);
         globals->continues  = 0;
         globals->saveSlotID = NO_SAVE_SLOT;
+        addendum->saveSlotID = NO_SAVE_SLOT;
     }
     else {
-        globals->saveSlotID = self->slotID;
-        globals->medalMods  = 0;
+        globals->saveSlotID    = self->slotID;
+        addendum->saveSlotID   = self->slotID;
+        globals->medalMods     = 0;
+        addendum->addendumMods = 0;
 
         if (self->isNewSave) {
             int32 *saveData = SaveGame_GetDataPtr(self->slotID % 8, self->encoreMode);
+            int32 *addendumData = Addendum_GetDataPtr(self->slotID % 8, self->encoreMode);
 
             // Bug Details(?):
             // see above
 
             memset(saveData, 0, 0x400);
-            if (globals->gameMode != MODE_ENCORE)
+            memset(addendumData, 0, 0x400);
+            if (globals->gameMode != MODE_ENCORE) {
                 saveRAM->saveState = 1;
+                addendumRAM->saveState = 1;
+            }
 
             saveRAM->characterID   = self->frameID;
             saveRAM->zoneID        = 0;
             saveRAM->lives         = 3;
             saveRAM->collectedEmeralds = self->saveEmeralds;
+            addendumRAM->collectedTimeStones = self->saveTimeStones;
             saveRAM->continues     = 0;
             UIWaitSpinner_StartWait();
             loadingSave = true;
             SaveGame_SaveFile(UISubHeading_SaveFileCB);
+            Addendum_SaveFile(UISubHeading_SaveFileCB);
         }
         else {
             if (saveRAM->saveState == SAVEGAME_COMPLETE) {
@@ -349,16 +420,20 @@ void UISubHeading_SaveButton_ActionCB(void)
 
             loadingSave = true;
             SaveGame_SaveFile(UISubHeading_SaveFileCB);
+            Addendum_SaveFile(UISubHeading_SaveFileCB);
         }
     }
 
     if (self->encoreMode) {
         globals->medalMods = MEDAL_NOTIMEOVER;
         saveRAM->medalMods = globals->medalMods;
+        addendumRAM->addendumMods = addendum->addendumMods;
     }
     else {
         globals->medalMods = UISubHeading_GetMedalMods();
         saveRAM->medalMods = globals->medalMods;
+        addendum->addendumMods = UISubHeading_GetAddendumMods();
+        addendumRAM->addendumMods = addendum->addendumMods;
 
         switch (self->frameID) {
             case 0: // Sonic & Tails
@@ -367,20 +442,31 @@ void UISubHeading_SaveButton_ActionCB(void)
             case 3: globals->playerID = ID_KNUCKLES; break;
             case 4: globals->playerID = ID_MIGHTY; break;
             case 5: globals->playerID = ID_RAY; break;
+            case 6: globals->playerID = ID_AMY; break;
             default: break;
         }
 
-        if ((globals->medalMods & MEDAL_ANDKNUCKLES))
-            globals->playerID |= ID_KNUCKLES_ASSIST;
-        else if (!self->frameID)
+        if (addendum->addendumMods & MEDAL_P2SONIC)
+            globals->playerID |= ID_SONIC_ASSIST;
+        else if (addendum->addendumMods & MEDAL_P2TAILS)
             globals->playerID |= ID_TAILS_ASSIST;
+        else if (addendum->addendumMods & MEDAL_P2KNUX)
+            globals->playerID |= ID_KNUX_ASSIST;
+        else if (addendum->addendumMods & MEDAL_P2MIGHTY)
+            globals->playerID |= ID_MIGHTY_ASSIST;
+        else if (addendum->addendumMods & MEDAL_P2RAY)
+            globals->playerID |= ID_RAY_ASSIST;
+        else if (addendum->addendumMods & MEDAL_P2AMY)
+            globals->playerID |= ID_AMY_ASSIST;
+        else if (!self->frameID)
+            globals->playerID |= ID_NONE;
     }
 
     if (self->type == UISAVESLOT_NOSAVE || self->isNewSave) {
         if (self->encoreMode) {
-            globals->playerID          = ID_SONIC;
+            globals->playerID          = ID_AMY;
             globals->stock             = ID_NONE;
-            globals->characterFlags    = ID_NONE;
+            globals->characterFlags    = ID_AMY;
             globals->enableIntro       = true;
             globals->suppressTitlecard = true;
             RSDK.SetScene("Cutscenes", "Angel Island Zone Encore");
@@ -398,11 +484,11 @@ void UISubHeading_SaveButton_ActionCB(void)
         globals->stock          = saveRAM->stock;
         globals->characterFlags = saveRAM->characterFlags;
         RSDK.SetScene("Encore Mode", "");
-        SceneInfo->listPos += TimeAttackData_GetEncoreListPos(self->saveZoneID, ACT_1, self->frameID);
+        SceneInfo->listPos += TimeAttackData_GetEncoreListPos(self->saveZoneID, self->actNameAnimator.frameID, self->frameID);
     }
     else {
         RSDK.SetScene("Mania Mode", "");
-        SceneInfo->listPos += TimeAttackData_GetManiaListPos(self->saveZoneID, ACT_1, self->frameID);
+        SceneInfo->listPos += TimeAttackData_GetManiaListPos(self->saveZoneID, self->actNameAnimator.frameID, self->frameID);
     }
 
     if (!loadingSave) {

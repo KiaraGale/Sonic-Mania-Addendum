@@ -193,6 +193,12 @@ void Armadiloid_State_PlatformShoot(void)
         projectile->hitbox.bottom    = 4;
         projectile->type             = PROJECTILE_BASIC2;
         RSDK.SetSpriteAnimation(Armadiloid->aniFrames, 5, &projectile->animator, true, 0);
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
+                Shield_State_Reflect(shield, self);
+        }
     }
 
     foreach_active(Player, player)

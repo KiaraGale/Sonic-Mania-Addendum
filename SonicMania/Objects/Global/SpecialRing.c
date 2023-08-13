@@ -176,7 +176,7 @@ void SpecialRing_State_Idle(void)
 
 #if GAME_VERSION != VER_100
                     // rings spawned via debug mode give you 50 rings, always
-                    if (!SaveGame_AllChaosEmeralds() && self->id) {
+                    if (!SaveGame_AllChaosEmeralds() || !Addendum_AllTimeStones() && self->id) {
 #else
                     // rings spawned via debug mode behave as regular special rings
                     if (!SaveGame_AllChaosEmeralds()) {
@@ -190,7 +190,7 @@ void SpecialRing_State_Idle(void)
                     }
 
                     if (self->id > 0) {
-                        if (!SaveGame_AllChaosEmeralds())
+                        if (!SaveGame_AllChaosEmeralds() || !Addendum_AllTimeStones())
                             globals->specialRingID = self->id;
 
                         SaveGame_SetCollectedSpecialRing(self->id);
@@ -235,7 +235,7 @@ void SpecialRing_State_Flash(void)
 
 #if GAME_VERSION != VER_100
     // rings spawned via debug mode give you 50 rings, always
-    if (SaveGame_AllChaosEmeralds() || !self->id) {
+    if (SaveGame_AllChaosEmeralds() && Addendum_AllTimeStones() || !self->id) {
 #else
     // rings spawned via debug mode behave as regular special rings
     if (SaveGame_AllChaosEmeralds()) {
@@ -257,14 +257,26 @@ void SpecialRing_State_Warp(void)
         RSDK.PlaySfx(SpecialRing->sfxSpecialWarp, false, 0xFE);
         destroyEntity(self);
 
-        SaveRAM *saveRAM       = SaveGame_GetSaveRAM();
+        SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
+        AddendumData *addendumData = Addendum_GetSaveRAM();
+        // this statement allows for easy compatibility with pre-Addendum files that already have all Chaos Emeralds
+        // this also fixes a bug that would make it so the nextSpecialStage variable would reset back to 0 when exiting the game
+        if (addendumData->collectedTimeStones != 0b01111111) {
+            switch (addendumData->collectedTimeStones) {
+                case 0b00000000: saveRAM->nextSpecialStage = 7; break;
+                case 0b00000001: saveRAM->nextSpecialStage = 8; break;
+                case 0b00000011: saveRAM->nextSpecialStage = 9; break;
+                case 0b00000111: saveRAM->nextSpecialStage = 10; break;
+                case 0b00001111: saveRAM->nextSpecialStage = 11; break;
+                case 0b00011111: saveRAM->nextSpecialStage = 12; break;
+                case 0b00111111: saveRAM->nextSpecialStage = 13; break;
+            }
+        }
+
         saveRAM->storedStageID = SceneInfo->listPos;
         RSDK.SetScene("Special Stage", "");
         SceneInfo->listPos += saveRAM->nextSpecialStage;
-#if MANIA_USE_PLUS
-        if (globals->gameMode == MODE_ENCORE)
-            SceneInfo->listPos += 7;
-#endif
+
         Zone_StartFadeOut(10, 0xF0F0F0);
         Music_Stop();
     }

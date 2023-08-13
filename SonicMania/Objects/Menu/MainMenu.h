@@ -48,6 +48,8 @@ void MainMenu_BuyPlusDialogCB(void);
 void MainMenu_HandleUnlocks(void);
 void MainMenu_SetupActions(void);
 void MainMenu_MenuSetupCB(void);
+void MainMenu_MenuButton_AddendumCB(void);
+void MainMenu_MenuButton_AddendumTransition(void);
 #endif
 
 #endif //! OBJ_MAINMENU_H

@@ -8,6 +8,9 @@ typedef enum {
     SC_MSG_GOTEMERALD,
     SC_MSG_ALLEMERALDS,
     SC_MSG_SUPER,
+    SC_MSG_GOTTIMESTONE,
+    SC_MSG_ALLTIMESTONES,
+    SC_MSG_MIRACLE,
 } SpecialClearTypes;
 
 typedef enum {
@@ -23,6 +26,8 @@ typedef enum {
     SC_ANI_EMERALDS,
 #if MANIA_USE_PLUS
     SC_ANI_CONTINUE,
+    SC_ANI_AMY,
+    SC_ANI_TIMESTONES,
 #endif
 } SpecialClearAniIDs;
 
@@ -39,6 +44,7 @@ struct ObjectSpecialClear {
     uint16 sfxSpecialWarp;
     uint16 sfxContinue;
     uint16 sfxEmerald;
+    uint16 sfxTimeStone;
 };
 
 // Entity Class
@@ -67,19 +73,20 @@ struct EntitySpecialClear {
     Vector2 continuePos;
     int32 emeraldPositions[7];
     int32 emeraldSpeeds[7];
+    int32 timeStonePositions[7];
+    int32 timeStoneSpeeds[7];
     int32 unused1;
     int32 unused2;
     int32 unused3;
     int32 unused4;
     int32 unused5;
     int32 unused6;
-    int32 unused7;
-    int32 unused8;
     bool32 saveInProgress;
     Animator playerNameAnimator;
     Animator bonusAnimator;
     Animator numbersAnimator;
     Animator emeraldsAnimator;
+    Animator timeStonesAnimator;
     Animator continueAnimator;
 };
 
@@ -118,7 +125,8 @@ void SpecialClear_State_ScoreShownDelay(void);
 void SpecialClear_State_TallyScore(void);
 void SpecialClear_State_ShowTotalScore_Continues(void);
 void SpecialClear_State_ShowTotalScore_NoContinues(void);
-void SpecialClear_State_ExitFinishMessage(void);
+void SpecialClear_State_ExitFinishMessageSuper(void);
+void SpecialClear_State_ExitFinishMessageMiracle(void);
 void SpecialClear_State_EnterSuperMessage(void);
 void SpecialClear_State_ShowSuperMessage(void);
 void SpecialClear_State_ExitFadeOut(void);

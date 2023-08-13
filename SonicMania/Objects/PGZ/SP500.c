@@ -408,18 +408,29 @@ void SP500_State_PrintFinished(void)
 
                 switch (player->characterID) {
                     default: break;
+                    case ID_SONIC:
+                        RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_SONIC, 0, PLAYER_PALETTE_INDEX_SONIC, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
 
-                    // Bug Details:
-                    // this is broken for sonic, see Ink for more explanation and how to fix
-                    case ID_SONIC: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_SONIC_OLD, 0, PLAYER_PALETTE_INDEX_SONIC_OLD, PLAYER_PRIMARY_COLOR_COUNT); break;
-
-                    case ID_TAILS: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_TAILS, 0, PLAYER_PALETTE_INDEX_TAILS, PLAYER_PRIMARY_COLOR_COUNT); break;
+                    case ID_TAILS:
+                        RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_TAILS, 0, PLAYER_PALETTE_INDEX_TAILS, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
 
                     case ID_KNUCKLES:
                         RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_KNUX, 0, PLAYER_PALETTE_INDEX_KNUX, PLAYER_PRIMARY_COLOR_COUNT);
                         break;
 
-                        // also see the Ink object for a concept on how this would work with mighty & ray
+                    case ID_MIGHTY:
+                        RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_MIGHTY, 0, PLAYER_PALETTE_INDEX_MIGHTY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
+
+                    case ID_RAY:
+                        RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_RAY, 0, PLAYER_PALETTE_INDEX_RAY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
+
+                    case ID_AMY:
+                        RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_AMY, 0, PLAYER_PALETTE_INDEX_AMY, PLAYER_PRIMARY_COLOR_COUNT);
+                        break;
                 }
                 Ink->playerColors[i] = 0;
             }

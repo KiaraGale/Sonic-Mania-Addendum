@@ -107,10 +107,10 @@ void UISaveSlot_Draw(void)
     if (self->type == UISAVESLOT_REGULAR) {
         drawPos.y = self->position.y + 0x30000;
         drawPos.x = self->position.x + 0x30000;
-        RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y - 0x4F0000, 0x600000, 0xA40000, 0xFFFFFF, 127, INK_BLEND, false);
+        RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y - 0x580000, 0x600000, 0xB60000, 0xFFFFFF, 127, INK_BLEND, false);
 
         drawPos.x = self->position.x - 0x2D0000;
-        drawPos.y = self->position.y - 0x100000;
+        drawPos.y = self->position.y - 0x190000;
         UIWidgets_DrawRightTriangle(drawPos.x, drawPos.y, (self->textBounceOffset >> 11), 232, 40, 88);
 
         drawPos.x = self->position.x + 0x2D0000;
@@ -120,14 +120,14 @@ void UISaveSlot_Draw(void)
 
         drawPos.x = self->position.x + 0x30000;
         drawPos.y = self->position.y + 0x30000;
-        UIWidgets_DrawRectOutline_Blended(drawPos.x, drawPos.y, 96, 164);
+        UIWidgets_DrawRectOutline_Blended(drawPos.x, drawPos.y, 96, 182);
 
-        RSDK.DrawRect(drawPos.x - 0x2D0000, drawPos.y - 0x130000, 0x5A0000, 0x30000, 0x000000, 0xFF, INK_BLEND, false);
+        RSDK.DrawRect(drawPos.x - 0x2D0000, drawPos.y - 0x1C0000, 0x5A0000, 0x30000, 0x000000, 0xFF, INK_BLEND, false);
 
         if (self->isSelected)
-            UIWidgets_DrawRectOutline_Flash(self->position.x, self->position.y, 96, 164);
+            UIWidgets_DrawRectOutline_Flash(self->position.x, self->position.y, 96, 182);
         else
-            UIWidgets_DrawRectOutline_Black(self->position.x, self->position.y, 96, 164);
+            UIWidgets_DrawRectOutline_Black(self->position.x, self->position.y, 96, 182);
 
         self->uiAnimator.frameID = 0;
         drawPos.x                = self->position.x;
@@ -156,6 +156,7 @@ void UISaveSlot_Draw(void)
 
             RSDK.DrawSprite(&self->zoneIconAnimator, &drawPos, false);
             RSDK.DrawSprite(&self->zoneNameAnimator, &drawPos, false);
+            RSDK.DrawSprite(&self->actNameAnimator, &drawPos, false);
         }
         else {
             self->drawFX = FX_FLIP;
@@ -163,6 +164,8 @@ void UISaveSlot_Draw(void)
 
             self->drawFX = FX_NONE;
             RSDK.DrawSprite(&self->zoneNameAnimator, &drawPos, false);
+
+            RSDK.DrawSprite(&self->actNameAnimator, &drawPos, false);
         }
 
         if (self->isNewSave) {
@@ -171,19 +174,73 @@ void UISaveSlot_Draw(void)
             UISaveSlot_DrawPlayerIcons(drawPos.x, drawPos.y);
         }
         else {
-            RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y + 0x3D0000, 0x5A0000, 0x100000, 0x000000, 0xFF, INK_NONE, false);
+            RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y + 0x340000, 0x5A0000, 0x100000, 0x000000, 0xFF, INK_NONE, false);
 
             drawPos.x = self->position.x - 0x240000;
             drawPos.y = 0x450000 + self->position.y;
             for (int32 i = 0; i < 7; ++i) {
                 self->emeraldsAnimator.frameID = ((1 << i) & self->saveEmeralds) ? i : 7;
-                RSDK.DrawSprite(&self->emeraldsAnimator, &drawPos, false);
+                self->emeraldGlowAnimator.frameID = ((1 << i) & self->saveEmeralds) ? i : 7;
+
+                for (int32 c = 0; c < 96; ++c) {
+                    UISaveSlot->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
+                    RSDK.SetPaletteEntry(0, c + 128, UISaveSlot->powerColors[c]);
+                }
+
+                if (!self->alpha) {
+                    self->alpha = abs(RSDK.Sin256(self->glowTimer * 1.1) / 3);
+                    self->alpha >>= 1;
+                    self->inkEffect = INK_NONE;
+                    RSDK.DrawSprite(&self->emeraldsAnimator, &drawPos, false);
+                    self->alpha <<= 1;
+                    self->inkEffect = INK_ADD;
+                    RSDK.DrawSprite(&self->emeraldGlowAnimator, &drawPos, false);
+                    self->alpha = 0;
+                    ++self->glowTimer;
+                }
 
                 drawPos.x += 0xC0000;
+
+                for (int32 c = 0; c < 96; ++c) {
+                    RSDK.SetPaletteEntry(0, c + 128, UISaveSlot->colorStorage[c]);
+                }
             }
+            self->inkEffect = INK_NONE;
+
+            RSDK.DrawRect(self->position.x - 0x2D0000, self->position.y + 0x460000, 0x5A0000, 0x100000, 0x000000, 0xFF, INK_NONE, false);
+
+            drawPos.x = self->position.x - 0x240000;
+            for (int32 i = 0; i < 7; ++i) {
+                self->stonesAnimator.frameID = ((1 << i) & self->saveTimeStones) ? i : 7;
+                self->stoneGlowAnimator.frameID = ((1 << i) & self->saveTimeStones) ? i : 7;
+
+                for (int32 c = 0; c < 96; ++c) {
+                    UISaveSlot->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
+                    RSDK.SetPaletteEntry(0, c + 128, UISaveSlot->powerColors[c]);
+                }
+
+                if (!self->alpha) {
+                    self->alpha = abs(RSDK.Sin256(self->glowTimer * 1.1) / 3);
+                    self->alpha >>= 1;
+                    self->inkEffect = INK_NONE;
+                    RSDK.DrawSprite(&self->stonesAnimator, &drawPos, false);
+                    self->alpha <<= 1;
+                    self->inkEffect = INK_ADD;
+                    RSDK.DrawSprite(&self->stoneGlowAnimator, &drawPos, false);
+                    self->alpha = 0;
+                    ++self->glowTimer;
+                }
+
+                drawPos.x += 0xC0000;
+
+                for (int32 c = 0; c < 96; ++c) {
+                    RSDK.SetPaletteEntry(0, c + 128, UISaveSlot->colorStorage[c]);
+                }
+            }
+            self->inkEffect = INK_NONE;
 
             drawPos.x = self->position.x;
-            drawPos.y = self->position.y + 0x100000;
+            drawPos.y = self->position.y - 0x20000;
 #if MANIA_USE_PLUS
             if (!self->encoreMode || self->type == UISAVESLOT_NOSAVE) {
                 if (!self->saveContinues) {
@@ -235,21 +292,21 @@ void UISaveSlot_Draw(void)
 #endif
                 if (self->type == UISAVESLOT_NOSAVE) {
                     drawPos.y -= 0x60000;
-                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y, 40);
+                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y - 0x90000, 40);
                 }
                 else if (self->isNewSave) {
                     drawPos.y += 0x200000;
-                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y, 64);
+                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y - 0x90000, 64);
                 }
                 else if (self->listID == 1) {
                     drawPos.y -= 0x300000;
-                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y, 40);
+                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y - 0x90000, 40);
                 }
 #if MANIA_USE_PLUS
             }
             else if (self->listID == 1) {
                 drawPos.y -= 0x300000;
-                UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y, 40);
+                UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y - 0x90000, 40);
             }
 #endif
         }
@@ -295,6 +352,7 @@ uint8 UISaveSlot_GetPlayerIDFromID(uint8 id)
         case 3: return ID_KNUCKLES;
         case 4: return ID_MIGHTY;
         case 5: return ID_RAY;
+        case 6: return ID_AMY;
         default: break;
     }
 
@@ -308,6 +366,7 @@ uint8 UISaveSlot_GetIDFromPlayerID(uint8 playerID)
         case ID_KNUCKLES: return 3;
         case ID_MIGHTY: return 4;
         case ID_RAY: return 5;
+        case ID_AMY: return 6;
         default: break;
     }
 
@@ -332,6 +391,7 @@ void UISaveSlot_DrawPlayerIcon_Encore(uint8 playerID, bool32 isSilhouette, uint8
         case ID_KNUCKLES: animator->frameID = 2; break;
         case ID_MIGHTY: animator->frameID = 3; break;
         case ID_RAY: animator->frameID = 4; break;
+        case ID_AMY: animator->frameID = 5; break;
     }
 
     int32 y = drawY;
@@ -350,6 +410,7 @@ void UISaveSlot_DrawPlayerIcon_Encore(uint8 playerID, bool32 isSilhouette, uint8
         case ID_KNUCKLES: animator->frameID = 2; break;
         case ID_MIGHTY: animator->frameID = 3; break;
         case ID_RAY: animator->frameID = 4; break;
+        case ID_AMY: animator->frameID = 5; break;
     }
 
     y = drawY;
@@ -383,6 +444,7 @@ void UISaveSlot_DrawPlayerIcon_Encore(uint8 playerID, bool32 isSilhouette, uint8
                 case ID_KNUCKLES: animator->frameID = 2; break;
                 case ID_MIGHTY: animator->frameID = 3; break;
                 case ID_RAY: animator->frameID = 4; break;
+                case ID_AMY: animator->frameID = 5; break;
             }
             RSDK.DrawSprite(animator, &drawPos, false);
 
@@ -401,14 +463,14 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 2, &self->shadowsAnimator, true, 3);
 
 #if MANIA_USE_PLUS
-    uint8 friendIDs[3];
+    uint8 friendIDs[4];
     int32 playerID    = 0;
     int32 buddyID     = 0;
     int32 friendCount = 0;
 
     if (!self->encoreMode) {
 #endif
-        int32 frames[]                = { 3, 0, 1, 2, 4, 5 };
+        int32 frames[]                = { 3, 0, 1, 2, 4, 5, 6 };
         self->shadowsAnimator.frameID = frames[self->frameID];
         self->playersAnimator.frameID = frames[self->frameID];
 #if MANIA_USE_PLUS
@@ -418,7 +480,7 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
             playerID = self->saveEncorePlayer;
             buddyID  = self->saveEncoreBuddy;
 
-            for (int32 i = 0; i < 3; ++i) {
+            for (int32 i = 0; i < 4; ++i) {
                 friendIDs[i] = 0;
                 if (!self->saveEncoreFriends[i])
                     continue;
@@ -435,6 +497,7 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
                     case ID_KNUCKLES: playerID = 2; break;
                     case ID_MIGHTY: playerID = 4; break;
                     case ID_RAY: playerID = 5; break;
+                    case ID_AMY: playerID = 6; break;
                 }
 
                 self->shadowsAnimator.frameID = playerID;
@@ -451,8 +514,8 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
             }
         }
         else {
-            self->playersAnimator.frameID = 6;
-            self->shadowsAnimator.frameID = 6;
+            self->playersAnimator.frameID = 7;
+            self->shadowsAnimator.frameID = 7;
         }
     }
     else if (self->debugEncoreDraw) {
@@ -461,6 +524,7 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
         friendIDs[0] = UISaveSlot_GetPlayerIDFromID(self->dCharStock1);
         friendIDs[1] = UISaveSlot_GetPlayerIDFromID(self->dCharStock2);
         friendIDs[2] = UISaveSlot_GetPlayerIDFromID(self->dCharStock3);
+        friendIDs[3] = UISaveSlot_GetPlayerIDFromID(self->dCharStock4);
 
         if (friendIDs[0])
             friendCount = 1;
@@ -468,6 +532,8 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
             friendCount = 2;
         if (friendIDs[0] && friendIDs[1] && friendIDs[2])
             friendCount = 3;
+        if (friendIDs[0] && friendIDs[1] && friendIDs[2] && friendIDs[3])
+            friendCount = 4;
 
         if (!buddyID) {
             switch (playerID) {
@@ -477,6 +543,7 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
                 case ID_KNUCKLES: playerID = 2; break;
                 case ID_MIGHTY: playerID = 4; break;
                 case ID_RAY: playerID = 5; break;
+                case ID_AMY: playerID = 6; break;
             }
 
             self->shadowsAnimator.frameID = playerID;
@@ -493,8 +560,8 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
         }
     }
     else {
-        self->playersAnimator.frameID = 6;
-        self->shadowsAnimator.frameID = 6;
+        self->playersAnimator.frameID = 7;
+        self->shadowsAnimator.frameID = 7;
     }
 #endif
 
@@ -534,6 +601,7 @@ void UISaveSlot_DrawPlayerInfo(int32 drawX, int32 drawY)
                 case ID_KNUCKLES: playerID = 2; break;
                 case ID_MIGHTY: playerID = 3; break;
                 case ID_RAY: playerID = 4; break;
+                case ID_AMY: playerID = 5; break;
             }
         }
         else {
@@ -544,12 +612,13 @@ void UISaveSlot_DrawPlayerInfo(int32 drawX, int32 drawY)
                 case ID_KNUCKLES: playerID = 2; break;
                 case ID_MIGHTY: playerID = 3; break;
                 case ID_RAY: playerID = 4; break;
+                case ID_AMY: playerID = 5; break;
             }
         }
     }
     else {
 #endif
-        int32 frames[] = { 0, 0, 1, 2, 3, 4 };
+        int32 frames[] = { 0, 0, 1, 2, 3, 4, 5 };
         playerID       = frames[self->frameID];
 #if MANIA_USE_PLUS
     }
@@ -717,6 +786,12 @@ void UISaveSlot_SetupAnimators(void)
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 7, &self->fuzzAnimator, true, 0);
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 4, &self->emeraldsAnimator, true, 0);
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 5, &self->zoneIconAnimator, true, 0);
+#if MANIA_USE_PLUS
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 22, &self->stonesAnimator, true, 0);
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 23, &self->actNameAnimator, true, 0);
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 26, &self->emeraldGlowAnimator, true, 0);
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 27, &self->stoneGlowAnimator, true, 0);
+#endif
 
     if (self->type == UISAVESLOT_NOSAVE)
         RSDK.SetSpriteAnimation(UIWidgets->textFrames, 2, &self->zoneNameAnimator, true, 2);
@@ -735,8 +810,11 @@ void UISaveSlot_LoadSaveInfo(void)
 #else
     SaveRAM *saveRAM = (SaveRAM *)SaveGame_GetDataPtr(self->slotID);
 #endif
+#if MANIA_USE_PLUS
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
+#endif
 
-    int32 saveState = saveRAM->saveState;
+    int32 saveState  = saveRAM->saveState;
     if (saveState == SAVEGAME_INPROGRESS || saveState == SAVEGAME_COMPLETE) {
 #if MANIA_USE_PLUS
         if (self->encoreMode) {
@@ -744,7 +822,7 @@ void UISaveSlot_LoadSaveInfo(void)
             self->saveEncoreBuddy  = (saveRAM->playerID >> 8) & 0xFF;
 
             int32 friends = saveRAM->stock;
-            for (int32 i = 0; i < 3; ++i) {
+            for (int32 i = 0; i < 4; ++i) {
                 self->saveEncoreFriends[i] = ID_NONE;
                 if (!friends)
                     continue;
@@ -767,12 +845,14 @@ void UISaveSlot_LoadSaveInfo(void)
         default: break;
 
         case SAVEGAME_BLANK:
-            self->saveZoneID   = ZONE_GHZ;
-            self->saveEmeralds = 0;
-            self->saveLives    = 3;
+            self->saveZoneID     = ZONE_GHZ;
+            self->saveActID      = ACT_1;
+            self->saveEmeralds   = 0;
+            self->saveLives      = 3;
 #if MANIA_USE_PLUS
-            self->saveContinues = 0;
-            self->frameID       = self->encoreMode ? 6 : 0;
+            self->saveContinues  = 0;
+            self->frameID        = self->encoreMode ? 6 : 0;
+            self->saveTimeStones = 0;
 #else
             self->frameID = 0;
 #endif
@@ -782,10 +862,12 @@ void UISaveSlot_LoadSaveInfo(void)
 
         case SAVEGAME_INPROGRESS:
             self->saveZoneID   = saveRAM->zoneID;
+            self->saveActID    = addendumData->actID;
             self->saveEmeralds = saveRAM->collectedEmeralds;
             self->saveLives    = saveRAM->lives;
 #if MANIA_USE_PLUS
-            self->saveContinues = saveRAM->continues;
+            self->saveContinues  = saveRAM->continues;
+            self->saveTimeStones = addendumData->collectedTimeStones;
 #endif
             self->isNewSave = false;
             self->listID    = 0;
@@ -793,10 +875,12 @@ void UISaveSlot_LoadSaveInfo(void)
 
         case SAVEGAME_COMPLETE:
             self->saveZoneID   = NO_SAVE_SLOT;
+            self->saveActID    = NO_SAVE_SLOT;
             self->saveEmeralds = saveRAM->collectedEmeralds;
             self->saveLives    = saveRAM->lives;
 #if MANIA_USE_PLUS
-            self->saveContinues = saveRAM->continues;
+            self->saveContinues  = saveRAM->continues;
+            self->saveTimeStones = addendumData->collectedTimeStones;
 #endif
             self->listID    = 1;
             self->isNewSave = false;
@@ -841,13 +925,20 @@ void UISaveSlot_DeleteDLG_CB(void)
 #else
     int32 *saveRAM = SaveGame_GetDataPtr(saveSlot->slotID % 8);
 #endif
+#if MANIA_USE_PLUS
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(saveSlot->slotID, saveSlot->encoreMode);
+#endif
     // Bug Details(?):
     // sizeof(globals->noSaveSlot) and sizeof(saveData) is 4096 (sizeof(int32) * 0x400)
     // but the memset size is only 1024 (sizeof(uint8) * 0x400)
     // so only about 1/4th of the save slot is cleared, though nothin uses the extra space so it's not a big deal
     memset(saveRAM, 0, 0x400);
+    memset(addendumData, 0, 0x400);
 
     SaveGame_SaveFile(UISaveSlot_DeleteSaveCB);
+#if MANIA_USE_PLUS
+    Addendum_SaveFile(UISaveSlot_DeleteSaveCB);
+#endif
 }
 
 #if MANIA_USE_PLUS
@@ -990,7 +1081,7 @@ void UISaveSlot_NextCharacter(void)
     int32 player = self->frameID;
 
 #if MANIA_USE_PLUS
-    int32 max = API.CheckDLC(DLC_PLUS) ? 6 : 4;
+    int32 max = API.CheckDLC(DLC_PLUS) ? 7 : 4;
 #else
     int32 max = 4;
 #endif
@@ -1013,7 +1104,7 @@ void UISaveSlot_PrevCharacter(void)
     int32 player = self->frameID;
 
 #if MANIA_USE_PLUS
-    int32 max = API.CheckDLC(DLC_PLUS) ? 6 : 4;
+    int32 max = API.CheckDLC(DLC_PLUS) ? 7 : 4;
 #else
     int32 max = 4;
 #endif
@@ -1037,8 +1128,14 @@ void UISaveSlot_NextZone(void)
     }
     else {
         self->saveZoneID++;
-        if (self->saveZoneID > ZONE_TMZ)
-            self->saveZoneID = ZONE_GHZ;
+        if (self->playersAnimator.frameID == 0 || 3) {
+            if (self->saveZoneID > ZONE_ERZ)
+                self->saveZoneID = ZONE_GHZ;
+        }
+        else {
+            if (self->saveZoneID > ZONE_TMZ)
+                self->saveZoneID = ZONE_GHZ;
+        }
     }
 
     RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
@@ -1051,17 +1148,126 @@ void UISaveSlot_PrevZone(void)
     RSDK_THIS(UISaveSlot);
 
     if (self->saveZoneID == NO_SAVE_SLOT) {
-        self->saveZoneID = ZONE_TMZ;
+        self->saveZoneID = ZONE_ERZ;
     }
     else {
         self->saveZoneID--;
         if (self->saveZoneID < ZONE_GHZ)
-            self->saveZoneID = ZONE_TMZ;
+            self->saveZoneID = self->playersAnimator.frameID == 0 || 3 ? ZONE_ERZ : ZONE_TMZ;
     }
 
     RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
 
     UISaveSlot_HandleSaveIcons();
+}
+
+void UISaveSlot_CycleAct(void)
+{
+    RSDK_THIS(UISaveSlot);
+
+    self->actNameAnimator.frameID++;
+
+    switch (self->saveZoneID) {
+        case ZONE_GHZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_CPZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_SPZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_FBZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_PGZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_SSZ:
+            if (self->actNameAnimator.frameID > 2)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 2;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_HCZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_MSZ:
+            if (self->playersAnimator.frameID == 2) {
+                SpriteFrame *dst = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 0);
+                SpriteFrame *src = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 3);
+
+                *dst = *src;
+            }
+            else {
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+            }
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_OOZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_LRZ:
+            if (self->actNameAnimator.frameID > 2)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 2;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_MMZ:
+            if (self->actNameAnimator.frameID > 1)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 1;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_TMZ:
+            if (self->actNameAnimator.frameID > 2)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 2;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+        case ZONE_ERZ:
+            if (self->actNameAnimator.frameID > 0)
+                self->actNameAnimator.frameID = 0;
+            self->actTotal = 0;
+            if (self->actNameAnimator.frameID > self->actTotal)
+                self->actNameAnimator.frameID = 0;
+            break;
+    }
 }
 
 bool32 UISaveSlot_CheckButtonEnterCB(void)
@@ -1190,9 +1396,11 @@ void UISaveSlot_State_NewSave(void)
 void UISaveSlot_State_ActiveSave(void)
 {
     RSDK_THIS(UISaveSlot);
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
 
     if (!self->currentlySelected)
         self->state = UISaveSlot_State_NotSelected;
+    self->actNameAnimator.frameID = addendumData->actID;
 }
 
 #if MANIA_USE_PLUS
@@ -1222,6 +1430,95 @@ void UISaveSlot_State_CompletedSave(void)
             UISaveSlot_NextZone();
         else if (UIControl->anyDownPress)
             UISaveSlot_PrevZone();
+
+        if (UIControl->anyZPress || UIControl->anySelectPress)
+            self->actNameAnimator.frameID++;
+
+        switch (self->saveZoneID) {
+            case ZONE_GHZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_CPZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_SPZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_FBZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_PGZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_SSZ:
+                if (self->actNameAnimator.frameID > 2)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 2;
+                break;
+            case ZONE_HCZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_MSZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_OOZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_LRZ:
+                if (self->actNameAnimator.frameID > 2)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 2;
+                break;
+            case ZONE_MMZ:
+                if (self->actNameAnimator.frameID > 1)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 1;
+                break;
+            case ZONE_TMZ:
+                if (self->actNameAnimator.frameID > 2)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 2;
+                break;
+            case ZONE_ERZ:
+                if (self->actNameAnimator.frameID > 0)
+                    self->actNameAnimator.frameID = 0;
+                self->actTotal = 0;
+                break;
+        }
+
+        if (self->playersAnimator.frameID == 2) {
+            if (self->saveZoneID == ZONE_MSZ) {
+                SpriteFrame *dst = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 0);
+                SpriteFrame *src = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 3);
+
+                *dst = *src;
+            }
+            else {
+                SpriteFrame *dst = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 0);
+                SpriteFrame *src = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 4);
+
+                *dst = *src;
+            }
+        }
+
+        if (self->actNameAnimator.frameID > self->actTotal)
+            self->actNameAnimator.frameID = 0;
     }
 }
 
@@ -1328,6 +1625,7 @@ void UISaveSlot_EditorLoad(void)
     RSDK_ENUM_VAR("Knuckles", knux);
     RSDK_ENUM_VAR("Mighty", mighty);
     RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
 
     RSDK_ACTIVE_VAR(UISaveSlot, dCharPartner);
     RSDK_ENUM_VAR("None", ID_NONE);
@@ -1336,6 +1634,7 @@ void UISaveSlot_EditorLoad(void)
     RSDK_ENUM_VAR("Knuckles", knux);
     RSDK_ENUM_VAR("Mighty", mighty);
     RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
 
     RSDK_ACTIVE_VAR(UISaveSlot, dCharStock1);
     RSDK_ENUM_VAR("None", ID_NONE);
@@ -1344,6 +1643,7 @@ void UISaveSlot_EditorLoad(void)
     RSDK_ENUM_VAR("Knuckles", knux);
     RSDK_ENUM_VAR("Mighty", mighty);
     RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
 
     RSDK_ACTIVE_VAR(UISaveSlot, dCharStock2);
     RSDK_ENUM_VAR("None", ID_NONE);
@@ -1352,6 +1652,7 @@ void UISaveSlot_EditorLoad(void)
     RSDK_ENUM_VAR("Knuckles", knux);
     RSDK_ENUM_VAR("Mighty", mighty);
     RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
 
     RSDK_ACTIVE_VAR(UISaveSlot, dCharStock3);
     RSDK_ENUM_VAR("None", ID_NONE);
@@ -1360,6 +1661,16 @@ void UISaveSlot_EditorLoad(void)
     RSDK_ENUM_VAR("Knuckles", knux);
     RSDK_ENUM_VAR("Mighty", mighty);
     RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
+
+    RSDK_ACTIVE_VAR(UISaveSlot, dCharStock4);
+    RSDK_ENUM_VAR("None", ID_NONE);
+    RSDK_ENUM_VAR("Sonic", sonic);
+    RSDK_ENUM_VAR("Tails", tails);
+    RSDK_ENUM_VAR("Knuckles", knux);
+    RSDK_ENUM_VAR("Mighty", mighty);
+    RSDK_ENUM_VAR("Ray", ray);
+    RSDK_ENUM_VAR("Amy", amy);
 #endif
 }
 #endif
@@ -1377,5 +1688,6 @@ void UISaveSlot_Serialize(void)
     RSDK_EDITABLE_VAR(UISaveSlot, VAR_UINT8, dCharStock1);
     RSDK_EDITABLE_VAR(UISaveSlot, VAR_UINT8, dCharStock2);
     RSDK_EDITABLE_VAR(UISaveSlot, VAR_UINT8, dCharStock3);
+    RSDK_EDITABLE_VAR(UISaveSlot, VAR_UINT8, dCharStock4);
 #endif
 }

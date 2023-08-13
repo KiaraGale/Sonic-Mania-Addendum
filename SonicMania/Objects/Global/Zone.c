@@ -161,6 +161,9 @@ void Zone_StageLoad(void)
             if (GET_STOCK_ID(3))
                 globals->characterFlags |= 1 << HUD_CharacterIndexFromID(GET_STOCK_ID(3));
 
+            if (GET_STOCK_ID(4))
+                globals->characterFlags |= 1 << HUD_CharacterIndexFromID(GET_STOCK_ID(4));
+
             saveRAM->playerID       = globals->playerID;
             saveRAM->characterFlags = globals->characterFlags;
         }
@@ -770,7 +773,7 @@ int32 Zone_GetListPos_ManiaMode(void)
 void Zone_Draw_Fade(void)
 {
     RSDK_THIS(Zone);
-    RSDK.FillScreen(self->fadeColor, self->timer, self->timer - 128, self->timer - 0x100);
+    RSDK.FillScreen(self->fadeColor, self->timer, self->timer, self->timer);
 }
 
 void Zone_State_FadeOut(void)

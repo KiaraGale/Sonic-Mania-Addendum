@@ -104,10 +104,6 @@ void RockemSockem_Update(void)
                 if (self->ballAnimator.animationID != 3)
                     RSDK.PlaySfx(RockemSockem->sfxRockemSockem, false, 0xFF);
 
-                // Bug Details:
-                // this one's actually the opposite of normal, since its fixed in release builds
-                // but if you comment out this Player_State_Air line and glide into the rockem sockem as knux
-                // you'll get the funny anim bug they showed off at SDCC 2017
                 player->state    = Player_State_Air;
                 player->onGround = false;
                 RSDK.SetSpriteAnimation(RockemSockem->aniFrames, 3, &self->ballAnimator, true, self->ballAnimator.frameID);

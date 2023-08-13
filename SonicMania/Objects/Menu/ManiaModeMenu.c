@@ -20,7 +20,7 @@ void ManiaModeMenu_Draw(void) {}
 
 void ManiaModeMenu_Create(void *data) {}
 
-void ManiaModeMenu_StageLoad(void) {}
+void ManiaModeMenu_StageLoad(void) { Addendum_LoadFile(Addendum_SaveLoadedCB); }
 
 void ManiaModeMenu_Initialize(void)
 {

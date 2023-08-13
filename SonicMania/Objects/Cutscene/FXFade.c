@@ -24,7 +24,7 @@ void FXFade_Draw(void)
 {
     RSDK_THIS(FXFade);
 
-    RSDK.FillScreen(self->color, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(self->color, self->timer, self->timer, self->timer);
 }
 
 void FXFade_Create(void *data)

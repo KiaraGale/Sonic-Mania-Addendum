@@ -147,6 +147,7 @@ void CompetitionMenu_HandleMenuReturn(void)
                         case ID_KNUCKLES: selector->frameID = 2; break;
                         case ID_MIGHTY: selector->frameID = 3; break;
                         case ID_RAY: selector->frameID = 4; break;
+                        case ID_AMY: selector->frameID = 5; break;
                         default: break;
                     }
                 }
@@ -567,6 +568,7 @@ void CompetitionMenu_RulesButton_ActionCB(void)
 #if MANIA_USE_PLUS
                 case 3: session->playerID[i] = ID_MIGHTY; break;
                 case 4: session->playerID[i] = ID_RAY; break;
+                case 5: session->playerID[i] = ID_AMY; break;
 #endif
                 default: break;
             }

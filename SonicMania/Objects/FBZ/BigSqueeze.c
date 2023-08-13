@@ -460,11 +460,7 @@ void BigSqueeze_StateBoss_Electrified(void)
     RSDK_THIS(BigSqueeze);
 
     RSDK.ProcessAnimation(&self->domeAnimator);
-
-    // Uncomment this line if you want the prongs to animate when the boss is attacking
-    // This is all that's needed to get them animating with no issues, so I assume this line being absent was prolly an oversight?
-    // RSDK.ProcessAnimation(&self->prongsAnimator);
-
+    RSDK.ProcessAnimation(&self->prongsAnimator);
     RSDK.ProcessAnimation(&self->electricAnimator);
 
     if (!self->setupTimer)

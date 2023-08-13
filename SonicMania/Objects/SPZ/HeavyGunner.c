@@ -14,6 +14,17 @@ void HeavyGunner_Update(void)
     RSDK_THIS(HeavyGunner);
 
     StateMachine_Run(self->state);
+
+    foreach_active(Player, player) {
+        if (player->state == Player_State_Ground || Player_State_Air || Player_Action_Jump) {
+            if ((!player->left && !player->right) || (player->left && player->right)) {
+                if (player->groundVel > 0x70000)
+                    player->groundVel -= 0x1000;
+                if (player->groundVel < 0x70000)
+                    player->groundVel += 0x2000;
+            }
+        }
+    }
 }
 
 void HeavyGunner_LateUpdate(void) {}
@@ -83,7 +94,7 @@ void HeavyGunner_Create(void *data)
                         if (self->type == HEAVYGUNNER_MISSILE_F)
                             RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 29, &self->mainAnimator, true, 0);
                         else
-                            RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 30, &self->mainAnimator, true, 0);
+                            RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 24, &self->mainAnimator, true, 0);
                         self->drawFX     = FX_SCALE | FX_ROTATE | FX_FLIP;
                         self->velocity.x = 0x40000;
                         self->velocity.y = -0x38000;
@@ -295,7 +306,7 @@ void HeavyGunner_Draw_FadeOut(void)
 {
     RSDK_THIS(HeavyGunner);
 
-    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer - 128, self->timer - 256);
+    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer, self->timer);
 }
 
 void HeavyGunner_StateManager_SetupArena(void)
@@ -605,6 +616,8 @@ void HeavyGunner_Input_LockedP1(void)
     if (self->state != Player_State_Static) {
         self->up        = false;
         self->down      = false;
+        self->left      = false;
+        self->right     = false;
         self->jumpPress = false;
         self->jumpHold  = false;
     }
@@ -618,6 +631,8 @@ void HeavyGunner_Input_LockedP2(void)
 
     self->up        = false;
     self->down      = false;
+    self->left      = false;
+    self->right     = false;
     self->jumpPress = false;
     self->jumpHold  = false;
 
@@ -632,6 +647,8 @@ void HeavyGunner_Input_LockedP2_AI(void)
 
     self->up        = false;
     self->down      = false;
+    self->left      = false;
+    self->right     = false;
     self->jumpPress = false;
     self->jumpHold  = false;
 
@@ -899,6 +916,7 @@ void HeavyGunner_StateMissile_AttackPlayer(void)
                 self->state     = HeavyGunner_StateMissile_Malfunction;
 
                 RSDK.PlaySfx(HeavyGunner->sfxHit, false, 255);
+                RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 30, &self->mainAnimator, true, 0);
                 RSDK.PlaySfx(HeavyGunner->sfxFlip, false, 255);
             }
             else {

@@ -18,7 +18,7 @@ void ItemBox_Update(void)
 #if MANIA_USE_PLUS
     if (self->type == ITEMBOX_STOCK) {
         if (self->contentsAnimator.animationID == 2 || self->contentsAnimator.animationID == 7 || self->contentsAnimator.animationID == 8) {
-            if (globals->characterFlags == 0x1F && globals->gameMode == MODE_ENCORE) {
+            if ((globals->characterFlags == 0x1F || GET_STOCK_ID(4)) && globals->gameMode == MODE_ENCORE) {
                 RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
             }
             else {
@@ -26,7 +26,7 @@ void ItemBox_Update(void)
                 if (globals->gameMode == MODE_ENCORE) {
                     int32 id = 0;
                     while ((1 << self->contentsAnimator.frameID) & globals->characterFlags) {
-                        if (++self->contentsAnimator.frameID > 4)
+                        if (++self->contentsAnimator.frameID > 5) // Amy in item box?
                             self->contentsAnimator.frameID = 0;
                         if (++id > 5) {
                             RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
@@ -104,6 +104,7 @@ void ItemBox_Create(void *data)
 #if MANIA_USE_PLUS
             case ITEMBOX_1UP_MIGHTY:
             case ITEMBOX_1UP_RAY:
+            case ITEMBOX_1UP_AMY:
 #endif
                 if (globals->gameMode == MODE_TIMEATTACK) {
                     self->type = ITEMBOX_RING;
@@ -121,6 +122,7 @@ void ItemBox_Create(void *data)
 #if MANIA_USE_PLUS
                         case ID_MIGHTY: self->type = ITEMBOX_1UP_MIGHTY; break;
                         case ID_RAY: self->type = ITEMBOX_1UP_RAY; break;
+                        case ID_AMY: self->type = ITEMBOX_1UP_AMY; break;
 #endif
                         default: break;
                     }
@@ -287,6 +289,7 @@ void ItemBox_State_IconFinish(void)
 void ItemBox_State_Idle(void)
 {
     RSDK_THIS(ItemBox);
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     self->contentsPos.x = self->position.x;
 
@@ -308,6 +311,56 @@ void ItemBox_State_Idle(void)
             self->contentsAnimator.frameID = 0;
     }
 #endif
+
+    if (self->type == ITEMBOX_SNEAKERS) {
+        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 9, &self->contentsAnimator, false, 0);
+        switch (leader->characterID) {
+            case ID_SONIC: self->contentsAnimator.frameID = 0; break;
+            case ID_TAILS: self->contentsAnimator.frameID = 1; break;
+            case ID_KNUCKLES: self->contentsAnimator.frameID = 2; break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: self->contentsAnimator.frameID = 3; break;
+            case ID_RAY: self->contentsAnimator.frameID = 4; break;
+            case ID_AMY: self->contentsAnimator.frameID = 5; break;
+#endif
+        }
+        RSDK.ProcessAnimation(&self->contentsAnimator);
+    }
+
+    if (self->type == ITEMBOX_SUPER) {
+        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 10, &self->contentsAnimator, false, 0);
+#if MANIA_USE_PLUS
+        if (leader->characterID == ID_AMY) {
+            self->contentsAnimator.frameID = 1;
+        }
+        else {
+#endif
+            self->contentsAnimator.frameID = 0;
+        }
+        RSDK.ProcessAnimation(&self->contentsAnimator);
+    }
+
+    if (self->type == ITEMBOX_1UP_SONIC && leader->characterID == ID_SONIC) {
+        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 12, &self->contentsAnimator, false, 0);
+        if (leader->superState == SUPERSTATE_SUPER) {
+            self->contentsAnimator.frameID = 1;
+        }
+        else {
+            self->contentsAnimator.frameID = 0;
+        }
+        RSDK.ProcessAnimation(&self->contentsAnimator);
+    }
+
+    if (self->type == ITEMBOX_1UP_KNUX && leader->characterID == ID_KNUCKLES) {
+        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 12, &self->contentsAnimator, false, 0);
+        if (leader->superState == SUPERSTATE_SUPER) {
+            self->contentsAnimator.frameID = 5;
+        }
+        else {
+            self->contentsAnimator.frameID = 4;
+        }
+        RSDK.ProcessAnimation(&self->contentsAnimator);
+    }
 
     if (self->timer) {
         self->timer--;
@@ -420,9 +473,12 @@ void ItemBox_CheckHit(void)
                 anim == ANI_JUMP && (player->velocity.y >= 0 || player->onGround || self->direction || player->state == Ice_PlayerState_Frozen);
             switch (player->characterID) {
                 case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
-                case ID_KNUCKLES: attacking |= anim == ANI_GLIDE || anim == ANI_GLIDE_SLIDE; break;
+                case ID_KNUCKLES:
+                    attacking |= anim == ANI_GLIDE || anim == ANI_GLIDE_SLIDE;
+                    break;
 #if MANIA_USE_PLUS
                 case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP || player->jumpAbilityState > 1; break;
+                case ID_AMY: attacking |= anim == ANI_HAMMER_HIT || anim == ANI_SPIN_JUMP || anim == ANI_HELI_HAMMER; break;
 #endif
             }
 
@@ -475,7 +531,11 @@ void ItemBox_GivePowerup(void)
 {
     RSDK_THIS(ItemBox);
 
-    EntityPlayer *player = (EntityPlayer *)self->storedEntity;
+    EntityPlayer *player   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick     = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    int32 slot                 = globals->saveSlotID;
+    SaveGame->addendumData     = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+    AddendumData *addendumData = Addendum_GetSaveRAM();
 
     switch (self->type) {
         case ITEMBOX_RING: Player_GiveRings(player, 10, true); break;
@@ -483,26 +543,43 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_BLUESHIELD:
             player->shield = SHIELD_BLUE;
             Player_ApplyShield(player);
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                sidekick->shield = SHIELD_BLUE;
+                Player_ApplyShield(sidekick);
+            }
             RSDK.PlaySfx(Shield->sfxBlueShield, false, 255);
             break;
 
         case ITEMBOX_BUBBLESHIELD:
             player->shield = SHIELD_BUBBLE;
             Player_ApplyShield(player);
-            RSDK.PlaySfx(Shield->sfxBubbleShield, false, 255);
             player->drownTimer = 0;
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                sidekick->shield = SHIELD_BUBBLE;
+                Player_ApplyShield(sidekick);
+                sidekick->drownTimer = 0;
+            }
+            RSDK.PlaySfx(Shield->sfxBubbleShield, false, 255);
             Music_JingleFadeOut(TRACK_DROWNING, false);
             break;
 
         case ITEMBOX_FIRESHIELD:
             player->shield = SHIELD_FIRE;
             Player_ApplyShield(player);
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                sidekick->shield = SHIELD_FIRE;
+                Player_ApplyShield(sidekick);
+            }
             RSDK.PlaySfx(Shield->sfxFireShield, false, 255);
             break;
 
         case ITEMBOX_LIGHTNINGSHIELD:
             player->shield = SHIELD_LIGHTNING;
             Player_ApplyShield(player);
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                sidekick->shield = SHIELD_LIGHTNING;
+                Player_ApplyShield(sidekick);
+            }
             RSDK.PlaySfx(Shield->sfxLightningShield, false, 255);
             break;
 
@@ -510,18 +587,47 @@ void ItemBox_GivePowerup(void)
             if (player->superState == SUPERSTATE_NONE) {
                 EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(player), InvincibleStars);
                 RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, player);
-                player->invincibleTimer = 1260;
+                if (addendumData->collectedTimeStones == 0b01111111)
+                    player->invincibleTimer = 1680;
+                else
+                    player->invincibleTimer = 1260;
                 Music_PlayJingle(TRACK_INVINCIBLE);
+            }
+
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                if (sidekick->superState == SUPERSTATE_NONE) {
+                    EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(sidekick), InvincibleStars);
+                    RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, sidekick);
+                    if (addendumData->collectedTimeStones == 0b01111111)
+                        sidekick->invincibleTimer = 1680;
+                    else
+                        sidekick->invincibleTimer = 1260;
+                }
             }
             break;
 
         case ITEMBOX_SNEAKERS:
-            player->speedShoesTimer = 1320;
+            if (addendumData->collectedTimeStones == 0b01111111)
+                player->speedShoesTimer = 1740;
+            else
+                player->speedShoesTimer = 1320;
             Player_UpdatePhysicsState(player);
             if (player->superState == SUPERSTATE_NONE) {
                 Music_PlayJingle(TRACK_SNEAKERS);
                 EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(player), ImageTrail);
                 RSDK.ResetEntity(powerup, ImageTrail->classID, player);
+            }
+
+            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+                if (addendumData->collectedTimeStones == 0b01111111)
+                    sidekick->speedShoesTimer = 1740;
+                else
+                    sidekick->speedShoesTimer = 1320;
+                Player_UpdatePhysicsState(sidekick);
+                if (player->superState == SUPERSTATE_NONE) {
+                    EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(sidekick), ImageTrail);
+                    RSDK.ResetEntity(powerup, ImageTrail->classID, sidekick);
+                }
             }
             break;
 
@@ -531,6 +637,7 @@ void ItemBox_GivePowerup(void)
 #if MANIA_USE_PLUS
         case ITEMBOX_1UP_MIGHTY:
         case ITEMBOX_1UP_RAY:
+        case ITEMBOX_1UP_AMY:
 #endif
             Player_GiveLife(player);
             break;
@@ -555,8 +662,12 @@ void ItemBox_GivePowerup(void)
 
                     if (GET_STOCK_ID(1)) {
                         charID <<= 8;
-                        if (GET_STOCK_ID(2))
+                        if (GET_STOCK_ID(2)) {
                             charID <<= 8;
+                            if (GET_STOCK_ID(3)) {
+                                charID <<= 8;
+                            }
+                        }
                     }
                     globals->stock |= charID;
                     EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
@@ -578,8 +689,8 @@ void ItemBox_GivePowerup(void)
 
 #if MANIA_USE_PLUS
         case ITEMBOX_RANDOM: {
-            uint8 playerIDs[5]    = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-            uint8 newPlayerIDs[5] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            uint8 playerIDs[6]    = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+            uint8 newPlayerIDs[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
             if (player->animator.animationID == ANI_TRANSFORM) {
                 RSDK.PlaySfx(Player->sfxSwapFail, false, 255);
@@ -595,7 +706,7 @@ void ItemBox_GivePowerup(void)
                     RSDK.PlaySfx(Player->sfxSwapFail, false, 255);
                 }
                 else {
-                    for (int32 i = 1; i < 4; ++i) {
+                    for (int32 i = 1; i < 5; ++i) {
                         if (GET_STOCK_ID(i)) {
                             playerIDs[1 + i] = HUD_CharacterIndexFromID(GET_STOCK_ID(i));
                         }
@@ -605,12 +716,12 @@ void ItemBox_GivePowerup(void)
 
                     int32 tempStock = 0;
                     int32 p         = 0;
-                    for (; p < 5;) {
+                    for (; p < 6;) {
                         bool32 inc = true;
                         if (playerIDs[p] == 0xFF)
                             break;
 
-                        newPlayerIDs[p] = RSDK.Rand(0, 5);
+                        newPlayerIDs[p] = RSDK.Rand(0, 6);
                         if ((1 << newPlayerIDs[p]) & globals->characterFlags) {
                             while (true) {
                                 if (!((1 << newPlayerIDs[p]) & tempStock)) {
@@ -618,7 +729,7 @@ void ItemBox_GivePowerup(void)
                                         tempStock |= 1 << newPlayerIDs[p];
                                         break;
                                     }
-                                    else if (p == 4 || playerIDs[p + 1] == 0xFF) {
+                                    else if (p == 5 || playerIDs[p + 1] == 0xFF) {
                                         int32 slot         = RSDK.Rand(0, p);
                                         int32 id           = newPlayerIDs[slot];
                                         newPlayerIDs[slot] = newPlayerIDs[p];
@@ -628,7 +739,7 @@ void ItemBox_GivePowerup(void)
                                         break;
                                     }
                                     else {
-                                        newPlayerIDs[p] = RSDK.Rand(0, 5);
+                                        newPlayerIDs[p] = RSDK.Rand(0, 6);
                                         if (!((1 << newPlayerIDs[p]) & globals->characterFlags)) {
                                             inc = false;
                                             break;
@@ -636,7 +747,7 @@ void ItemBox_GivePowerup(void)
                                     }
                                 }
                                 else {
-                                    newPlayerIDs[p] = RSDK.Rand(0, 5);
+                                    newPlayerIDs[p] = RSDK.Rand(0, 6);
                                     if (!((1 << newPlayerIDs[p]) & globals->characterFlags)) {
                                         inc = false;
                                         break;
@@ -675,18 +786,19 @@ void ItemBox_GivePowerup(void)
 
         case ITEMBOX_SUPER:
             Player_GiveRings(player, 50, false);
-            Player_TryTransform(player, 0x7F);
+            Player_TryTransform(player, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
             break;
 
 #if MANIA_USE_PLUS
         case ITEMBOX_STOCK: {
             if (self->contentsAnimator.animationID == 7) {
                 if (globals->gameMode == MODE_ENCORE) {
-                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x1F && !GET_STOCK_ID(3)) {
+                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x1F && !GET_STOCK_ID(4)) {
                         globals->characterFlags |= 1 << self->contentsAnimator.frameID;
                         EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
                         if (player2->classID) {
-                            for (int32 s = 0; s < 3; ++s) {
+                            for (int32 s = 0; s < 4; ++s) {
                                 int32 id = HUD_CharacterIndexFromID(GET_STOCK_ID(1 + s));
                                 if (id < 0) {
                                     globals->stock |= (1 << self->contentsAnimator.frameID) << (8 * s);
@@ -764,6 +876,7 @@ void ItemBox_GivePowerup(void)
                         case 2: Player_ChangeCharacter(player, ID_KNUCKLES); break;
                         case 3: Player_ChangeCharacter(player, ID_MIGHTY); break;
                         case 4: Player_ChangeCharacter(player, ID_RAY); break;
+                        case 5: Player_ChangeCharacter(player, ID_AMY); break;
                         default: break;
                     }
 
@@ -791,6 +904,21 @@ void ItemBox_GivePowerup(void)
             break;
         }
 
+        case ITEMBOX_EMERALD:
+            SaveGame->saveRAM          = (SaveRAM *)SaveGame_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+            SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
+            saveRAM->collectedEmeralds = 0b01111111;
+            saveRAM->nextSpecialStage  = 7;
+            break;
+
+        case ITEMBOX_TIMESTONE:
+            SaveGame->saveRAM                 = (SaveRAM *)SaveGame_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+            SaveRAM *saveData                 = SaveGame_GetSaveRAM();
+            SaveGame->addendumData            = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+            AddendumData *addendumData        = Addendum_GetSaveRAM();
+            addendumData->collectedTimeStones = 0b01111111;
+            saveData->nextSpecialStage        = 0;
+            break;
 #endif
         default: break;
     }
@@ -862,7 +990,8 @@ void ItemBox_Break(EntityItemBox *itemBox, EntityPlayer *player)
                             case ID_KNUCKLES: itemBox->type = ITEMBOX_1UP_KNUX; break;
 #if MANIA_USE_PLUS
                             case ID_MIGHTY: itemBox->type = ITEMBOX_1UP_MIGHTY; break;
-                            case ID_RAY: itemBox->type = ITEMBOX_1UP_RAY;
+                            case ID_RAY: itemBox->type = ITEMBOX_1UP_RAY; break;
+                            case ID_AMY: itemBox->type = ITEMBOX_1UP_AMY;
 #endif
                                 break;
                             default: break;
@@ -875,6 +1004,7 @@ void ItemBox_Break(EntityItemBox *itemBox, EntityPlayer *player)
 #if MANIA_USE_PLUS
                     case ITEMBOX_1UP_MIGHTY:
                     case ITEMBOX_1UP_RAY:
+                    case ITEMBOX_1UP_AMY:
 #endif
                         continue;
 
@@ -1235,6 +1365,7 @@ void ItemBox_EditorLoad(void)
 #if MANIA_USE_PLUS
     RSDK_ENUM_VAR("1UP Mighty", ITEMBOX_1UP_MIGHTY);
     RSDK_ENUM_VAR("1UP Ray", ITEMBOX_1UP_RAY);
+    RSDK_ENUM_VAR("1UP Amy", ITEMBOX_1UP_AMY);
     RSDK_ENUM_VAR("Change", ITEMBOX_STOCK);
 #endif
 

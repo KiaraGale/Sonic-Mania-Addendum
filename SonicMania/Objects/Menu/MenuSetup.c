@@ -138,7 +138,7 @@ void MenuSetup_Draw(void)
 {
     RSDK_THIS(MenuSetup);
 
-    RSDK.FillScreen(self->fadeColor, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
+    RSDK.FillScreen(self->fadeColor, self->fadeTimer, self->fadeTimer, self->fadeTimer);
 }
 
 void MenuSetup_Create(void *data)

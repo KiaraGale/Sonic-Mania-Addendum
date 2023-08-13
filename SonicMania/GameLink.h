@@ -137,6 +137,8 @@ typedef struct {
     uint8 inkEffect;
     uint8 visible;
     uint8 onScreen;
+    int32 health;
+    int32 maxHealth;
 } Entity;
 
 typedef struct {

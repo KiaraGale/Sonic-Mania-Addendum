@@ -38,10 +38,11 @@ void ERZSetup_StageLoad(void)
     // Animal Types in ERZ...? why is that? no animals would exist so it'd be safe to not define types
     Animals->animalTypes[0] = ANIMAL_POCKY;
     Animals->animalTypes[1] = ANIMAL_ROCKY;
-
+    /*
     // Remove all players except for P1
     for (int32 p = 1; p < Player->playerCount; ++p) destroyEntitySlot(p);
     Player->playerCount = 1;
+    */
 }
 
 void ERZSetup_Scanline_Sky(ScanlineInfo *scanlines)

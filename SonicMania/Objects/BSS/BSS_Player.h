@@ -7,12 +7,14 @@
 struct ObjectBSS_Player {
     RSDK_OBJECT
     uint16 jumpPressState;
+    uint16 upPressState;
     uint16 unused1; // set to 4 when hitting a yellow sphere, never *used* though
     uint16 sonicFrames;
     uint16 tailsFrames;
     uint16 knuxFrames;
     uint16 mightyFrames;
     uint16 rayFrames;
+    uint16 amyFrames;
     uint16 sfxJump;
 };
 
@@ -29,8 +31,11 @@ struct EntityBSS_Player {
     bool32 right;
     bool32 jumpPress;
     Animator animator;
+    Animator sidekickAnimator;
     Animator tailAnimator;
+    Animator sidekickTailAnimator;
     uint16 aniFrames;
+    int32 playerID;
 };
 
 // Object Struct

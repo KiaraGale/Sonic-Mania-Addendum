@@ -273,6 +273,12 @@ void BuzzBomber_State_ProjectileShot(void)
             if (Player_CheckCollisionTouch(player, self, &BuzzBomber->hitboxProjectile))
                 Player_ProjectileHurt(player, self);
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &BuzzBomber->hitboxProjectile))
+                Shield_State_Reflect(shield, self);
+        }
     }
     else {
         destroyEntity(self);

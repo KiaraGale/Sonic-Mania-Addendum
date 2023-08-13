@@ -41,6 +41,7 @@ struct EntityPhantomKing {
     Vector2 rubyPos;
     Vector2 unused;
     bool32 drawRuby;
+    bool32 drawFlash;
     bool32 canLaunchAttacks;
     EntityPhantomKing *parent;
     int32 armRadius;

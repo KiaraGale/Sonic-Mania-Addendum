@@ -272,6 +272,18 @@ void MainMenu_MenuButton_ActionCB(void)
 void MainMenu_BuyPlusDialogCB(void) { API.ShowAltExtensionOverlay(0); }
 #endif
 
+void MainMenu_MenuButton_AddendumCB(void)
+{
+    RSDK_THIS(UIButton);
+    UITransition_StartTransition(MainMenu_MenuButton_AddendumTransition, 0);
+}
+
+void MainMenu_MenuButton_AddendumTransition(void)
+{
+    EntityUIControl *control = MainMenu->menuControl;
+    UIControl_MatchMenuTag("Addendum Options");
+}
+
 void MainMenu_HandleUnlocks(void)
 {
     EntityUIControl *control = MainMenu->menuControl;
@@ -309,6 +321,8 @@ void MainMenu_SetupActions(void)
     }
 
     MainMenu->menuControl->menuSetupCB = MainMenu_MenuSetupCB;
+
+    MainMenu->menuControl->yPressCB = MainMenu_MenuButton_AddendumCB;
 }
 
 void MainMenu_MenuSetupCB(void) { MainMenu->diorama->lastDioramaID = -1; }

@@ -410,6 +410,12 @@ void JuggleSaw_StateSaw_Handle(void)
                     Player_Hurt(player, self);
             }
         }
+
+        foreach_active(Shield, shield)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &JuggleSaw->hitboxSaw))
+                Shield_State_Reflect(shield, self);
+        }
     }
     else if (!self->friends[0] || self->friends[0]->classID != JuggleSaw->classID)
         destroyEntity(self);
