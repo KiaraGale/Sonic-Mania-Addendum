@@ -18,7 +18,7 @@ void ItemBox_Update(void)
 #if MANIA_USE_PLUS
     if (self->type == ITEMBOX_STOCK) {
         if (self->contentsAnimator.animationID == 2 || self->contentsAnimator.animationID == 7 || self->contentsAnimator.animationID == 8) {
-            if ((globals->characterFlags == 0x3F || GET_STOCK_ID(4)) && globals->gameMode == MODE_ENCORE) {
+            if (globals->characterFlags == 0x3F && globals->gameMode == MODE_ENCORE) {
                 RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
             }
             else {
@@ -28,7 +28,7 @@ void ItemBox_Update(void)
                     while ((1 << self->contentsAnimator.frameID) & globals->characterFlags) {
                         if (++self->contentsAnimator.frameID > 5) // Amy in item box?
                             self->contentsAnimator.frameID = 0;
-                        if (++id > 5) {
+                        if (++id > 6) {
                             RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
                             LogHelpers_PrintText("Bad Change Item State");
                         }
@@ -794,7 +794,7 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_STOCK: {
             if (self->contentsAnimator.animationID == 7) {
                 if (globals->gameMode == MODE_ENCORE) {
-                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x3F && !GET_STOCK_ID(4)) {
+                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x3F) {
                         globals->characterFlags |= 1 << self->contentsAnimator.frameID;
                         EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
                         if (player2->classID) {

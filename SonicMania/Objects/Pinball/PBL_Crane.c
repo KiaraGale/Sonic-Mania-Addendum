@@ -121,9 +121,7 @@ void PBL_Crane_HandlePrizes(void)
         case PBL_CRANE_PRIZE_RAY:
         case PBL_CRANE_PRIZE_AMY: {
             int32 playerID = 1 << self->displayAnimator.frameID;
-            if (self->displayAnimator.frameID == PBL_CRANE_PRIZE_AMY) {
-                playerID = 1 << 5;
-            }
+            globals->characterFlags |= playerID;
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_BUDDY;
 
             if (!GET_CHARACTER_ID(1))
@@ -150,13 +148,10 @@ void PBL_Crane_HandlePrizes(void)
 
         case PBL_CRANE_PRIZE_RINGS:
             globals->restartRings += PBL_Setup->rings;
-            globals->restartRings = CLAMP(globals->restartRings, 0, 999);
 
             if (globals->gameMode == MODE_MANIA && globals->restartRings >= globals->restart1UP) {
                 PBL_Setup_GiveLife();
                 globals->restart1UP += 100;
-                if (globals->restart1UP > 300)
-                    globals->restart1UP = 1000;
             }
 
             PBL_Setup->rings   = 0;
@@ -197,11 +192,9 @@ void PBL_Crane_HandlePrizes(void)
         }
 
         case PBL_CRANE_PRIZE_1UP:
-            if (SaveGame_GetSaveRAM()->lives < 99)
-                SaveGame_GetSaveRAM()->lives++;
+            SaveGame_GetSaveRAM()->lives++;
 
-            if (globals->restartLives[0] < 99)
-                globals->restartLives[0]++;
+            globals->restartLives[0]++;
 
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_1UP;
             break;
@@ -288,13 +281,8 @@ void PBL_Crane_State_CreatePrizes(void)
     for (int32 i = 0; i < 6; ++i) {
         EntityPBL_Crane *prize = CREATE_ENTITY(PBL_Crane, INT_TO_VOID(PBL_CRANE_PRIZEDISPLAY), spawnX, spawnY);
         if (globals->gameMode == MODE_ENCORE) {
-            if ((!((1 << i) & globals->characterFlags) && !GET_STOCK_ID(4)) || i == PBL_CRANE_PRIZE_EGGMAN) {
-                if ((!((1 << i) & globals->characterFlags) && !GET_STOCK_ID(4)) && i == PBL_CRANE_PRIZE_EGGMAN) {
-                    prize->displayAnimator.frameID = PBL_CRANE_PRIZE_AMY;
-                }
-                else {
-                    prize->displayAnimator.frameID = i;
-                }
+            if (!((1 << i) & globals->characterFlags) || i == PBL_CRANE_PRIZE_EGGMAN) {
+                prize->displayAnimator.frameID = i;
             }
             else {
                 prize->displayAnimator.frameID = RSDK.Rand(PBL_CRANE_PRIZE_RINGS, PBL_CRANE_PRIZE_TABLE_RESTORE + 1);
@@ -492,7 +480,7 @@ void PBL_Crane_StateCrane_Rise(void)
             crane->velocity.x = self->position.x > parent->position.x ? 0x20000 : -0x20000;
             crane->velocity.y = -0x20000;
 
-            if (crane->displayAnimator.frameID != 5) {
+            if (crane->displayAnimator.frameID != 6) {
                 RSDK.PlaySfx(PBL_Crane->sfxPrizeGood, false, 255);
                 self->state = StateMachine_None;
             }

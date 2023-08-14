@@ -326,7 +326,7 @@ void HUD_Draw(void)
 
 #if MANIA_USE_PLUS
     if (globals->gameMode == MODE_ENCORE) {
-        for (int32 p = 0; p < PLAYER_COUNT; ++p) {
+        for (int32 p = 0; p < PLAYER_COUNT + 1; ++p) {
             if (HUD->stockFlashTimers[p] > 0)
                 HUD->stockFlashTimers[p]--;
         }
@@ -346,7 +346,7 @@ void HUD_Draw(void)
             // Draw Stock Icons
             drawPos.x += TO_FIXED(20);
             RSDK.SetSpriteAnimation(HUD->aniFrames, 12, &self->lifeIconAnimator, true, 0);
-            for (int32 i = 1; i < 5; ++i) {
+            for (int32 i = 1; i < 4; ++i) {
                 self->lifeIconAnimator.frameID = HUD_CharacterIndexFromID(GET_STOCK_ID(i));
                 if (self->lifeIconAnimator.frameID >= 0 && !(HUD->stockFlashTimers[i] & 4))
                     RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);

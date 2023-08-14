@@ -33,7 +33,7 @@ struct ObjectHUD {
     bool32 replaySaveEnabled;
     int32 screenBorderType[PLAYER_COUNT];
     int32 swapCooldown;
-    int32 stockFlashTimers[PLAYER_COUNT];
+    int32 stockFlashTimers[PLAYER_COUNT + 1];
 #endif
 };
 

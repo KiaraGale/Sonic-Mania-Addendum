@@ -493,7 +493,7 @@ bool32 EncoreIntro_Cutscene_ViewEncoreTutorial(EntityCutsceneSeq *host)
         buddy->direction = ruby->position.x < buddy->position.x;
 
     if (host->timer == 18) {
-        if (globals->characterFlags == (ID_SONIC | ID_RAY)) {
+        if (globals->characterFlags == (ID_AMY | ID_RAY)) {
             player->velocity.x = 0;
             buddy->velocity.x  = 0;
         }
