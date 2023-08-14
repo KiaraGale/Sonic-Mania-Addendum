@@ -187,7 +187,7 @@ void HeavyRider_StageLoad(void)
     HeavyRider->hitboxFireball.right  = 14;
     HeavyRider->hitboxFireball.bottom = 46;
 
-    HeavyRider->health             = 8;
+    HeavyRider->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
     HeavyRider->invincibilityTimer = 0;
 
     HeavyRider->sfxHit       = RSDK.GetSfx("Stage/BossHit.wav");

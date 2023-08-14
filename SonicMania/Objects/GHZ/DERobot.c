@@ -56,8 +56,8 @@ void DERobot_Create(void *data)
                     self->shoulderFront = RSDK_GET_ENTITY(slotID + 4, DERobot);
                     self->arms[2]       = RSDK_GET_ENTITY(slotID + 5, DERobot);
                     self->arms[3]       = RSDK_GET_ENTITY(slotID + 6, DERobot);
-                    self->health        = 8;
-                    self->maxHealth     = 8;
+                    self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+                    self->maxHealth     = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     self->state         = DERobot_State_SetupArena;
                     self->stateDraw     = DERobot_Draw_Simple;
                     RSDK.SetSpriteAnimation(DERobot->aniFrames, self->aniID, &self->mainAnimator, true, self->frameID);

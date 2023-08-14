@@ -56,7 +56,7 @@ void PhantomEgg_Create(void *data)
 
             self->drawFX = FX_FLIP;
             self->active = ACTIVE_NORMAL;
-            self->health = 16;
+            self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 12 : 16;
 
             RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 0, &self->coreAnimator, true, 0);
             RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 17, &self->eggmanAnimator, true, 0);
@@ -153,22 +153,43 @@ void PhantomEgg_Hit(void)
     RSDK_THIS(PhantomEgg);
 
     --self->health;
-    if (!(self->health & 3)) {
-        int32 id = (-2 - RSDK.GetEntityCount(TMZCable->classID, true)) & 3;
+    if (Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
+        if (!(self->health & 2)) {
+            int32 id = (-2 - RSDK.GetEntityCount(TMZCable->classID, true)) & 2;
 
-        foreach_active(TMZCable, cable)
-        {
-            if (cable->cableID == id || !self->health) {
-                RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 9, &cable->animator, true, 0);
-                cable->state = TMZCable_State_Destroyed;
-                cable->timer = 0;
+            foreach_active(TMZCable, cable)
+            {
+                if (cable->cableID == id || !self->health) {
+                    RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 9, &cable->animator, true, 0);
+                    cable->state = TMZCable_State_Destroyed;
+                    cable->timer = 0;
+                }
             }
-        }
 
-        if (id == 1)
-            self->attackStateTable = PhantomEgg->attackStateTable2;
-        else
-            self->attackStateTable = PhantomEgg->attackStateTable1;
+            if (id == 1)
+                self->attackStateTable = PhantomEgg->attackStateTable2;
+            else
+                self->attackStateTable = PhantomEgg->attackStateTable1;
+        }
+    }
+    else {
+        if (!(self->health & 3)) {
+            int32 id = (-2 - RSDK.GetEntityCount(TMZCable->classID, true)) & 3;
+
+            foreach_active(TMZCable, cable)
+            {
+                if (cable->cableID == id || !self->health) {
+                    RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 9, &cable->animator, true, 0);
+                    cable->state = TMZCable_State_Destroyed;
+                    cable->timer = 0;
+                }
+            }
+
+            if (id == 1)
+                self->attackStateTable = PhantomEgg->attackStateTable2;
+            else
+                self->attackStateTable = PhantomEgg->attackStateTable1;
+        }
     }
 
     if (self->health <= 0) {

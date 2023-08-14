@@ -55,7 +55,7 @@ void SpiderMobile_Create(void *data)
                         self->drawGroup         = Zone->objectDrawGroup[1];
                         self->drawFX            = FX_ROTATE | FX_FLIP;
                         self->webCurveDirection = 1;
-                        self->health            = 6;
+                        self->health            = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                         self->active            = ACTIVE_BOUNDS;
                         self->updateRange.x     = 0x400000;
                         self->updateRange.y     = 0x400000;

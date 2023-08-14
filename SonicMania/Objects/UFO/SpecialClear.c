@@ -476,10 +476,9 @@ void SpecialClear_GiveScoreBonus(int32 score)
 #endif
 
     if (self->score >= self->score1UP) {
-        if (self->lives < 99)
-            self->lives++;
+        self->lives++;
 
-        Music_PlayJingle(TRACK_1UP);
+        RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
 
         Music->nextTrack = TRACK_NONE;
         while (self->score1UP <= self->score) self->score1UP += 50000;

@@ -68,36 +68,7 @@ void Dust_State_SpinDash(void)
 
         RSDK.ProcessAnimation(&self->animator);
 
-        if (player->state != Player_State_Spindash)
-            destroyEntity(self);
-    }
-}
-
-void Dust_State_SpinDash_CD(void)
-{
-    RSDK_THIS(Dust);
-
-    EntityPlayer *player = (EntityPlayer *)self->parent;
-    if (!player) {
-        destroyEntity(self);
-    }
-    else {
-        Hitbox *playerHitbox = Player_GetHitbox(player);
-
-        self->position.x = player->position.x;
-        self->position.y = player->position.y;
-        int32 bottom     = playerHitbox->bottom << 16;
-        if (player->invertGravity)
-            self->position.y -= bottom;
-        else
-            self->position.y += bottom;
-        self->direction = player->direction;
-        self->drawGroup = player->drawGroup;
-        self->rotation  = player->rotation;
-
-        RSDK.ProcessAnimation(&self->animator);
-
-        if (player->state != Player_State_Spindash_CD)
+        if (player->state != Player_State_Spindash || player->state != Player_State_Spindash_CD)
             destroyEntity(self);
     }
 }

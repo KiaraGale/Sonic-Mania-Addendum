@@ -240,10 +240,9 @@ void PBL_Setup_GiveLife(void)
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
 
     if (globals->gameMode != MODE_TIMEATTACK && globals->gameMode != MODE_ENCORE) {
-        if (saveRAM->lives < 99)
-            saveRAM->lives++;
+        saveRAM->lives++;
 
-        Music_PlayJingle(TRACK_1UP);
+        RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
     }
 }
 

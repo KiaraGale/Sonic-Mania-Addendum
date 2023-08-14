@@ -83,7 +83,7 @@ void DBTower_Create(void *data)
                 self->bodyPositions[0].y  = self->position.y + 0xA20000;
 
                 self->originPos             = self->position;
-                self->health                = 6;
+                self->health                = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                 self->wobbleAngleVel        = 640;
                 self->xOffsetAngle          = 64;
                 self->connectedSegmentCount = 0;

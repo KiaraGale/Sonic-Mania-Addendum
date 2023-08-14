@@ -36,7 +36,6 @@ void Dust_Serialize(void);
 
 // Extra Entity Functions
 void Dust_State_SpinDash(void);
-void Dust_State_SpinDash_CD(void);
 void Dust_State_DustTrail(void);
 void Dust_State_GlideTrail(void);
 void Dust_State_DustPuff(void);

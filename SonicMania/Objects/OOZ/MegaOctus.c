@@ -248,8 +248,8 @@ void MegaOctus_StageLoad(void)
     MegaOctus->hitbox.bottom = 30;
 
     MegaOctus->spawnHarpoon = false;
-    MegaOctus->orbHealth[0] = 4;
-    MegaOctus->orbHealth[1] = 4;
+    MegaOctus->orbHealth[0] = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
+    MegaOctus->orbHealth[1] = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
     MegaOctus->defeated     = false;
 
     MegaOctus->sfxBossHit     = RSDK.GetSfx("Stage/BossHit.wav");
@@ -460,7 +460,7 @@ void MegaOctus_State_SetupArena(void)
 
         OOZSetup->useSmogEffect = false;
         self->velocity.y        = -0x40000;
-        self->health            = 8;
+        self->health            = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
         self->timer             = 60;
 
         EntityMegaOctus *arm = CREATE_ENTITY(MegaOctus, INT_TO_VOID(MEGAOCTUS_ARM), self->position.x + 0x800000, self->origin.y + 0x400000);

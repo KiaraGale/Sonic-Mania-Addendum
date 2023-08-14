@@ -56,7 +56,7 @@ void MeterDroid_Create(void *data)
             self->active        = ACTIVE_BOUNDS;
             self->updateRange.x = 0x800000;
             self->updateRange.y = 0x800000;
-            self->health        = 6;
+            self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
             self->drawGroup     = Zone->objectDrawGroup[0];
             self->state         = MeterDroid_State_Init;
 

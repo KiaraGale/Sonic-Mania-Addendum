@@ -77,7 +77,7 @@ void LaundroMobile_Create(void *data)
                     self->updateRange.x = 0x800000;
                     self->updateRange.y = 0x800000;
 
-                    LaundroMobile->health             = 5 + 8; // phase1 health + phase 2 health
+                    LaundroMobile->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 + 6 : 5 + 8; // phase1 health + phase 2 health
                     LaundroMobile->invincibilityTimer = 0;
                     LaundroMobile->nextLoopPoint      = 0;
                     LaundroMobile->attackDir          = FLIP_NONE;

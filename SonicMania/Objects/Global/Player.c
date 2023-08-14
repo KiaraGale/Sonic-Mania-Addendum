@@ -1333,7 +1333,7 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
             entity->stateAbility = Player_JumpAbility_Amy;
             entity->sensorY      = TO_FIXED(20);
             if (!(globals->medalMods & MEDAL_PEELOUT))
-                entity->statePeelout = Player_Action_TallJump;
+                entity->stateTallJump = Player_Action_TallJump;
 
             if (globals->medalMods & MEDAL_PEELOUT) {
                 for (int32 f = 0; f < 5; ++f) {
@@ -3174,7 +3174,7 @@ bool32 Player_CheckCollisionBox(EntityPlayer *player, void *e, Hitbox *entityHit
         case C_LEFT:
             player->controlLock = 0;
             if (player->left && player->onGround) {
-                if (player->state != Player_State_Spindash) {
+                if (player->state != Player_State_Spindash || player->state != Player_State_Spindash_CD) {
                     player->groundVel = -0x8000;
                     player->position.x &= 0xFFFF0000;
                 }
@@ -3277,6 +3277,7 @@ bool32 Player_CheckAttacking(EntityPlayer *player, void *e)
         case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
 #if MANIA_USE_PLUS
         case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP; break;
+        case ID_AMY: attacking |= anim == ANI_HAMMER_HIT || anim == ANI_SPIN_JUMP || anim == ANI_HELI_HAMMER; break;
 #endif
         case ID_TAILS:
             if (!attacking && entity) {
@@ -3296,7 +3297,7 @@ bool32 Player_CheckAttackingNoInvTimer(EntityPlayer *player, void *e)
 {
     Entity *entity   = (Entity *)e;
     int32 anim       = player->animator.animationID;
-    bool32 attacking = anim == ANI_JUMP || anim == ANI_SPINDASH;
+    bool32 attacking = anim == ANI_JUMP || anim == ANI_SPINDASH || anim == ANI_CDSPINDASH;
     switch (player->characterID) {
         case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
 #if MANIA_USE_PLUS
@@ -5197,7 +5198,7 @@ void Player_State_Spindash_CD(void)
         self->spindashCharge = 33;
         EntityDust *dust     = CREATE_ENTITY(Dust, self, self->position.x, self->position.y);
         RSDK.SetSpriteAnimation(Dust->aniFrames, 1, &dust->animator, true, 0);
-        dust->state     = Dust_State_SpinDash_CD;
+        dust->state     = Dust_State_SpinDash;
         dust->drawGroup = self->drawGroup;
     }
 

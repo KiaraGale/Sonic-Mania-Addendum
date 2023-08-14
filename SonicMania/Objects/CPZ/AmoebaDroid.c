@@ -48,7 +48,7 @@ void AmoebaDroid_Create(void *data)
                     self->visible   = false;
                     self->drawGroup = Zone->objectDrawGroup[0];
                     self->drawFX    = FX_FLIP;
-                    self->health    = 6;
+                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
 
                     self->hitbox.left   = -22;
                     self->hitbox.top    = -22;

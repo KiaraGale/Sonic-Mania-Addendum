@@ -16,7 +16,7 @@ void HeavyGunner_Update(void)
     StateMachine_Run(self->state);
 
     foreach_active(Player, player) {
-        if (player->state == Player_State_Ground || Player_State_Air || Player_Action_Jump) {
+        if (player->state == Player_State_Ground || player->state == Player_State_Air) {
             if ((!player->left && !player->right) || (player->left && player->right)) {
                 if (player->groundVel > 0x70000)
                     player->groundVel -= 0x1000;

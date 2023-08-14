@@ -116,7 +116,7 @@ void GigaMetal_Create(void *data)
 
                     foreach_all(MetalSonic, metal) { self->metalSonic = metal; }
 
-                    self->health = 8;
+                    self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     self->state  = GigaMetal_StateBody_AwaitPlayer;
                     break;
                 }

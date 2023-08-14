@@ -346,7 +346,7 @@ void HUD_Draw(void)
             // Draw Stock Icons
             drawPos.x += TO_FIXED(20);
             RSDK.SetSpriteAnimation(HUD->aniFrames, 12, &self->lifeIconAnimator, true, 0);
-            for (int32 i = 1; i < 4; ++i) {
+            for (int32 i = 1; i < 5; ++i) {
                 self->lifeIconAnimator.frameID = HUD_CharacterIndexFromID(GET_STOCK_ID(i));
                 if (self->lifeIconAnimator.frameID >= 0 && !(HUD->stockFlashTimers[i] & 4))
                     RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);

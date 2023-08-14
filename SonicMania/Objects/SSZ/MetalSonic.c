@@ -1199,7 +1199,7 @@ void MetalSonic_State_StartPanelSequence(void)
         self->position    = self->targetPos;
         self->timer       = 16;
         self->attackTimer = MANIA_USE_PLUS ? 240 : 180;
-        self->health      = MANIA_USE_PLUS ? 6 : 4;
+        self->health      = Addendum_GetSaveRAM()->collectedTimeStones != 0b01111111 ? 6 : 4;
         self->state       = MetalSonic_State_OpenFactoryDoor;
     }
 }

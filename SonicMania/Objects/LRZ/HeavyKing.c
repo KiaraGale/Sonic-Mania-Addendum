@@ -62,7 +62,7 @@ void HeavyKing_Create(void *data)
             self->active        = ACTIVE_BOUNDS;
             self->updateRange.x = 0xC00000;
             self->updateRange.y = 0x800000;
-            self->health        = 8;
+            self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
             self->state         = HeavyKing_State_SetupArena;
 
             RSDK.SetSpriteAnimation(HeavyKing->aniFrames, 7, &self->bodyAnimator, true, 0);

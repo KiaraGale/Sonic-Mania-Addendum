@@ -74,7 +74,7 @@ void HeavyMystic_Create(void *data)
                     self->visible   = false;
                     self->drawGroup = Zone->objectDrawGroup[0] + 2;
                     self->drawFX    = FX_FLIP;
-                    self->health    = 6;
+                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
 
                     RSDK.SetSpriteAnimation(HeavyMystic->aniFrames, 0, &self->animator, true, 0);
 
@@ -96,7 +96,7 @@ void HeavyMystic_Create(void *data)
                         self->hitbox.right  = 22;
                         self->hitbox.bottom = 22;
 
-                        self->health                = 8;
+                        self->health                = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                         HeavyMystic->curtainLinePos = 0xD00000;
 
                         RSDK.SetSpriteAnimation(HeavyMystic->aniFrames, 0, &self->animator, true, 0);

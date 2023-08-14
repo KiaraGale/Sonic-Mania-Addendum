@@ -65,7 +65,7 @@ void BigSqueeze_Create(void *data)
                     self->hitbox.right  = 32;
                     self->hitbox.bottom = 16;
 
-                    self->timer = 6;
+                    self->timer = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 1, &self->animator, true, 0);
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 2, &self->domeAnimator, true, 0);
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 3, &self->prongsAnimator, true, 0);

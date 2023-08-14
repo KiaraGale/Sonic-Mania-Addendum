@@ -220,6 +220,13 @@ int32 UISubHeading_GetMedalMods(void)
         mods |= MEDAL_NODROPDASH;
         mods |= MEDAL_INSTASHIELD;
     }
+    else if (control->buttons[2]->selection == 3) {
+        mods |= MEDAL_PEELOUT;
+        mods |= MEDAL_INSTASHIELD;
+    }
+
+    if (control->buttons[4]->selection == 1)
+        mods |= MEDAL_SPINDASH;
 
     return mods;
 }

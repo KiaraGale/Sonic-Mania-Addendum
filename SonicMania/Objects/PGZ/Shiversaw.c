@@ -176,7 +176,7 @@ void Shiversaw_StageLoad(void)
     Shiversaw->hitboxEntryBounds.bottom = 112;
 #endif
 
-    Shiversaw->health             = 6;
+    Shiversaw->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
     Shiversaw->invincibilityTimer = 0;
 
     Shiversaw->sfxHit        = RSDK.GetSfx("Stage/BossHit.wav");

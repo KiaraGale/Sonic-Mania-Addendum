@@ -108,7 +108,7 @@ void WeatherMobile_Create(void *data)
                     self->hitbox.bottom = 22;
 
                     self->drawFX = FX_FLIP;
-                    self->health = 8;
+                    self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 4, &self->seatAnimator, true, 0);
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 0, &self->eggmanAnimator, true, 0);
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 6, &self->eggMobileAnimator, true, 0);

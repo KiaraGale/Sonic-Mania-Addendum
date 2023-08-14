@@ -103,7 +103,7 @@ void EggJanken_Create(void *data)
     self->stateEyes              = EggJanken_Eyes_None;
     self->eyeFrames[0]           = 3;
     self->eyeFrames[1]           = 4;
-    self->health                 = 3;
+    self->health                 = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
     self->buttonAnimator.frameID = 1;
 
     for (int32 a = 0; a < EGGJANKEN_ARM_COUNT; ++a) self->stateArm[a] = EggJanken_Arm_None;

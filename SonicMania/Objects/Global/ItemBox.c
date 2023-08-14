@@ -18,7 +18,7 @@ void ItemBox_Update(void)
 #if MANIA_USE_PLUS
     if (self->type == ITEMBOX_STOCK) {
         if (self->contentsAnimator.animationID == 2 || self->contentsAnimator.animationID == 7 || self->contentsAnimator.animationID == 8) {
-            if ((globals->characterFlags == 0x1F || GET_STOCK_ID(4)) && globals->gameMode == MODE_ENCORE) {
+            if ((globals->characterFlags == 0x3F || GET_STOCK_ID(4)) && globals->gameMode == MODE_ENCORE) {
                 RSDK.SetSpriteAnimation(ItemBox->aniFrames, 8, &self->contentsAnimator, false, 0);
             }
             else {
@@ -794,11 +794,11 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_STOCK: {
             if (self->contentsAnimator.animationID == 7) {
                 if (globals->gameMode == MODE_ENCORE) {
-                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x1F && !GET_STOCK_ID(4)) {
+                    if (!((1 << self->contentsAnimator.frameID) & globals->characterFlags) && globals->characterFlags != 0x3F && !GET_STOCK_ID(4)) {
                         globals->characterFlags |= 1 << self->contentsAnimator.frameID;
                         EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
                         if (player2->classID) {
-                            for (int32 s = 0; s < 4; ++s) {
+                            for (int32 s = 0; s < 5; ++s) {
                                 int32 id = HUD_CharacterIndexFromID(GET_STOCK_ID(1 + s));
                                 if (id < 0) {
                                     globals->stock |= (1 << self->contentsAnimator.frameID) << (8 * s);

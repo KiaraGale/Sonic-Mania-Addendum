@@ -295,7 +295,7 @@ void UISaveSlot_Draw(void)
 #endif
                 if (self->type == UISAVESLOT_NOSAVE) {
                     drawPos.y -= 0x60000;
-                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y - 0x90000, 40);
+                    UIWidgets_DrawUpDownArrows(drawPos.x, drawPos.y, 40);
                 }
                 else if (self->isNewSave) {
                     drawPos.y += 0x200000;
@@ -1131,7 +1131,7 @@ void UISaveSlot_NextZone(void)
     }
     else {
         self->saveZoneID++;
-        if (self->playersAnimator.frameID == 0 || 3) {
+        if (self->playersAnimator.frameID == 0 || self->playersAnimator.frameID == 3) {
             if (self->saveZoneID > ZONE_ERZ)
                 self->saveZoneID = ZONE_GHZ;
         }

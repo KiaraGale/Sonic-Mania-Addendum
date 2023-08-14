@@ -102,7 +102,7 @@ void DashLift_State_HandleDash(void)
                         continue;
 
                     int32 speed = 0;
-                    if (player->state == Player_State_Spindash || Player_State_Spindash_CD) {
+                    if (player->state == Player_State_Spindash || player->state == Player_State_Spindash_CD) {
                         if (player->superState == SUPERSTATE_SUPER)
                             speed = ((player->abilityTimer >> 1) & 0x7FFF8000) + 0xB0000;
                         else
@@ -137,7 +137,7 @@ void DashLift_State_HandleDash(void)
                         continue;
 
                     int32 speed = 0;
-                    if (player->state == Player_State_Spindash || Player_State_Spindash_CD) {
+                    if (player->state == Player_State_Spindash || player->state == Player_State_Spindash_CD) {
                         if (player->superState == SUPERSTATE_SUPER)
                             speed = -((player->abilityTimer >> 1) & 0x7FFF8000) - 0xB0000;
                         else

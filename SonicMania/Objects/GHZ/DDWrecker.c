@@ -68,7 +68,7 @@ void DDWrecker_Create(void *data)
                     self->hitbox.top    = -20;
                     self->hitbox.right  = 20;
                     self->hitbox.bottom = 20;
-                    self->health        = 3;
+                    self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     break;
 
                 case DDWRECKER_CHAIN: // chains

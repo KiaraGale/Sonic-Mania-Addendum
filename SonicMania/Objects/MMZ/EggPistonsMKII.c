@@ -395,7 +395,7 @@ void EggPistonsMKII_State_EnterBoss(void)
             Zone->playerBoundActiveL[0] = true;
             Zone->cameraBoundsL[0]      = (self->position.x >> 16) - ScreenInfo->center.x;
             Music_TransitionTrack(TRACK_MINIBOSS, 0.0125);
-            EggPistonsMKII->health = 8;
+            EggPistonsMKII->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
 
             self->timer = 142;
             for (int32 i = 0; i < 2; ++i) {
@@ -458,7 +458,12 @@ void EggPistonsMKII_State_ClassicMode(void)
 
     if (--self->timer <= 0) {
         if (self->pistonID) {
-            if (EggPistonsMKII->health > 4) {
+            if (EggPistonsMKII->health > 4 && Addendum_GetSaveRAM()->collectedTimeStones != 0b01111111) {
+                EggPistonsMKII_SpawnElecBall();
+                RSDK.PlaySfx(EggPistonsMKII->sfxElectrify, false, 255);
+                self->timer = 345;
+            }
+            else if (EggPistonsMKII->health > 3 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
                 EggPistonsMKII_SpawnElecBall();
                 RSDK.PlaySfx(EggPistonsMKII->sfxElectrify, false, 255);
                 self->timer = 345;
@@ -646,7 +651,7 @@ void EggPistonsMKII_StatePiston_Retract(void)
         self->state      = EggPistonsMKII_StatePiston_Idle;
     }
 
-    if (!EggPistonsMKII->health || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 4)) {
+    if ((!EggPistonsMKII->health || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 4 && Addendum_GetSaveRAM()->collectedTimeStones != 0b01111111)) || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 3 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)) {
         self->state      = EggPistonsMKII_StatePiston_Explode;
         self->velocity.y = self->direction == FLIP_NONE ? 0x10000 : -0x10000;
 
@@ -661,7 +666,9 @@ void EggPistonsMKII_StatePiston_Explode(void)
     if ((self->direction || self->position.y < self->pistonID) && (self->direction != FLIP_Y || self->position.y > self->pistonID)) {
         EggPistonsMKII_CheckPlayerCollisions_Piston();
 
-        if (!EggPistonsMKII->health || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 4)) {
+        if ((!EggPistonsMKII->health
+             || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 4 && Addendum_GetSaveRAM()->collectedTimeStones != 0b01111111))
+            || (!EggPistonsMKII->isPhase2 && EggPistonsMKII->health == 3 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)) {
             EggPistonsMKII_Explode();
         }
     }

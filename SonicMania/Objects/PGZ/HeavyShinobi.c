@@ -158,7 +158,7 @@ void HeavyShinobi_StageLoad(void)
     RSDK.SetSpriteAnimation(-1, 0, &HeavyShinobi->fxTrailAnimator[3], true, 0);
 
     HeavyShinobi->activeShurikens    = 0;
-    HeavyShinobi->health             = 8;
+    HeavyShinobi->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
     HeavyShinobi->invincibilityTimer = 0;
 
     HeavyShinobi->sfxHit       = RSDK.GetSfx("Stage/BossHit.wav");
