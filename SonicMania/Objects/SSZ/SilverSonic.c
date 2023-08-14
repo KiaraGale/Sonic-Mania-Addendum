@@ -155,7 +155,7 @@ void SilverSonic_CheckPlayerCollisions_Ball(void)
         foreach_active(Player, player)
         {
             if (Player_CheckBadnikTouch(player, self, self->innerBox)) {
-                if (Player_CheckAttacking(player, self)) {
+                if (Player_CheckAttackingNoInvTimer(player, self)) {
                     if (self->onGround) {
                         if (abs(player->velocity.x) <= 0x30000) {
                             player->groundVel  = self->groundVel;

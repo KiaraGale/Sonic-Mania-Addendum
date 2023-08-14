@@ -3277,6 +3277,30 @@ bool32 Player_CheckAttacking(EntityPlayer *player, void *e)
         case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
 #if MANIA_USE_PLUS
         case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP; break;
+#endif
+        case ID_TAILS:
+            if (!attacking && entity) {
+                attacking = anim == ANI_FLY || anim == ANI_FLY_TIRED || anim == ANI_FLY_LIFT;
+                if (player->position.y <= entity->position.y)
+                    return false;
+            }
+            break;
+        case ID_KNUCKLES: attacking |= anim == ANI_GLIDE || anim == ANI_GLIDE_SLIDE; break;
+        default: break;
+    }
+
+    return attacking;
+}
+// This is identical to Player_CheckAttacking, except it's not checking for the player invincible timer.
+bool32 Player_CheckAttackingNoInvTimer(EntityPlayer *player, void *e)
+{
+    Entity *entity   = (Entity *)e;
+    int32 anim       = player->animator.animationID;
+    bool32 attacking = anim == ANI_JUMP || anim == ANI_SPINDASH;
+    switch (player->characterID) {
+        case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
+#if MANIA_USE_PLUS
+        case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP; break;
         case ID_AMY: attacking |= anim == ANI_HAMMER_HIT || anim == ANI_SPIN_JUMP || anim == ANI_HELI_HAMMER; break;
 #endif
         case ID_TAILS:
@@ -7993,17 +8017,16 @@ void Player_Input_P2_AI(void)
 
         uint8 autoJump = 0;
         if (self->animator.animationID == ANI_PUSH) {
+            ++Player->autoJumpTimer;
             if (leader->direction == self->direction && leader->animator.animationID == ANI_PUSH)
                 Player->autoJumpTimer = 0;
-            else
-                autoJump = ++Player->autoJumpTimer < 30 ? 1 : 0;
+
+            autoJump = Player->autoJumpTimer < 30 ? 1 : 0;
         }
         else {
             if (self->position.y - Player->targetLeaderPosition.y <= 0x200000) {
                 Player->autoJumpTimer = 0;
-                if (self->controlLock > 0 && abs(self->groundVel) < 0x8000)
-                    self->stateInput = Player_Input_AI_SpindashPt1;
-                autoJump = 2;
+                autoJump = 2; // Skip autoJump
             }
             else {
                 ++Player->autoJumpTimer;

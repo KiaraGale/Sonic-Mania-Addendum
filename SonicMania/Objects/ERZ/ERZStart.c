@@ -18,14 +18,14 @@ void ERZStart_Update(void)
         {
             if (!player->sidekick && Player_CheckCollisionTouch(player, self, &self->hitbox)) {
                 CutsceneSeq_StartSequence(self, ERZStart_Cutscene_FadeIn, ERZStart_Cutscene_ShrinkRubyWarpFX, ERZStart_Cutscene_EnterKing,
-                                          ERZStart_Cutscene_KingMovingRuby, ERZStart_Cutscene_KingAttatchHornRuby,
+                                          ERZStart_Cutscene_KingMovingRuby, ERZStart_Cutscene_KingAttachHornRuby,
                                           ERZStart_Cutscene_SetupEggmanReveal, ERZStart_Cutscene_EnterEggman, ERZStart_Cutscene_EggmanKingWrestling,
                                           ERZStart_Cutscene_PostWrestleFadeIn, ERZStart_Cutscene_ReturnCamToSonic,
                                           ERZStart_Cutscene_PreparePlayerTransform, ERZStart_Cutscene_PlayerTransform, ERZStart_Cutscene_StartFight,
                                           ERZStart_Cutscene_Fight, StateMachine_None);
 
 #if MANIA_USE_PLUS
-                CutsceneSeq_SetSkipType(SKIPTYPE_DISABLED, StateMachine_None);
+                CutsceneSeq_SetSkipType(SKIPTYPE_DISABLED);
 #endif
 
                 self->activated = true;
@@ -113,7 +113,7 @@ void ERZStart_SetupObjects(void)
     }
 }
 
-void ERZStart_HandlePlayerHover(EntityCutsceneSeq *seq, EntityPlayer *player, int32 posY)
+void ERZStart_HandlePlayerHover(EntityPlayer *player, EntityCutsceneSeq *seq, int32 posY)
 {
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
@@ -219,8 +219,8 @@ bool32 ERZStart_Cutscene_FadeIn(EntityCutsceneSeq *host)
         }
     }
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-    ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
     return false;
 }
 
@@ -232,21 +232,20 @@ bool32 ERZStart_Cutscene_ShrinkRubyWarpFX(EntityCutsceneSeq *host)
     EntityPhantomRuby *ruby = ERZStart->ruby;
     EntityFXRuby *fxRuby    = ERZStart->fxRuby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-    ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
-
     if (!host->timer)
         fxRuby->state = FXRuby_State_Shrinking;
 
     EntityPhantomKing *king = ERZStart->king;
     if (fxRuby->outerRadius <= 0) {
-        ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
         ruby->drawGroup = Zone->objectDrawGroup[0] + 1;
         king->state     = PhantomKing_State_SetupArms;
         return true;
     }
 
+	ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
     return false;
 }
 
@@ -257,8 +256,8 @@ bool32 ERZStart_Cutscene_EnterKing(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-    ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     EntityPhantomKing *king = ERZStart->king;
     if (king->state == PhantomKing_State_TakeRubyAway) {
@@ -275,8 +274,8 @@ bool32 ERZStart_Cutscene_KingMovingRuby(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-    ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+	ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     EntityPhantomKing *king = ERZStart->king;
     if (!host->timer) {
@@ -302,16 +301,16 @@ bool32 ERZStart_Cutscene_KingMovingRuby(EntityCutsceneSeq *host)
     return false;
 }
 
-bool32 ERZStart_Cutscene_KingAttatchHornRuby(EntityCutsceneSeq *host)
+bool32 ERZStart_Cutscene_KingAttachHornRuby(EntityCutsceneSeq *host)
 {
     MANIA_GET_PLAYER(player1, player2, camera);
     UNUSED(camera);
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
     EntityPhantomKing *king = ERZStart->king;
 
     if (!host->timer) {
@@ -325,6 +324,7 @@ bool32 ERZStart_Cutscene_KingAttatchHornRuby(EntityCutsceneSeq *host)
 
             king->drawRuby   = true;
             ruby->position.x = -0x400000;
+            ruby->state      = StateMachine_None;
             return true;
         }
 
@@ -348,9 +348,9 @@ bool32 ERZStart_Cutscene_SetupEggmanReveal(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     if (host->timer == 30)
         Camera_SetupLerp(CAMERA_LERP_NORMAL, 0, camera->position.x - (ScreenInfo->size.x << 16), camera->position.y, 3);
@@ -367,9 +367,9 @@ bool32 ERZStart_Cutscene_EnterEggman(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     EntityKleptoMobile *eggman = ERZStart->eggman;
     EntityPhantomKing *king    = ERZStart->king;
@@ -490,9 +490,9 @@ bool32 ERZStart_Cutscene_EggmanKingWrestling(EntityCutsceneSeq *host)
     EntityPhantomKing *kingChild1 = RSDK_GET_ENTITY(kingSlot - 1, PhantomKing);
     EntityPhantomKing *kingChild2 = RSDK_GET_ENTITY(kingSlot + 1, PhantomKing);
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     if (host->timer > 6 && !(host->timer % 6))
         Camera_ShakeScreen(0, 1, 0);
@@ -542,9 +542,9 @@ bool32 ERZStart_Cutscene_PostWrestleFadeIn(EntityCutsceneSeq *host)
     EntityPhantomKing *kingArmL = RSDK_GET_ENTITY(kingSlot - 1, PhantomKing);
     EntityPhantomKing *kingArmR = RSDK_GET_ENTITY(kingSlot + 1, PhantomKing);
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     if (!king->rubyAnimator.frameID)
         king->rubyAnimator.speed = 0;
@@ -579,9 +579,9 @@ bool32 ERZStart_Cutscene_ReturnCamToSonic(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
     if (player2->classID)
-        ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+        ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     if (host->timer == 30)
         Camera_SetupLerp(CAMERA_LERP_NORMAL, 0, ScreenInfo->center.x << 16, camera->position.y, 2);
@@ -607,8 +607,8 @@ bool32 ERZStart_Cutscene_PreparePlayerTransform(EntityCutsceneSeq *host)
 
     EntityPhantomRuby *ruby = ERZStart->ruby;
 
-    ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
-    ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+    ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+    ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
 
     if (++ERZStart->timer >= 60) {
         ERZStart->timer = 0;
@@ -689,9 +689,9 @@ bool32 ERZStart_Cutscene_PlayerTransform(EntityCutsceneSeq *host)
             }
         }
         else {
-            ERZStart_HandlePlayerHover(host, player1, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
+            ERZStart_HandlePlayerHover(player1, host, player2->classID ? ruby->startPos.y - 0x9A000 : ruby->startPos.y);
             if (player2->classID)
-                ERZStart_HandlePlayerHover(host, player2, ruby->startPos.y + 0x9A000);
+                ERZStart_HandlePlayerHover(player2, host, ruby->startPos.y + 0x9A000);
         }
     }
 

@@ -153,11 +153,11 @@ void WallCrawl_State_Moving(void)
             if (!Player_CheckCollisionTouch(playerPtr, self, &WallCrawl->hitboxLaser)) {
                 self->animator.speed = 48;
                 if (playerPtr->position.y <= self->position.y) {
-                    self->direction &= ~FX_ROTATE;
+                    self->direction &= ~FLIP_Y;
                     self->velocity.y = -0x10000;
                 }
                 else {
-                    self->direction |= FX_ROTATE;
+                    self->direction |= FLIP_Y;
                     self->velocity.y = 0x10000;
                 }
             }

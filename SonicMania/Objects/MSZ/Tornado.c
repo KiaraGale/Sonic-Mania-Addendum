@@ -22,9 +22,6 @@ void Tornado_Update(void)
     RSDK.ProcessAnimation(&self->animatorPilot);
     RSDK.ProcessAnimation(&self->animatorFlame);
     RSDK.ProcessAnimation(&self->animatorKnux);
-
-    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    self->velocity.x      = player1->velocity.x;
 }
 
 void Tornado_LateUpdate(void) {}
@@ -245,8 +242,10 @@ void Tornado_State_PlayerControlled(void)
     self->prevPosY     = self->position.y;
     player1->drawGroup = self->turnAngle < 0x20 ? self->drawGroup : (self->drawGroup + 1);
 
-    player1->groundVel  = CLAMP(player1->groundVel, -self->offsetX, self->offsetX);
-    player1->velocity.x = player1->groundVel;
+    if (player1->state == Player_State_Roll) {
+        player1->groundVel  = CLAMP(player1->groundVel, -self->offsetX, self->offsetX);
+        player1->velocity.x = player1->groundVel;
+    }
 
     switch (self->mode) {
         case TORNADO_MODE_IDLE:

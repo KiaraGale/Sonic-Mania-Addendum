@@ -38,17 +38,25 @@ typedef uint32 color;
 // CONSTANTS
 // -------------------------
 
-#define SCREEN_XMAX    (1280)
-#define SCREEN_YSIZE   (240)
+#ifndef SCREEN_XMAX
+#define SCREEN_XMAX (1280)
+#endif
+
+#ifndef SCREEN_YSIZE
+#define SCREEN_YSIZE (240)
+#endif
+
 #define SCREEN_YCENTER (SCREEN_YSIZE / 2)
 
 #define LAYER_COUNT     (8)
 #define DRAWGROUP_COUNT (16)
 
+#ifndef SCREEN_COUNT
 #if RETRO_REV02
 #define SCREEN_COUNT (4)
 #else
 #define SCREEN_COUNT (2)
+#endif
 #endif
 
 #define PLAYER_COUNT (4)
@@ -1571,7 +1579,7 @@ typedef struct {
     // Sprite Animations & Frames
     uint16 (*LoadSpriteAnimation)(const char *filePath, uint8 scope);
     uint16 (*CreateSpriteAnimation)(const char *filePath, uint32 frameCount, uint32 listCount, uint8 scope);
-    void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int16 frameID);
+    void (*SetSpriteAnimation)(uint16 aniFrames, uint16 listID, Animator *animator, bool32 forceApply, int32 frameID);
     void (*EditSpriteAnimation)(uint16 aniFrames, uint16 listID, const char *name, int32 frameOffset, uint16 frameCount, int16 speed, uint8 loopIndex,
                                 uint8 rotationStyle);
     void (*SetSpriteString)(uint16 aniFrames, uint16 listID, String *string);

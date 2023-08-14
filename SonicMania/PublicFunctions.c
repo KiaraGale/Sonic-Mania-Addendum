@@ -470,6 +470,7 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(ChemicalPool_State_Changing);
 
     // CPZ/CPZ1Intro
+    ADD_PUBLIC_FUNC(CPZ1Intro_SetupCutscene);
     ADD_PUBLIC_FUNC(CPZ1Intro_Particle_ChemDrop);
     ADD_PUBLIC_FUNC(CPZ1Intro_HandleRubyHover);
     ADD_PUBLIC_FUNC(CPZ1Intro_CheckSonicAnimFinish);
@@ -710,6 +711,8 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(CutsceneSeq_NewState);
 #if MANIA_USE_PLUS
     ADD_PUBLIC_FUNC(CutsceneSeq_CheckSkip);
+    ADD_PUBLIC_FUNC(CutsceneSeq_SetSkipType);
+    ADD_PUBLIC_FUNC(CutsceneSeq_SetSkipTypeCallback);
 #endif
     ADD_PUBLIC_FUNC(CutsceneSeq_GetEntity);
     ADD_PUBLIC_FUNC(CutsceneSeq_LockPlayerControl);
@@ -856,7 +859,7 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_ShrinkRubyWarpFX);
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_EnterKing);
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_KingMovingRuby);
-    ADD_PUBLIC_FUNC(ERZStart_Cutscene_KingAttatchHornRuby);
+    ADD_PUBLIC_FUNC(ERZStart_Cutscene_KingAttachHornRuby);
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_SetupEggmanReveal);
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_EnterEggman);
     ADD_PUBLIC_FUNC(ERZStart_Cutscene_EggmanKingWrestling);
@@ -981,6 +984,7 @@ void InitPublicFunctions()
 
     // ERZ/PhantomKing
     ADD_PUBLIC_FUNC(PhantomKing_CheckPlayerCollisions);
+    ADD_PUBLIC_FUNC(PhantomKing_Oscillate);
     ADD_PUBLIC_FUNC(PhantomKing_Hit);
     ADD_PUBLIC_FUNC(PhantomKing_Explode);
     ADD_PUBLIC_FUNC(PhantomKing_HandleFrames);
@@ -1912,6 +1916,7 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Player_HurtFlip);
     ADD_PUBLIC_FUNC(Player_ElementHurt);
     ADD_PUBLIC_FUNC(Player_CheckAttacking);
+    ADD_PUBLIC_FUNC(Player_CheckAttackingNoInvTimer);
     ADD_PUBLIC_FUNC(Player_CheckBadnikTouch);
     ADD_PUBLIC_FUNC(Player_CheckBadnikBreak);
     ADD_PUBLIC_FUNC(Player_CheckBossHit);
@@ -6063,9 +6068,10 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(SpikeFlail_GetScale);
 
     // SSZ/SSZ1Intro
+    ADD_PUBLIC_FUNC(SSZ1Intro_SetupCutscene);
     ADD_PUBLIC_FUNC(SSZ1Intro_HandleRubyHover);
     ADD_PUBLIC_FUNC(SSZ1Intro_Cutscene_FinishRubyWarp);
-    ADD_PUBLIC_FUNC(SSZ1Intro_Cutscene_HandeLanding);
+    ADD_PUBLIC_FUNC(SSZ1Intro_Cutscene_HandleLanding);
     ADD_PUBLIC_FUNC(SSZ1Intro_Cutscene_BeginAct1);
 
     // SSZ/SSZ1Outro

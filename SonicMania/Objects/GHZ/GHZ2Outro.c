@@ -19,7 +19,7 @@ void GHZ2Outro_Update(void)
                                   GHZ2Outro_Cutscene_LoadCPZ1, StateMachine_None);
 
 #if MANIA_USE_PLUS
-        CutsceneSeq_SetSkipType(SKIPTYPE_CALLBACK, GHZ2Outro_Cutscene_SkipCB);
+        CutsceneSeq_SetSkipTypeCallback(GHZ2Outro_Cutscene_SkipCB);
 #endif
 
         self->active = ACTIVE_NEVER;
@@ -28,7 +28,7 @@ void GHZ2Outro_Update(void)
         CutsceneSeq_StartSequence(self, GHZ2Outro_Cutscene_FinishActClear, GHZ2Outro_Cutscene_JumpIntoHole, StateMachine_None);
 
 #if MANIA_USE_PLUS
-        CutsceneSeq_SetSkipType(SKIPTYPE_RELOADSCN, StateMachine_None);
+        CutsceneSeq_SetSkipType(SKIPTYPE_RELOADSCN);
 #endif
 
         HUD_MoveOut();
@@ -247,7 +247,6 @@ bool32 GHZ2Outro_Cutscene_BreakupGroup(EntityCutsceneSeq *host)
 
     switch (host->timer) {
         default: break;
-        // case 0: RSDK.SetSpriteAnimation(player->aniFrames, ANI_PEER, &player->animator, false, 0); break;
 
         case 90:
             RSDK.SetSpriteAnimation(Eggman->aniFrames, 5, &eggman->animator, true, 2);
