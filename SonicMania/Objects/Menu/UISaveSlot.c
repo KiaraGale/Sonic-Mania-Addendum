@@ -114,7 +114,7 @@ void UISaveSlot_Draw(void)
         UIWidgets_DrawRightTriangle(drawPos.x, drawPos.y, (self->textBounceOffset >> 11), 232, 40, 88);
 
         drawPos.x = self->position.x + 0x2D0000;
-        drawPos.y = 0x4F0000 + self->position.y;
+        drawPos.y = 0x580000 + self->position.y;
         UIWidgets_DrawRightTriangle(drawPos.x, drawPos.y, (-64 * self->textBounceOffset) >> 16, 0x60, 0xA0, 0xB0);
         UIWidgets_DrawRightTriangle(drawPos.x, drawPos.y, (-44 * self->textBounceOffset) >> 16, 0x58, 0x70, 0xE0);
 
@@ -159,9 +159,11 @@ void UISaveSlot_Draw(void)
             RSDK.DrawSprite(&self->actNameAnimator, &drawPos, false);
         }
         else {
+            drawPos.y    -= 0x90000;
             self->drawFX = FX_FLIP;
             RSDK.DrawSprite(&self->fuzzAnimator, &drawPos, false);
 
+            drawPos.y    += 0x90000;
             self->drawFX = FX_NONE;
             RSDK.DrawSprite(&self->zoneNameAnimator, &drawPos, false);
 
@@ -170,7 +172,7 @@ void UISaveSlot_Draw(void)
 
         if (self->isNewSave) {
             drawPos.x = self->position.x;
-            drawPos.y = self->position.y + 0x200000;
+            drawPos.y = self->position.y + 0x1D0000;
             UISaveSlot_DrawPlayerIcons(drawPos.x, drawPos.y);
         }
         else {
@@ -256,6 +258,7 @@ void UISaveSlot_Draw(void)
             else
                 drawPos.y += 0x80000;
 #endif
+            drawPos.y += 0x90000;
             UISaveSlot_DrawPlayerIcons(drawPos.x, drawPos.y);
 
             drawPos.x = self->position.x;
@@ -1159,115 +1162,6 @@ void UISaveSlot_PrevZone(void)
     RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
 
     UISaveSlot_HandleSaveIcons();
-}
-
-void UISaveSlot_CycleAct(void)
-{
-    RSDK_THIS(UISaveSlot);
-
-    self->actNameAnimator.frameID++;
-
-    switch (self->saveZoneID) {
-        case ZONE_GHZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_CPZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_SPZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_FBZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_PGZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_SSZ:
-            if (self->actNameAnimator.frameID > 2)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 2;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_HCZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_MSZ:
-            if (self->playersAnimator.frameID == 2) {
-                SpriteFrame *dst = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 0);
-                SpriteFrame *src = RSDK.GetFrame(UISaveSlot->aniFrames, 23, 3);
-
-                *dst = *src;
-            }
-            else {
-                if (self->actNameAnimator.frameID > 1)
-                    self->actNameAnimator.frameID = 0;
-            }
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_OOZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_LRZ:
-            if (self->actNameAnimator.frameID > 2)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 2;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_MMZ:
-            if (self->actNameAnimator.frameID > 1)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 1;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_TMZ:
-            if (self->actNameAnimator.frameID > 2)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 2;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-        case ZONE_ERZ:
-            if (self->actNameAnimator.frameID > 0)
-                self->actNameAnimator.frameID = 0;
-            self->actTotal = 0;
-            if (self->actNameAnimator.frameID > self->actTotal)
-                self->actNameAnimator.frameID = 0;
-            break;
-    }
 }
 
 bool32 UISaveSlot_CheckButtonEnterCB(void)

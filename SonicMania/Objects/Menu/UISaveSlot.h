@@ -139,7 +139,6 @@ void UISaveSlot_NextCharacter(void);
 void UISaveSlot_PrevCharacter(void);
 void UISaveSlot_NextZone(void);
 void UISaveSlot_PrevZone(void);
-void UISaveSlot_CycleAct(void);
 
 bool32 UISaveSlot_CheckButtonEnterCB(void);
 bool32 UISaveSlot_CheckSelectedCB(void);
