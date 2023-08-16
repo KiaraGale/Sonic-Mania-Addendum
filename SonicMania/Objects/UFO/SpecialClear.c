@@ -185,11 +185,20 @@ void SpecialClear_Draw(void)
             self->playerNameAnimator.frameID = 16;
             RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
 
+            for (int32 c = 0; c < 6; ++c) {
+                SpecialClear->colorStorage[c] = RSDK.GetPaletteEntry(0, 42 + c);
+                RSDK.SetPaletteEntry(0, 42 + c, SpecialClear->miracleColors[c]);
+            }
+
             self->playerNameAnimator.frameID = 17;
             RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
 
             self->playerNameAnimator.frameID = 18;
             RSDK.DrawSprite(&self->playerNameAnimator, &drawPos, true);
+
+            for (int32 c = 0; c < 6; ++c) {
+                RSDK.SetPaletteEntry(0, 42 + c, SpecialClear->colorStorage[c]);
+            }
             break;
 
         default: break;
@@ -438,6 +447,7 @@ void SpecialClear_StageLoad(void)
     SpecialClear->sfxContinue    = RSDK.GetSfx("Special/Continue.wav");
     SpecialClear->sfxEmerald     = RSDK.GetSfx("Special/Emerald.wav");
     SpecialClear->sfxTimeStone   = RSDK.GetSfx("Special/TimeStone.wav");
+    SpecialClear->sfx1up         = RSDK.GetSfx("Global/1up.wav");
 }
 
 void SpecialClear_DrawNumbers(Vector2 *pos, int32 value)
@@ -478,7 +488,7 @@ void SpecialClear_GiveScoreBonus(int32 score)
     if (self->score >= self->score1UP) {
         self->lives++;
 
-        RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
+        RSDK.PlaySfx(SpecialClear->sfx1up, false, 0xFF);
 
         Music->nextTrack = TRACK_NONE;
         while (self->score1UP <= self->score) self->score1UP += 50000;
@@ -597,6 +607,9 @@ void SpecialClear_State_EnterBonuses(void)
         if (self->messageType == SC_MSG_ALLEMERALDS) {
             API_UnlockAchievement(&achievementList[ACH_EMERALDS]);
         }
+        if (self->messageType == SC_MSG_ALLTIMESTONES) {
+            API_UnlockAchievement(&achievementList[ACH_TIMESTONES]);
+        }
 
         self->state = SpecialClear_State_ScoreShownDelay;
     }
@@ -610,18 +623,21 @@ void SpecialClear_State_EnterBonuses(void)
 void SpecialClear_State_ScoreShownDelay(void)
 {
     RSDK_THIS(SpecialClear);
-    int32 playerID = GET_CHARACTER_ID(1);
 
     if (++self->timer == 120) {
         self->timer = 0;
         self->state = SpecialClear_State_TallyScore;
 
-        if (self->messageType == SC_MSG_GOTEMERALD || SC_MSG_ALLEMERALDS) {
-            RSDK.PlaySfx(SpecialClear->sfxEmerald, false, 0xFF);
-        }
+        switch (self->messageType) {
+            case SC_MSG_GOTEMERALD:
+            case SC_MSG_ALLEMERALDS:
+                RSDK.PlaySfx(SpecialClear->sfxEmerald, false, 0xFF);
+                break;
 
-        if (self->messageType == SC_MSG_GOTTIMESTONE || SC_MSG_ALLTIMESTONES) {
-            RSDK.PlaySfx(SpecialClear->sfxTimeStone, false, 0xFF);
+            case SC_MSG_GOTTIMESTONE:
+            case SC_MSG_ALLTIMESTONES:
+                RSDK.PlaySfx(SpecialClear->sfxTimeStone, false, 0xFF);
+                break;
         }
     }
 

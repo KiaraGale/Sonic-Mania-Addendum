@@ -57,7 +57,7 @@ void InvincibleStars_Update(void)
         self->starOffset = 11;
     }
 
-    if (self->sidekick->classID) {
+    if (sidekick->active) {
         self->sidekickStarFrame[0] = (self->sidekickStarAngle[0] + 1) % 12;
         self->sidekickStarFrame[1] = (self->sidekickStarAngle[1] + 1) % 10;
 
@@ -169,7 +169,7 @@ void InvincibleStars_Draw(void)
     drawPos.y = (RSDK.Sin512(self->starAngle[0] + 0x100) << self->starOffset) + self->starPos[0].y;
     RSDK.DrawSprite(&self->starAnimator[0], &drawPos, false);
 
-    if (self->sidekick->classID) {
+    if (sidekick->active) {
         if (sidekick->isChibi) {
             self->drawFX |= FX_SCALE;
             self->scale.x = 0x100;
@@ -228,7 +228,8 @@ void InvincibleStars_Draw(void)
 
 void InvincibleStars_Create(void *data)
 {
-    RSDK_THIS(InvincibleStars);
+    RSDK_THIS(InvincibleStars); 
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     if (!SceneInfo->inEditor) {
         self->active  = ACTIVE_NORMAL;
@@ -251,21 +252,23 @@ void InvincibleStars_Create(void *data)
         RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 2, &self->starAnimator[2], true, 0);
         RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 3, &self->starAnimator[3], true, 0);
 
-        for (int32 s = 0; s < 8; ++s) {
-            self->sidekickStarPos[s].x = self->sidekick->position.x;
-            self->sidekickStarPos[s].y = self->sidekick->position.y;
+        if (player2->active) {
+            for (int32 s = 0; s < 8; ++s) {
+                self->sidekickStarPos[s].x = self->sidekick->position.x;
+                self->sidekickStarPos[s].y = self->sidekick->position.y;
+            }
+
+            self->drawFX               = FX_FLIP;
+            self->inkEffect            = INK_ADD;
+            self->sidekickStarAngle[0] = 180;
+            self->sidekickStarAngle[1] = 0;
+            self->alpha                = 0xFF;
+
+            RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 0, &self->sidekickStarAnimator[0], true, 0);
+            RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 1, &self->sidekickStarAnimator[1], true, 0);
+            RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 2, &self->sidekickStarAnimator[2], true, 0);
+            RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 3, &self->sidekickStarAnimator[3], true, 0);
         }
-
-        self->drawFX               = FX_FLIP;
-        self->inkEffect            = INK_ADD;
-        self->sidekickStarAngle[0] = 180;
-        self->sidekickStarAngle[1] = 0;
-        self->alpha                = 0xFF;
-
-        RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 0, &self->sidekickStarAnimator[0], true, 0);
-        RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 1, &self->sidekickStarAnimator[1], true, 0);
-        RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 2, &self->sidekickStarAnimator[2], true, 0);
-        RSDK.SetSpriteAnimation(InvincibleStars->aniFrames, 3, &self->sidekickStarAnimator[3], true, 0);
     }
 }
 

@@ -45,6 +45,9 @@ struct ObjectSpecialClear {
     uint16 sfxContinue;
     uint16 sfxEmerald;
     uint16 sfxTimeStone;
+    uint16 sfx1up;
+    TABLE(color miracleColors[6], { 0x6D2661, 0x952D82, 0xBC34A3, 0xD94AB1, 0xF16AC2, 0xFF88CA });
+    int32 colorStorage[6];
 };
 
 // Entity Class

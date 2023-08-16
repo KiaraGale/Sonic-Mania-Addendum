@@ -27,6 +27,8 @@ AchievementID achievementList[] = {
     { .idPS4 = 15, .idUnknown = 34, .id = "ACH_LRZ" },
     { .idPS4 = 16, .idUnknown = 35, .id = "ACH_MMZ" },
     { .idPS4 = 17, .idUnknown = 36, .id = "ACH_TMZ" },
+    { .idPS4 = 18, .idUnknown = 37, .id = "ACH_TIMESTONES" },
+    { .idPS4 = 19, .idUnknown = 38, .id = "ACH_INSTAREFLECT" },
 };
 // clang-format on
 
@@ -167,7 +169,7 @@ float Addendum_GetCompletionPercent(AddendumProgress *progress)
     }
 
     // get the count of the unlock
-    // then multiply by its completion weight (in this case zones are worth 55% of completion percent)
+    // then multiply by its completion weight
     // then finally divide by the maximum count to normalize it
 
     float specialPercent = ((MIN(timeStonesGotten, ADDENDUMPROGRESS_TIMESTONE_COUNT)) / (float)ADDENDUMPROGRESS_TIMESTONE_COUNT);

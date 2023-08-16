@@ -1145,14 +1145,14 @@ void HUD_Life_Miracle_Draw(void)
     drawPos.x = lifePos.x;
     drawPos.y = lifePos.y;
 
-    for (int32 c = 0; c < 28; ++c) {
+    for (int32 c = 0; c < 31; ++c) {
         Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
         RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
     }
 
     RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
 
-    for (int32 c = 0; c < 28; ++c) {
+    for (int32 c = 0; c < 31; ++c) {
         RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
     }
 }

@@ -510,7 +510,7 @@ void Spikes_CheckHit(EntityPlayer *player, int32 playerVelX, int32 playerVelY)
 
     if (player->state == Player_State_Hurt)
         return;
-    if (!Player_CheckValidState(player) || player->invincibleTimer || player->blinkTimer > 0)
+    if (!Player_CheckValidState(player) || player->invincibleTimer || player->superInvulnTimer || player->blinkTimer > 0)
         return;
 
     if (player->characterID == ID_MIGHTY

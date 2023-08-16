@@ -52,6 +52,8 @@ typedef enum {
     ACH_LRZ,
     ACH_MMZ,
     ACH_TMZ,
+    ACH_TIMESTONES,
+    ACH_INSTAREFLECT,
 } AchievementIDs;
 
 extern AchievementID achievementList[];

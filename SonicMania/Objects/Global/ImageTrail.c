@@ -130,6 +130,21 @@ void ImageTrail_Draw(void)
     int32 alpha = 0x60 * self->baseAlpha >> 8;
     int32 inc   = 0x40 / (IMAGETRAIL_TRACK_COUNT / 3);
 
+    for (int32 c = 0; c < 31; ++c) {
+        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
+        RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
+    }
+
+    for (int32 c = 0; c < 31; ++c) {
+        Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 224 + c);
+        RSDK.SetPaletteEntry(1, 224 + c, Player->miracleColors_HCZ[c]);
+    }
+
+    for (int32 c = 0; c < 31; ++c) {
+        Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 224 + c);
+        RSDK.SetPaletteEntry(2, 224 + c, Player->miracleColors_CPZ[c]);
+    }
+
     for (int32 i = (IMAGETRAIL_TRACK_COUNT / 3); i >= 0; --i) {
         int32 id = (i * 3) - (i - 1);
         if (self->stateVisible[id]) {
@@ -142,10 +157,7 @@ void ImageTrail_Draw(void)
             alpha += inc;
             self->rotation  = self->stateRotation[id];
             self->direction = self->stateDirection[id];
-            if (player->miracleState)
-                ImageTrail_Miracle_Draw();
-            else
-                RSDK.DrawSprite(&self->stateAnimator[id], &self->statePos[id], false);
+            RSDK.DrawSprite(&self->stateAnimator[id], &self->statePos[id], false);
             self->drawFX &= ~FX_SCALE;
 
             if (player->characterID == ID_TAILS) {
@@ -162,6 +174,18 @@ void ImageTrail_Draw(void)
                 self->drawFX &= ~FX_SCALE;
             }
         }
+    }
+
+    for (int32 c = 0; c < 31; ++c) {
+        RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
+    }
+
+    for (int32 c = 0; c < 31; ++c) {
+        RSDK.SetPaletteEntry(1, 224 + c, Player->colorStorage_HCZ[c]);
+    }
+
+    for (int32 c = 0; c < 31; ++c) {
+        RSDK.SetPaletteEntry(2, 224 + c, Player->colorStorage_CPZ[c]);
     }
 }
 
@@ -198,43 +222,6 @@ void ImageTrail_Create(void *data)
 }
 
 void ImageTrail_StageLoad(void) {}
-
-void ImageTrail_Miracle_Draw(void)
-{
-    RSDK_THIS(ImageTrail);
-
-    for (int32 i = (IMAGETRAIL_TRACK_COUNT / 3); i >= 0; --i) {
-        int32 id = (i * 3) - (i - 1);
-        for (int32 c = 0; c < 28; ++c) {
-            Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
-            RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
-        }
-
-        for (int32 c = 0; c < 28; ++c) {
-            Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 224 + c);
-            RSDK.SetPaletteEntry(1, 224 + c, Player->miracleColors_HCZ[c]);
-        }
-
-        for (int32 c = 0; c < 28; ++c) {
-            Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 224 + c);
-            RSDK.SetPaletteEntry(2, 224 + c, Player->miracleColors_CPZ[c]);
-        }
-
-        RSDK.DrawSprite(&self->stateAnimator[id], &self->statePos[id], false);
-
-        for (int32 c = 0; c < 28; ++c) {
-            RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
-        }
-
-        for (int32 c = 0; c < 28; ++c) {
-            RSDK.SetPaletteEntry(1, 224 + c, Player->colorStorage_HCZ[c]);
-        }
-
-        for (int32 c = 0; c < 28; ++c) {
-            RSDK.SetPaletteEntry(2, 224 + c, Player->colorStorage_CPZ[c]);
-        }
-    }
-}
 
 #if GAME_INCLUDE_EDITOR
 void ImageTrail_EditorDraw(void) {}

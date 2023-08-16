@@ -54,7 +54,6 @@ void ImageTrail_StaticUpdate(void);
 void ImageTrail_Draw(void);
 void ImageTrail_Create(void *data);
 void ImageTrail_StageLoad(void);
-void ImageTrail_Miracle_Draw(void);
 #if GAME_INCLUDE_EDITOR
 void ImageTrail_EditorDraw(void);
 void ImageTrail_EditorLoad(void);

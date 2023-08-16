@@ -543,7 +543,7 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_BLUESHIELD:
             player->shield = SHIELD_BLUE;
             Player_ApplyShield(player);
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 sidekick->shield = SHIELD_BLUE;
                 Player_ApplyShield(sidekick);
             }
@@ -554,7 +554,7 @@ void ItemBox_GivePowerup(void)
             player->shield = SHIELD_BUBBLE;
             Player_ApplyShield(player);
             player->drownTimer = 0;
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 sidekick->shield = SHIELD_BUBBLE;
                 Player_ApplyShield(sidekick);
                 sidekick->drownTimer = 0;
@@ -566,7 +566,7 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_FIRESHIELD:
             player->shield = SHIELD_FIRE;
             Player_ApplyShield(player);
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 sidekick->shield = SHIELD_FIRE;
                 Player_ApplyShield(sidekick);
             }
@@ -576,7 +576,7 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_LIGHTNINGSHIELD:
             player->shield = SHIELD_LIGHTNING;
             Player_ApplyShield(player);
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 sidekick->shield = SHIELD_LIGHTNING;
                 Player_ApplyShield(sidekick);
             }
@@ -594,7 +594,7 @@ void ItemBox_GivePowerup(void)
                 Music_PlayJingle(TRACK_INVINCIBLE);
             }
 
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 if (sidekick->superState == SUPERSTATE_NONE) {
                     EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(sidekick), InvincibleStars);
                     RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, sidekick);
@@ -618,7 +618,7 @@ void ItemBox_GivePowerup(void)
                 RSDK.ResetEntity(powerup, ImageTrail->classID, player);
             }
 
-            if (sidekick->classID && globals->gameMode != MODE_COMPETITION) {
+            if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 if (addendumData->collectedTimeStones == 0b01111111)
                     sidekick->speedShoesTimer = 1740;
                 else

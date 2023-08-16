@@ -159,6 +159,8 @@ void InitGameLogic(void)
     RSDK.RegisterGlobalVariables((void **)&globals, sizeof(GlobalVariables));
     RSDK.RegisterGlobalVariables((void **)&addendum, sizeof(AddendumVariables));
 #endif
+    Mod.RegisterAchievement("ACH_TIMESTONES", "Savior of the Planet", "Collected all Time Stones");
+    Mod.RegisterAchievement("ACH_INSTAREFLECT", "Return to Sender", "Reflected an enemy projectile with Insta-shield");
 
     RSDK_REGISTER_OBJECT(Acetone);
     RSDK_REGISTER_OBJECT(ActClear);

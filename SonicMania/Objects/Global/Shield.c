@@ -103,7 +103,8 @@ void Shield_Create(void *data)
             break;
 
         case SHIELD_BUBBLE:
-            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEADD, &self->fxAnimator, true, 0);
+            if (self->player->superState != SUPERSTATE_SUPER)
+                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEADD, &self->fxAnimator, true, 0);
             RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLE, &self->shieldAnimator, true, 0);
             self->alpha = 0x100;
             break;
@@ -273,6 +274,10 @@ bool32 Shield_State_Reflect(EntityShield *shield, void *p)
         projectile->velocity.x  = -0x800 * RSDK.Cos256(angle);
         projectile->velocity.y  = -0x800 * RSDK.Sin256(angle);
         projectile->interaction = false;
+        if (!Player->hasReflectAchievement) {
+            API_UnlockAchievement(&achievementList[ACH_INSTAREFLECT]);
+            Player->hasReflectAchievement = true;
+        }
 
         return true;
     }
