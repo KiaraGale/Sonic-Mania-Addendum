@@ -176,7 +176,7 @@ void SpecialRing_State_Idle(void)
 
 #if GAME_VERSION != VER_100
                     // rings spawned via debug mode give you 50 rings, always
-                    if (!SaveGame_AllChaosEmeralds() || !Addendum_AllTimeStones() && self->id) {
+                    if (!SaveGame_AllChaosEmeralds() && self->id || !Addendum_AllTimeStones() && self->id) {
 #else
                     // rings spawned via debug mode behave as regular special rings
                     if (!SaveGame_AllChaosEmeralds()) {
@@ -261,7 +261,7 @@ void SpecialRing_State_Warp(void)
         AddendumData *addendumData = Addendum_GetSaveRAM();
         // this statement allows for easy compatibility with pre-Addendum files that already have all Chaos Emeralds
         // this also fixes a bug that would make it so the nextSpecialStage variable would reset back to 0 when exiting the game
-        if (addendumData->collectedTimeStones != 0b01111111) {
+        if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones != 0b01111111) {
             switch (addendumData->collectedTimeStones) {
                 case 0b00000000: saveRAM->nextSpecialStage = 7; break;
                 case 0b00000001: saveRAM->nextSpecialStage = 8; break;
