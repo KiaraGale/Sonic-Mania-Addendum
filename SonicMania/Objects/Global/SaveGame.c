@@ -411,9 +411,17 @@ void SaveGame_SaveProgress(void)
                 if (saveRAM->zoneID < Zone_GetZoneID() + 1)
                     saveRAM->zoneID = Zone_GetZoneID() + 1;
 
-                if (saveRAM->zoneID > ZONE_ERZ) {
-                    saveRAM->saveState = SAVEGAME_COMPLETE;
-                    saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                if (saveRAM->characterID == ID_SONIC && SaveGame_AllChaosEmeralds()) {
+                    if (saveRAM->zoneID > ZONE_ERZ) {
+                        saveRAM->saveState = SAVEGAME_COMPLETE;
+                        saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                    }
+                }
+                else {
+                    if (saveRAM->zoneID > ZONE_TMZ) {
+                        saveRAM->saveState = SAVEGAME_COMPLETE;
+                        saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                    }
                 }
             }
 #if MANIA_USE_PLUS
@@ -424,17 +432,17 @@ void SaveGame_SaveProgress(void)
 #if MANIA_USE_PLUS
 void Addendum_SaveProgress(void)
 {
-    int32 slot                 = addendum->saveSlotID;
-    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
+    AddendumData *addendumData = Addendum_GetSaveRAM();
 
     if (!AIZSetup) {
-        if (Zone_IsZoneLastAct()) {
-            if (!OOZ1Outro)
-                addendumData->actID -= Zone->actID;
-            else if (OOZ2Outro)
+        if (RSDK.CheckSceneFolder("PSZ2") && Zone->actID == 0) {
+            addendumData->actID = 1;
+        }
+        else if (RSDK.CheckSceneFolder("OOZ2") && Zone->actID == 0) {
+            addendumData->actID = 1;
+        }
+        else if (Zone_IsZoneLastAct()) {
                 addendumData->actID = 0;
-            else
-                addendumData->actID += 1;
         }
         else {
             addendumData->actID += 1;

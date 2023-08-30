@@ -12,6 +12,7 @@ ObjectUISaveSlot *UISaveSlot;
 void UISaveSlot_Update(void)
 {
     RSDK_THIS(UISaveSlot);
+    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
 
     UISaveSlot_SetupButtonElements();
 
@@ -93,6 +94,11 @@ void UISaveSlot_Update(void)
 
         self->active = ACTIVE_BOUNDS;
     }
+
+    self->actNameAnimator.frameID = addendumData->actID;
+
+    if (self->actNameAnimator.animationID != 23) // failsafe in case the game does fucky shit while retrieving the act number data, which does happen a lot
+        RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 23, &self->actNameAnimator, true, 0);
 }
 
 void UISaveSlot_LateUpdate(void) {}
@@ -473,7 +479,7 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
 
     if (!self->encoreMode) {
 #endif
-        int32 frames[]                = { 3, 0, 1, 2, 4, 5, 6 };
+        int32 frames[]                = { 0, 1, 2, 3, 4, 5 };
         self->shadowsAnimator.frameID = frames[self->frameID];
         self->playersAnimator.frameID = frames[self->frameID];
 #if MANIA_USE_PLUS
@@ -498,9 +504,9 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
                     case ID_SONIC: playerID = 0; break;
                     case ID_TAILS: playerID = 1; break;
                     case ID_KNUCKLES: playerID = 2; break;
-                    case ID_MIGHTY: playerID = 4; break;
-                    case ID_RAY: playerID = 5; break;
-                    case ID_AMY: playerID = 6; break;
+                    case ID_MIGHTY: playerID = 3; break;
+                    case ID_RAY: playerID = 4; break;
+                    case ID_AMY: playerID = 5; break;
                 }
 
                 self->shadowsAnimator.frameID = playerID;
@@ -517,8 +523,8 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
             }
         }
         else {
-            self->playersAnimator.frameID = 7;
-            self->shadowsAnimator.frameID = 7;
+            self->playersAnimator.frameID = 6;
+            self->shadowsAnimator.frameID = 6;
         }
     }
     else if (self->debugEncoreDraw) {
@@ -544,9 +550,9 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
                 case ID_SONIC: playerID = 0; break;
                 case ID_TAILS: playerID = 1; break;
                 case ID_KNUCKLES: playerID = 2; break;
-                case ID_MIGHTY: playerID = 4; break;
-                case ID_RAY: playerID = 5; break;
-                case ID_AMY: playerID = 6; break;
+                case ID_MIGHTY: playerID = 3; break;
+                case ID_RAY: playerID = 4; break;
+                case ID_AMY: playerID = 5; break;
             }
 
             self->shadowsAnimator.frameID = playerID;
@@ -563,8 +569,8 @@ void UISaveSlot_DrawPlayerIcons(int32 drawX, int32 drawY)
         }
     }
     else {
-        self->playersAnimator.frameID = 7;
-        self->shadowsAnimator.frameID = 7;
+        self->playersAnimator.frameID = 6;
+        self->shadowsAnimator.frameID = 6;
     }
 #endif
 
@@ -621,7 +627,7 @@ void UISaveSlot_DrawPlayerInfo(int32 drawX, int32 drawY)
     }
     else {
 #endif
-        int32 frames[] = { 0, 0, 1, 2, 3, 4, 5 };
+        int32 frames[] = { 0, 1, 2, 3, 4, 5 };
         playerID       = frames[self->frameID];
 #if MANIA_USE_PLUS
     }
@@ -781,8 +787,8 @@ void UISaveSlot_SetupAnimators(void)
     RSDK_THIS(UISaveSlot);
 
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 0, &self->uiAnimator, true, 0);
-    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 1, &self->playersAnimator, true, 3);
-    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 2, &self->shadowsAnimator, true, 3);
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 1, &self->playersAnimator, true, 0);
+    RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 2, &self->shadowsAnimator, true, 0);
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 3, &self->livesAnimator, true, 0);
     RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 0, &self->iconBGAnimator, true, 2);
     RSDK.SetSpriteAnimation(UIWidgets->textFrames, 2, &self->saveStatusAnimator, true, 0);
@@ -1084,9 +1090,9 @@ void UISaveSlot_NextCharacter(void)
     int32 player = self->frameID;
 
 #if MANIA_USE_PLUS
-    int32 max = API.CheckDLC(DLC_PLUS) ? 7 : 4;
+    int32 max = API.CheckDLC(DLC_PLUS) ? 6 : 3;
 #else
-    int32 max = 4;
+    int32 max = 3;
 #endif
     while (player >= max) player -= max;
 
@@ -1107,9 +1113,9 @@ void UISaveSlot_PrevCharacter(void)
     int32 player = self->frameID;
 
 #if MANIA_USE_PLUS
-    int32 max = API.CheckDLC(DLC_PLUS) ? 7 : 4;
+    int32 max = API.CheckDLC(DLC_PLUS) ? 6 : 3;
 #else
-    int32 max = 4;
+    int32 max = 3;
 #endif
     while (player < 0) player += max;
 
@@ -1125,13 +1131,14 @@ void UISaveSlot_PrevCharacter(void)
 void UISaveSlot_NextZone(void)
 {
     RSDK_THIS(UISaveSlot);
+    SaveRAM *saveRAM = (SaveRAM *)SaveGame_GetDataPtr(self->slotID, self->encoreMode);
 
     if (self->saveZoneID == NO_SAVE_SLOT) {
         self->saveZoneID = ZONE_GHZ;
     }
     else {
         self->saveZoneID++;
-        if (self->playersAnimator.frameID == 0 || self->playersAnimator.frameID == 3) {
+        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
             if (self->saveZoneID > ZONE_ERZ)
                 self->saveZoneID = ZONE_GHZ;
         }
@@ -1149,14 +1156,24 @@ void UISaveSlot_NextZone(void)
 void UISaveSlot_PrevZone(void)
 {
     RSDK_THIS(UISaveSlot);
+    SaveRAM *saveRAM = (SaveRAM *)SaveGame_GetDataPtr(self->slotID, self->encoreMode);
 
     if (self->saveZoneID == NO_SAVE_SLOT) {
-        self->saveZoneID = ZONE_ERZ;
+        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111)
+            self->saveZoneID = ZONE_ERZ;
+        else
+            self->saveZoneID = ZONE_TMZ;
     }
     else {
         self->saveZoneID--;
-        if (self->saveZoneID < ZONE_GHZ)
-            self->saveZoneID = self->playersAnimator.frameID == 0 || 3 ? ZONE_ERZ : ZONE_TMZ;
+        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
+            if (self->saveZoneID < ZONE_GHZ)
+                self->saveZoneID = ZONE_ERZ;
+        }
+        else {
+            if (self->saveZoneID < ZONE_GHZ)
+                self->saveZoneID = ZONE_TMZ;
+        }
     }
 
     RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
@@ -1290,11 +1307,9 @@ void UISaveSlot_State_NewSave(void)
 void UISaveSlot_State_ActiveSave(void)
 {
     RSDK_THIS(UISaveSlot);
-    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
 
     if (!self->currentlySelected)
         self->state = UISaveSlot_State_NotSelected;
-    self->actNameAnimator.frameID = addendumData->actID;
 }
 
 #if MANIA_USE_PLUS

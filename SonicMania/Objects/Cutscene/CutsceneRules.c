@@ -29,7 +29,7 @@ void CutsceneRules_StageLoad(void) {}
 
 bool32 CutsceneRules_IsAct1(void)
 {
-    if ((RSDK.CheckSceneFolder("GHZ") && !Zone->actID) || (RSDK.CheckSceneFolder("CPZ") && !Zone->actID) || RSDK.CheckSceneFolder("SPZ1")
+    if ((RSDK.CheckSceneFolder("GHZ") && !Zone->actID) || (RSDK.CheckSceneFolder("GHZE") && !Zone->actID) || (RSDK.CheckSceneFolder("CPZ") && !Zone->actID) || RSDK.CheckSceneFolder("SPZ1")
         || (RSDK.CheckSceneFolder("FBZ") && !Zone->actID) || RSDK.CheckSceneFolder("PSZ1") || RSDK.CheckSceneFolder("SSZ1")
         || (RSDK.CheckSceneFolder("HCZ") && !Zone->actID) || (RSDK.CheckSceneFolder("MSZ") && !Zone->actID)
         || (RSDK.CheckSceneFolder("OOZ") && !Zone->actID) || RSDK.CheckSceneFolder("LRZ1") || (RSDK.CheckSceneFolder("MMZ") && !Zone->actID)
@@ -41,7 +41,7 @@ bool32 CutsceneRules_IsAct1(void)
 }
 bool32 CutsceneRules_IsAct2(void)
 {
-    if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("CPZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+    if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1) || (RSDK.CheckSceneFolder("CPZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("PSZ2") || RSDK.CheckSceneFolder("SSZ2")
         || (RSDK.CheckSceneFolder("HCZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("MSZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("OOZ2")
         || RSDK.CheckSceneFolder("LRZ3") || (RSDK.CheckSceneFolder("MMZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("TMZ2")) {

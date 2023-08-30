@@ -56,7 +56,7 @@ void Crabmeat_Create(void *data)
 
 void Crabmeat_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         Crabmeat->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Crabmeat.bin", SCOPE_STAGE);
 
     Crabmeat->hitboxBadnik.left   = -14;

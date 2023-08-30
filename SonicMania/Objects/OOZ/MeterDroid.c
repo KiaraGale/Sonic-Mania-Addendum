@@ -721,6 +721,11 @@ void MeterDroid_State_Destroyed(void)
 void MeterDroid_State_FinishAct(void)
 {
     RSDK_THIS(MeterDroid);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+    globals->carryOverShieldP1 = leader->shield;
+    globals->carryOverShieldP2 = sidekick->shield;
 
     MeterDroid_Explode();
 

@@ -70,7 +70,7 @@ void Decoration_Create(void *data)
 
 void Decoration_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         Decoration->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Decoration.bin", SCOPE_STAGE);
     else if (RSDK.CheckSceneFolder("CPZ"))
         Decoration->aniFrames = RSDK.LoadSpriteAnimation("CPZ/Decoration.bin", SCOPE_STAGE);

@@ -279,6 +279,8 @@ typedef struct {
     int32 superMusicEnabled;
     int32 lastHasPlus;
     int32 hasPlusInitial;
+    int32 carryOverShieldP1;
+    int32 carryOverShieldP2;
 #endif
 } GlobalVariables;
 

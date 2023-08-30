@@ -51,37 +51,35 @@ void Debris_Draw(void)
     for (int32 p = 0; p < 4; ++p) {
         EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
 
-        for (int32 c = 0; c < 36; ++c) {
-            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
-            RSDK.SetPaletteEntry(0, c + 128, Debris->emeraldColors[c]);
-        }
-
-        RSDK.DrawSprite(&self->emeraldsAnimator, NULL, false);
-
-        for (int32 c = 0; c < 36; ++c) {
-            RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage[c]);
-        }
-
-        for (int32 c = 0; c < 36; ++c) {
-            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 176);
-            RSDK.SetPaletteEntry(0, c + 176, Debris->stoneColors[c]);
-        }
-
-        RSDK.DrawSprite(&self->stonesAnimator, NULL, false);
-
-        for (int32 c = 0; c < 36; ++c) {
-            RSDK.SetPaletteEntry(0, c + 176, Debris->colorStorage[c]);
-        }
-
         for (int32 c = 0; c < 96; ++c) {
-            Debris->colorStorage2[c] = RSDK.GetPaletteEntry(0, c + 128);
+            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
             RSDK.SetPaletteEntry(0, c + 128, Debris->powerColors[c]);
         }
 
+        for (int32 c = 0; c < 96; ++c) {
+            Debris->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, c + 128);
+            RSDK.SetPaletteEntry(1, c + 128, Debris->powerColors[c]);
+        }
+
+        for (int32 c = 0; c < 96; ++c) {
+            Debris->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, c + 128);
+            RSDK.SetPaletteEntry(2, c + 128, Debris->powerColors[c]);
+        }
+
+        RSDK.DrawSprite(&self->emeraldsAnimator, NULL, false);
+        RSDK.DrawSprite(&self->stonesAnimator, NULL, false);
         RSDK.DrawSprite(&self->powerAnimator, NULL, false);
 
         for (int32 c = 0; c < 96; ++c) {
-            RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage2[c]);
+            RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage[c]);
+        }
+
+        for (int32 c = 0; c < 96; ++c) {
+            RSDK.SetPaletteEntry(1, c + 128, Debris->colorStorage_HCZ[c]);
+        }
+
+        for (int32 c = 0; c < 96; ++c) {
+            RSDK.SetPaletteEntry(2, c + 128, Debris->colorStorage_CPZ[c]);
         }
     }
 }

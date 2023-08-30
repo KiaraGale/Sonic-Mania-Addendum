@@ -208,14 +208,8 @@ bool32 MSZ2Cutscene_Cutscene_PistolFired(EntityCutsceneSeq *host)
         Camera_SetupLerp(CAMERA_LERP_NORMAL, 0, host->storedValue, host->storedTimer, 2);
     }
 
-    if (host->timer > 30 && camera->position.x == host->storedValue && camera->position.y == host->storedTimer) {
-        EntityShield *shield = RSDK_GET_ENTITY(player1->playerID + Player->playerCount, Shield);
-        if (shield->classID == Shield->classID) {
-            player1->shield = SHIELD_NONE;
-            destroyEntity(shield);
-        }
+    if (host->timer > 30 && camera->position.x == host->storedValue && camera->position.y == host->storedTimer)
         return true;
-    }
 
     return false;
 }

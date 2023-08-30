@@ -33,6 +33,7 @@ void MainMenu_StaticUpdate(void)
                 case 5: diorama->dioramaID = UIDIORAMA_ENCOREMODE; break;
                 case 6: diorama->dioramaID = UIDIORAMA_PLUSUPSELL; break;
                 case 7: diorama->dioramaID = UIDIORAMA_EXIT; break;
+                case 8: diorama->dioramaID = UIDIORAMA_ACHIEVEMENTS; break;
                 default: break;
             }
 
@@ -81,22 +82,27 @@ void MainMenu_Initialize(void)
 #if MANIA_USE_PLUS
     int32 button1Frame = 1; // Time Attack
     int32 button2Frame = 2; // Competition
-    int32 button3Frame = 3; // Options
-    int32 button4Frame = 4; // Extras
-    int32 button5Frame = 6; // Buy Plus
+    int32 button3Frame = 8; // Achievements
+    int32 button4Frame = 3; // Options
+    int32 button5Frame = 4; // Extras
+    int32 button6Frame = 6; // Buy Plus
 
-    bool32 button3StopMus    = false; // Options button does NOT stop music
-    bool32 button5Transition = false; // Buy Plus Does NOT do a transition
+    bool32 button3StopMus    = false; // Achievements button does NOT stop music
+    bool32 button4StopMus    = false; // Options button does NOT stop music
+    bool32 button5Transition = true;  // Extras does a transition
+    bool32 button6Transition = false; // Buy Plus Does NOT do a transition
 
     if (API.CheckDLC(DLC_PLUS)) {
         button1Frame = 5; // Encore Mode
         button2Frame = 1; // Time Attack
         button3Frame = 2; // Competition
-        button4Frame = 3; // Options
-        button5Frame = 4; // Extras
+        button4Frame = 8; // Achievements
+        button5Frame = 3; // Options
+        button6Frame = 4; // Extras
 
         button3StopMus    = true; // Competition button stops music
-        button5Transition = true; // Extras Does a transition
+        button5Transition = true;
+        button6Transition = true; // Extras Does a transition
     }
 
     EntityUIButton *buttonManiaMode = menuControl->buttons[0];
@@ -119,17 +125,22 @@ void MainMenu_Initialize(void)
     buttonCompetition->transition     = true;
     buttonCompetition->stopMusic      = button3StopMus;
 
-    EntityUIButton *buttonOptions = menuControl->buttons[4];
-    buttonOptions->frameID        = button4Frame;
+    EntityUIButton *buttonAchievements = menuControl->buttons[4];
+    buttonAchievements->frameID        = button4Frame;
+    buttonAchievements->transition     = true;
+    buttonAchievements->stopMusic      = false;
+
+    EntityUIButton *buttonOptions = menuControl->buttons[5];
+    buttonOptions->frameID        = button5Frame;
     buttonOptions->transition     = true;
     buttonOptions->stopMusic      = false;
 
-    EntityUIButton *buttonExtras = menuControl->buttons[5];
-    buttonExtras->frameID        = button5Frame;
-    buttonExtras->transition     = button5Transition;
+    EntityUIButton *buttonExtras = menuControl->buttons[6];
+    buttonExtras->frameID        = button6Frame;
+    buttonExtras->transition     = button6Transition;
     buttonExtras->stopMusic      = false;
 
-    EntityUIButton *buttonExit = menuControl->buttons[6];
+    EntityUIButton *buttonExit = menuControl->buttons[7];
     buttonExit->frameID        = 7;
     buttonExit->transition     = false;
     buttonExit->stopMusic      = false;
@@ -174,7 +185,7 @@ void MainMenu_MenuButton_ActionCB(void)
             }
             else {
                 EntityUIControl *saveSelect = ManiaModeMenu->saveSelectMenu;
-                saveSelect->buttonID        = 7;
+                saveSelect->buttonID        = 1;
 #if MANIA_USE_PLUS
                 saveSelect->menuWasSetup           = false;
                 ManiaModeMenu->saveSelLastButtonID = -1;
@@ -264,6 +275,10 @@ void MainMenu_MenuButton_ActionCB(void)
 #endif
             break;
 
+        case 8: // Achievements
+            UIControl_MatchMenuTag("Achievements");
+            break;
+
         default: break;
     }
 }
@@ -308,7 +323,7 @@ void MainMenu_SetupActions(void)
                     destroyEntity(button);
                     --control->buttonCount;
                     --control->rowCount;
-                    control->buttons[6] = NULL;
+                    control->buttons[7] = NULL;
                 }
                 else {
                     button->actionCB = MainMenu_ExitButton_ActionCB;

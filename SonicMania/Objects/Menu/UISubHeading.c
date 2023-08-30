@@ -111,6 +111,8 @@ void UISubHeading_Initialize(void)
 
 void UISubHeading_HandleUnlocks(void)
 {
+    // Addendum removes the medallion requirements for unlocks, but keeping this code here in case it's needed for some reason in the future
+    /*
     EntityUIControl *control  = ManiaModeMenu->secretsMenu;
     EntityUIButton *debugMode = control->buttons[1];
     debugMode->disabled       = !GameProgress_CheckUnlock(GAMEPROGRESS_UNLOCK_DEBUGMODE) && !globals->superSecret;
@@ -131,6 +133,7 @@ void UISubHeading_HandleUnlocks(void)
     andKnux->disabled       = !GameProgress_CheckUnlock(GAMEPROGRESS_UNLOCK_ANDKNUX);
     if (andKnux->disabled)
         UIButton_ManageChoices(andKnux);
+    */
 }
 
 void UISubHeading_SetupActions(void)
@@ -237,11 +240,6 @@ int32 UISubHeading_GetAddendumMods(void)
 
     int32 mods = 0;
 
-    if (control->buttons[2]->selection == 3) {
-        mods |= MEDAL_PEELOUT;
-        mods |= MEDAL_INSTASHIELD;
-    }
-
     if (control->buttons[3]->selection == 1) {
         mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2SONIC;
@@ -266,9 +264,6 @@ int32 UISubHeading_GetAddendumMods(void)
         mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2AMY;
     }
-
-    if (control->buttons[4]->selection == 1)
-        mods |= MEDAL_SPINDASH;
 
     return mods;
 }
@@ -443,13 +438,12 @@ void UISubHeading_SaveButton_ActionCB(void)
         addendumRAM->addendumMods = addendum->addendumMods;
 
         switch (self->frameID) {
-            case 0: // Sonic & Tails
-            case 1: globals->playerID = ID_SONIC; break;
-            case 2: globals->playerID = ID_TAILS; break;
-            case 3: globals->playerID = ID_KNUCKLES; break;
-            case 4: globals->playerID = ID_MIGHTY; break;
-            case 5: globals->playerID = ID_RAY; break;
-            case 6: globals->playerID = ID_AMY; break;
+            case 0: globals->playerID = ID_SONIC; break;
+            case 1: globals->playerID = ID_TAILS; break;
+            case 2: globals->playerID = ID_KNUCKLES; break;
+            case 3: globals->playerID = ID_MIGHTY; break;
+            case 4: globals->playerID = ID_RAY; break;
+            case 5: globals->playerID = ID_AMY; break;
             default: break;
         }
 

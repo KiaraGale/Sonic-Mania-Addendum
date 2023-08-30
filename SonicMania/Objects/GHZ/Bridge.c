@@ -99,7 +99,7 @@ void Bridge_Create(void *data)
 
 void Bridge_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         Bridge->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Bridge.bin", SCOPE_STAGE);
     if (RSDK.CheckSceneFolder("HCZ"))
         Bridge->aniFrames = RSDK.LoadSpriteAnimation("HCZ/Bridge.bin", SCOPE_STAGE);
@@ -297,7 +297,7 @@ void Bridge_EditorDraw(void)
 
 void Bridge_EditorLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         Bridge->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Bridge.bin", SCOPE_STAGE);
     if (RSDK.CheckSceneFolder("HCZ"))
         Bridge->aniFrames = RSDK.LoadSpriteAnimation("HCZ/Bridge.bin", SCOPE_STAGE);

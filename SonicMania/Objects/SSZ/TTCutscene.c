@@ -36,6 +36,9 @@ void TTCutscene_Create(void *data)
 
 void TTCutscene_StageLoad(void)
 {
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     TTCutscene->fxFade = NULL;
 
     foreach_all(FXFade, fade)
@@ -43,6 +46,9 @@ void TTCutscene_StageLoad(void)
         TTCutscene->fxFade = fade;
         foreach_break;
     }
+
+    globals->carryOverShieldP1 = leader->shield;
+    globals->carryOverShieldP2 = sidekick->shield;
 }
 
 void TTCutscene_StartCutscene(void)

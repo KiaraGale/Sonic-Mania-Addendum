@@ -80,6 +80,19 @@ void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer
     players[0] = player1;
     players[1] = player2;
 
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    leader->shield = globals->carryOverShieldP1;
+    Player_ApplyShield(leader);
+    if (sidekick->classID == Player->classID) {
+        sidekick->shield = globals->carryOverShieldP2;
+        Player_ApplyShield(sidekick);
+    }
+
+    Player->powerups           = 0;
+    globals->carryOverShieldP1 = 0;
+    globals->carryOverShieldP2 = 0;
+
     int32 id = 0;
     for (int32 angle = 0; angle < 0x80; angle += 0x40) {
         EntityPlayer *player = players[id++];
@@ -169,6 +182,16 @@ bool32 CPZ1Intro_CheckAmyAnimFinish(void)
 bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
 {
     MANIA_GET_PLAYER(player1, player2, camera);
+
+    player1->shield = globals->carryOverShieldP1;
+    Player_ApplyShield(player1);
+    if (player2->classID == Player->classID) {
+        player2->shield = globals->carryOverShieldP2;
+        Player_ApplyShield(player2);
+    }
+
+    globals->carryOverShieldP1 = 0;
+    globals->carryOverShieldP2 = 0;
 
     EntityFXRuby *fxRuby = CPZ1Intro->fxRuby;
     if (!host->timer) {
@@ -347,6 +370,13 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
                 break;
+
+            case ID_AMY:
+                CPZ1Intro->playerAnimID = 5;
+                RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
+                player1->state          = Player_State_Static;
+                player1->tileCollisions = TILECOLLISION_NONE;
+                break;
 #endif
         }
     }
@@ -364,6 +394,7 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
 #if MANIA_USE_PLUS
         case 3: return CPZ1Intro_CheckMightyAnimFinish();
         case 4: return CPZ1Intro_CheckRayAnimFinish();
+        case 5: return CPZ1Intro_CheckAmyAnimFinish();
 #endif
         default: break;
     }
@@ -378,10 +409,8 @@ bool32 CPZ1Intro_Cutscene_ReadyStage(EntityCutsceneSeq *host)
     if (!host->timer) {
         RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, true, 0);
 
-        if (player2->classID == Player->classID) {
-            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
+        if (player2->classID == Player->classID)
             player2->up = false;
-        }
     }
 
     if (host->timer == 30) {

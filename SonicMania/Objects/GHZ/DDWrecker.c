@@ -708,7 +708,7 @@ void DDWrecker_StateBall_Spiked(void)
     foreach_active(Player, player)
     {
         if (!self->invincibilityTimer && Player_CheckBadnikTouch(player, self, &self->hitbox)) {
-            if (player->invincibleTimer || player->blinkTimer > 0 || self->animator.animationID < 3) {
+            if (player->invincibleTimer || player->blinkTimer > 0 || self->animator.animationID < 3 || player->superInvulnTimer) {
                 if (Player_CheckBossHit(player, self)) {
                     DDWrecker_Hit();
                     RSDK.PlaySfx(DDWrecker->sfxBossHit, false, 255);
@@ -750,7 +750,7 @@ void DDWrecker_StateBall_Partnerless(void)
     foreach_active(Player, player)
     {
         if (!self->invincibilityTimer && Player_CheckBadnikTouch(player, self, &self->hitbox)) {
-            if (player->invincibleTimer || player->blinkTimer > 0 || self->animator.animationID < 3) {
+            if (player->invincibleTimer || player->blinkTimer > 0 || self->animator.animationID < 3 || player->superInvulnTimer) {
                 if (Player_CheckBossHit(player, self)) {
                     DDWrecker_Hit();
                     RSDK.PlaySfx(DDWrecker->sfxBossHit, false, 255);

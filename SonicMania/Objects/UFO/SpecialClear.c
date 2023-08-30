@@ -37,6 +37,7 @@ void SpecialClear_Draw(void)
             frame = i;
         self->emeraldsAnimator.frameID = frame;
         drawPos.y                      = self->emeraldPositions[i] - 0x70000;
+        // RSDK.CopyPalette(0, 176, 0, 128, 36);
         RSDK.DrawSprite(&self->emeraldsAnimator, &drawPos, true);
         drawPos.x += 0x200000;
     }
@@ -49,6 +50,7 @@ void SpecialClear_Draw(void)
             frame = i;
         self->timeStonesAnimator.frameID = frame;
         drawPos.y                      = self->emeraldPositions[i] + 0x130000;
+        // RSDK.CopyPalette(0, 128, 0, 176, 36);
         RSDK.DrawSprite(&self->timeStonesAnimator, &drawPos, true);
         drawPos.x += 0x200000;
     }

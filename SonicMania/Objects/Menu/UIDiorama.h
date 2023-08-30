@@ -14,7 +14,7 @@ typedef enum {
     UIDIORAMA_OPTIONS,
     UIDIORAMA_EXTRAS,
     UIDIORAMA_EXIT,
-    UIDIORAMA_ADDENDUM,
+    UIDIORAMA_ACHIEVEMENTS,
 } UIDioramaIDs;
 
 typedef enum {

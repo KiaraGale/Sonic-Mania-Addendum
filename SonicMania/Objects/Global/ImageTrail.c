@@ -130,19 +130,19 @@ void ImageTrail_Draw(void)
     int32 alpha = 0x60 * self->baseAlpha >> 8;
     int32 inc   = 0x40 / (IMAGETRAIL_TRACK_COUNT / 3);
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
-        RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+        RSDK.SetPaletteEntry(0, 223 + c, Player->miracleColors[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 224 + c);
-        RSDK.SetPaletteEntry(1, 224 + c, Player->miracleColors_HCZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 223 + c);
+        RSDK.SetPaletteEntry(1, 223 + c, Player->miracleColors_HCZ[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 224 + c);
-        RSDK.SetPaletteEntry(2, 224 + c, Player->miracleColors_CPZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 223 + c);
+        RSDK.SetPaletteEntry(2, 223 + c, Player->miracleColors_CPZ[c]);
     }
 
     for (int32 i = (IMAGETRAIL_TRACK_COUNT / 3); i >= 0; --i) {
@@ -176,16 +176,16 @@ void ImageTrail_Draw(void)
         }
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(0, 223 + c, Player->colorStorage[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(1, 224 + c, Player->colorStorage_HCZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(1, 223 + c, Player->colorStorage_HCZ[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(2, 224 + c, Player->colorStorage_CPZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(2, 223 + c, Player->colorStorage_CPZ[c]);
     }
 }
 

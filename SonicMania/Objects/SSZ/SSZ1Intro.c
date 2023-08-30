@@ -77,6 +77,16 @@ bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
 {
     MANIA_GET_PLAYER(player1, player2, camera);
 
+    player1->shield = globals->carryOverShieldP1;
+    Player_ApplyShield(player1);
+    if (player2->classID == Player->classID) {
+        player2->shield = globals->carryOverShieldP2;
+        Player_ApplyShield(player2);
+    }
+
+    globals->carryOverShieldP1 = 0;
+    globals->carryOverShieldP2 = 0;
+
     Entity *cutEntity    = host->activeEntity;
     EntityFXRuby *fxRuby = SSZ1Intro->fxRuby;
     if (!host->timer) {

@@ -114,20 +114,20 @@ void DebugMode_Update(void)
         }
 
         if (ControllerInfo[CONT_P1].keyB.press) {
-            DebugMode->itemType--;
+        DebugMode->itemType--;
 
-            if (DebugMode->itemType >= DebugMode->itemTypeCount)
-                DebugMode->itemType = DebugMode->itemTypeCount - 1;
+        if (DebugMode->itemType >= DebugMode->itemTypeCount)
+            DebugMode->itemType = DebugMode->itemTypeCount - 1;
         }
     }
     else if (ControllerInfo[CONT_P1].keyC.press || keySpawn) {
-        StateMachine_Run(DebugMode->spawn[DebugMode->itemID]);
+            StateMachine_Run(DebugMode->spawn[DebugMode->itemID]);
     }
     else if (ControllerInfo[CONT_P1].keyB.press) {
         if (DebugMode->itemType >= DebugMode->itemTypeCount - 1)
             DebugMode->itemType = 0;
         else
-            DebugMode->itemType++;
+        DebugMode->itemType++;
     }
 }
 

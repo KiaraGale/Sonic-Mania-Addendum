@@ -181,12 +181,6 @@ bool32 SPZ2Outro_Cutscene_ExitStageRight(EntityCutsceneSeq *host)
     if (player1->position.x > posX) {
         player1->right = false;
         if (player2->classID != Player->classID || SPZ2Outro->ignoreP2 || player2->position.x > posX) {
-            EntityShield *shield = RSDK_GET_ENTITY(player1->playerID + Player->playerCount, Shield);
-            if (shield->classID == Shield->classID) {
-                player1->shield = SHIELD_NONE;
-                destroyEntity(shield);
-            }
-
             return true;
         }
     }

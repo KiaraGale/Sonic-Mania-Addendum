@@ -160,16 +160,29 @@ void LogoSetup_State_ShowLogos(void)
 {
     RSDK_THIS(LogoSetup);
 
-    if (self->timer <= 0) {
-        if (!ScreenInfo->position.y)
-            RSDK.PlaySfx(LogoSetup->sfxSega, false, 0xFF);
-
-        self->timer     = 0;
-        self->state     = LogoSetup_State_FadeToNextLogos;
-        self->stateDraw = StateMachine_None;
+    if (RSDK.CheckSceneFolder("Lock")) {
+        if (self->timer <= 0) {
+            self->timer = 0;
+            Music_SetMusicTrack("BuddyBeat.ogg", TRACK_BUDDYBEAT, 85232);
+            Music_PlayTrack(TRACK_BUDDYBEAT);
+            self->state = StateMachine_None;
+        }
+        else {
+            self->timer -= 16;
+        }
     }
     else {
-        self->timer -= 16;
+        if (self->timer <= 0) {
+            if (!ScreenInfo->position.y)
+                RSDK.PlaySfx(LogoSetup->sfxSega, false, 0xFF);
+
+            self->timer     = 0;
+            self->state     = LogoSetup_State_FadeToNextLogos;
+            self->stateDraw = StateMachine_None;
+        }
+        else {
+            self->timer -= 16;
+        }
     }
 }
 

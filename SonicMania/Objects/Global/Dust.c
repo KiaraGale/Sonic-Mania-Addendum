@@ -68,7 +68,7 @@ void Dust_State_SpinDash(void)
 
         RSDK.ProcessAnimation(&self->animator);
 
-        if (player->state != Player_State_Spindash || player->state != Player_State_Spindash_CD)
+        if (!(player->state == Player_State_Spindash || player->state == Player_State_Spindash_CD))
             destroyEntity(self);
     }
 }

@@ -198,7 +198,7 @@ void ZipLine_Create(void *data)
 
 void ZipLine_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         ZipLine->aniFrames = RSDK.LoadSpriteAnimation("GHZ/ZipLine.bin", SCOPE_STAGE);
 
     ZipLine->hitboxHandle.top    = 0;

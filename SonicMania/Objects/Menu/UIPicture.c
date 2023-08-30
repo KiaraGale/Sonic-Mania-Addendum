@@ -53,7 +53,7 @@ void UIPicture_Create(void *data)
            self->drawGroup = 8;
         }
         else {
-            if (RSDK.CheckSceneFolder("Logos") || RSDK.CheckSceneFolder("LSelect") || RSDK.CheckSceneFolder("Summary"))
+            if (RSDK.CheckSceneFolder("Logos") || RSDK.CheckSceneFolder("LSelect") || RSDK.CheckSceneFolder("Summary") || RSDK.CheckSceneFolder("Lock"))
                 self->active = ACTIVE_NORMAL;
             self->visible   = true;
             self->drawGroup = 2;
@@ -67,6 +67,8 @@ void UIPicture_StageLoad(void)
         UIPicture->aniFrames = RSDK.LoadSpriteAnimation("UI/Picture.bin", SCOPE_STAGE);
     else if (RSDK.CheckSceneFolder("Logos"))
         UIPicture->aniFrames = RSDK.LoadSpriteAnimation("Logos/Logos.bin", SCOPE_STAGE);
+    else if (RSDK.CheckSceneFolder("Lock"))
+        UIPicture->aniFrames = RSDK.LoadSpriteAnimation("Lock/Lock.bin", SCOPE_STAGE);
 }
 
 #if GAME_INCLUDE_EDITOR
@@ -85,6 +87,8 @@ void UIPicture_EditorLoad(void)
         UIPicture->aniFrames = RSDK.LoadSpriteAnimation("UI/Picture.bin", SCOPE_STAGE);
     else if (RSDK.CheckSceneFolder("Logos"))
         UIPicture->aniFrames = RSDK.LoadSpriteAnimation("Logos/Logos.bin", SCOPE_STAGE);
+    else if (RSDK.CheckSceneFolder("Lock"))
+        UIPicture->aniFrames = RSDK.LoadSpriteAnimation("Lock/Lock.bin", SCOPE_STAGE);
 
     // Never used afaik
     RSDK_ACTIVE_VAR(UIPicture, tag);

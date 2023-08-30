@@ -95,6 +95,7 @@ struct EntityHUD {
     Animator inputDpadAnimator; // input viewer crap
     Animator inputABCAnimator;
     Animator inputXYZAnimator;
+    Animator inputBumperAnimator;
     Animator inputUpAnimator;
     Animator inputDownAnimator;
     Animator inputLeftAnimator;
@@ -105,6 +106,8 @@ struct EntityHUD {
     Animator inputXAnimator;
     Animator inputYAnimator;
     Animator inputZAnimator;
+    Animator inputLBumperAnimator;
+    Animator inputRBumperAnimator;
     Animator itemBox1Animator; // invincibility/super/miracle
     Animator itemBox2Animator; // speed shoes
     Animator itemBox3Animator; // shield
@@ -152,7 +155,6 @@ int32 HUD_CharacterIndexFromID(int32 characterID);
 
 void HUD_HandleInputViewer(void);
 void HUD_HandleItemsHUD(void);
-void HUD_Life_Miracle_Draw(void);
 
 void HUD_InitializeBossBar(void *b, int32 icon, const char *bossName);
 void HUD_UpdateBossBar(void *b);

@@ -1071,6 +1071,11 @@ void PhantomEgg_State_Destroyed(void)
 void PhantomEgg_State_Exploding(void)
 {
     RSDK_THIS(PhantomEgg);
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+    globals->carryOverShieldP1 = 0; // ERZ seems to crash if the player loads in with a shield,
+    globals->carryOverShieldP2 = 0; // and it'll just be overwritten with a lightning shield upon transformation anyway
 
     self->targetPos.x += ((PhantomEgg->boundsM - self->targetPos.x) >> 5);
     self->targetPos.y += ((PhantomEgg->boundsB - self->targetPos.y - 0x400000) >> 5);

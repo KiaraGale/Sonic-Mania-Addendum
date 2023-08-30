@@ -175,10 +175,6 @@ void UIVsCharSelector_DrawPlayer(void)
     }
     else if (self->state != UIVsCharSelector_State_Selected || !(self->timer & 2)) {
         int32 frameID = self->frameID;
-#if MANIA_USE_PLUS
-        if (self->frameID >= UICHARBUTTON_MIGHTY)
-            frameID++;
-#endif
 
         RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 24, &self->playerAnimator, true, frameID);
         RSDK.SetSpriteAnimation(UIVsCharSelector->aniFrames, 25, &self->shadowAnimator, true, frameID);

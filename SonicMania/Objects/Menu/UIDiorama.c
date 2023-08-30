@@ -185,7 +185,7 @@ void UIDiorama_ChangeDiorama(uint8 dioramaID)
             self->state     = UIDiorama_State_Exit;
             break;
 
-        case UIDIORAMA_ADDENDUM:
+        case UIDIORAMA_ACHIEVEMENTS:
             self->stateDraw = UIDiorama_Draw_Addendum;
             self->state     = UIDiorama_State_Addendum;
             break;

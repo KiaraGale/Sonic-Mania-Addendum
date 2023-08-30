@@ -67,6 +67,7 @@ struct EntityItemBox {
     Animator debrisAnimator;
 #if MANIA_USE_PLUS
     Entity *parent;
+    bool32 sidekickBreak;
 #endif
 };
 

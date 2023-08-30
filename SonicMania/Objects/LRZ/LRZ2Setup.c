@@ -178,6 +178,10 @@ void LRZ2Setup_Trigger_StartOutro(void)
 {
     if (isMainGameMode()) {
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+        globals->carryOverShieldP1 = player1->shield;
+        globals->carryOverShieldP2 = player2->shield;
 
 #if MANIA_USE_PLUS
         if (globals->gameMode == MODE_ENCORE)

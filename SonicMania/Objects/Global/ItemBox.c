@@ -467,60 +467,123 @@ void ItemBox_CheckHit(void)
                 }
             }
 #endif
+            EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+            EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
-            int32 anim = player->animator.animationID;
-            bool32 attacking =
-                anim == ANI_JUMP && (player->velocity.y >= 0 || player->onGround || self->direction || player->state == Ice_PlayerState_Frozen);
-            switch (player->characterID) {
-                case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
-                case ID_KNUCKLES:
-                    attacking |= anim == ANI_GLIDE || anim == ANI_GLIDE_SLIDE;
-                    break;
+            int32 leaderanim = leader->animator.animationID;
+            bool32 leaderattacking =
+                leaderanim == ANI_JUMP && (leader->velocity.y >= 0 || leader->onGround || self->direction || leader->state == Ice_PlayerState_Frozen);
+            switch (leader->characterID) {
+                case ID_SONIC: leaderattacking |= leaderanim == ANI_DROPDASH; break;
+                case ID_KNUCKLES: leaderattacking |= leaderanim == ANI_GLIDE || leaderanim == ANI_GLIDE_SLIDE; break;
 #if MANIA_USE_PLUS
-                case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP || player->jumpAbilityState > 1; break;
-                case ID_AMY: attacking |= anim == ANI_HAMMER_HIT || anim == ANI_SPIN_JUMP || anim == ANI_HELI_HAMMER; break;
+                case ID_MIGHTY: leaderattacking |= leaderanim == ANI_HAMMERDROP || leader->jumpAbilityState > 1; break;
+                case ID_AMY: leaderattacking |= leaderanim == ANI_HAMMER_HIT || leaderanim == ANI_SPIN_JUMP || leaderanim == ANI_HELI_HAMMER; break;
 #endif
             }
 
-            if (attacking && !player->sidekick) {
-                if (Player_CheckBadnikTouch(player, self, &ItemBox->hitboxItemBox)) {
-                    ItemBox_Break(self, player);
-                    foreach_break;
+            int32 sidekickanim = sidekick->animator.animationID;
+            bool32 sidekickattacking =
+                sidekickanim == ANI_JUMP && (sidekick->velocity.y >= 0 || sidekick->onGround || self->direction || sidekick->state == Ice_PlayerState_Frozen);
+            switch (sidekick->characterID) {
+                case ID_SONIC: sidekickattacking |= sidekickanim == ANI_DROPDASH; break;
+                case ID_KNUCKLES: sidekickattacking |= sidekickanim == ANI_GLIDE || sidekickanim == ANI_GLIDE_SLIDE; break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: sidekickattacking |= sidekickanim == ANI_HAMMERDROP || sidekick->jumpAbilityState > 1; break;
+                case ID_AMY: sidekickattacking |= sidekickanim == ANI_HAMMER_HIT || sidekickanim == ANI_SPIN_JUMP || sidekickanim == ANI_HELI_HAMMER; break;
+#endif
+            }
+
+            if (leader->classID == Player->classID) { // prevents ItemBox collision being active while in Debug Mode
+                if (leaderattacking) {
+                    if (Player_CheckBadnikTouch(leader, self, &ItemBox->hitboxItemBox)) {
+                        ItemBox_Break(self, leader);
+                        self->sidekickBreak = false;
+                        foreach_break;
+                    }
+                }
+                else {
+                    self->position.x -= self->moveOffset.x;
+                    self->position.y -= self->moveOffset.y;
+                    int32 lx = leader->position.x;
+                    int32 ly = leader->position.y;
+
+                    uint8 leaderside = Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox);
+
+                    leader->position.x = lx;
+                    leader->position.y = ly;
+
+                    self->position.x += self->moveOffset.x;
+                    self->position.y += self->moveOffset.y;
+
+                    if (leaderside == C_BOTTOM) {
+                        self->active = ACTIVE_NORMAL;
+
+                        if (!self->lrzConvPhys)
+                            self->state = ItemBox_State_Falling;
+
+                        self->velocity.y = -TO_FIXED(2);
+
+                        if (!leader->onGround)
+                            leader->velocity.y = TO_FIXED(2);
+                    }
+                    else if (leaderside == C_TOP) {
+                        leader->position.x += self->moveOffset.x;
+                        leader->position.y += self->moveOffset.y;
+                    }
+
+                    if (Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
+                        if (leader->onGround) {
+                            leader->position.x = lx;
+                            leader->position.y = ly;
+                        }
+                    }
                 }
             }
-            else {
-                self->position.x -= self->moveOffset.x;
-                self->position.y -= self->moveOffset.y;
-                int32 px = player->position.x;
-                int32 py = player->position.y;
 
-                uint8 side = Player_CheckCollisionBox(player, self, &ItemBox->hitboxItemBox);
-
-                player->position.x = px;
-                player->position.y = py;
-                self->position.x += self->moveOffset.x;
-                self->position.y += self->moveOffset.y;
-
-                if (side == C_BOTTOM) {
-                    self->active = ACTIVE_NORMAL;
-
-                    if (!self->lrzConvPhys)
-                        self->state = ItemBox_State_Falling;
-
-                    self->velocity.y = -TO_FIXED(2);
-
-                    if (!player->onGround)
-                        player->velocity.y = TO_FIXED(2);
+            if (sidekick->classID == Player->classID) {
+                if (sidekickattacking && sidekick->stateInput == Player_Input_P2_Player) {
+                    if (Player_CheckBadnikTouch(sidekick, self, &ItemBox->hitboxItemBox)) {
+                        ItemBox_Break(self, sidekick);
+                        self->sidekickBreak = true;
+                        foreach_break;
+                    }
                 }
-                else if (side == C_TOP) {
-                    player->position.x += self->moveOffset.x;
-                    player->position.y += self->moveOffset.y;
-                }
+                else {
+                    self->position.x -= self->moveOffset.x;
+                    self->position.y -= self->moveOffset.y;
+                    int32 sx = sidekick->position.x;
+                    int32 sy = sidekick->position.y;
 
-                if (Player_CheckCollisionBox(player, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
-                    if (player->onGround) {
-                        player->position.x = px;
-                        player->position.y = py;
+                    uint8 buddyside = Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox);
+
+                    sidekick->position.x = sx;
+                    sidekick->position.y = sy;
+
+                    self->position.x += self->moveOffset.x;
+                    self->position.y += self->moveOffset.y;
+
+                    if (buddyside == C_BOTTOM) {
+                        self->active = ACTIVE_NORMAL;
+
+                        if (!self->lrzConvPhys)
+                            self->state = ItemBox_State_Falling;
+
+                        self->velocity.y = -TO_FIXED(2);
+
+                        if (!sidekick->onGround)
+                            sidekick->velocity.y = TO_FIXED(2);
+                    }
+                    else if (buddyside == C_TOP) {
+                        sidekick->position.x += self->moveOffset.x;
+                        sidekick->position.y += self->moveOffset.y;
+                    }
+
+                    if (Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
+                        if (sidekick->onGround) {
+                            sidekick->position.x = sx;
+                            sidekick->position.y = sy;
+                        }
                     }
                 }
             }
@@ -531,7 +594,7 @@ void ItemBox_GivePowerup(void)
 {
     RSDK_THIS(ItemBox);
 
-    EntityPlayer *player   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player       = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *sidekick     = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     int32 slot                 = globals->saveSlotID;
     SaveGame->addendumData     = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
@@ -593,6 +656,8 @@ void ItemBox_GivePowerup(void)
                     player->invincibleTimer = 1260;
                 Music_PlayJingle(TRACK_INVINCIBLE);
             }
+            else
+                Player_GiveRings(player, 20, true);
 
             if (sidekick->active && globals->gameMode != MODE_COMPETITION) {
                 if (sidekick->superState == SUPERSTATE_NONE) {
@@ -642,7 +707,17 @@ void ItemBox_GivePowerup(void)
             Player_GiveLife(player);
             break;
 
-        case ITEMBOX_EGGMAN: Player_Hurt(player, self); break;
+        case ITEMBOX_EGGMAN:
+            if (self->sidekickBreak) {
+                int32 entityID       = RSDK.GetEntitySlot(sidekick);
+                EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + entityID, Shield);
+                Player_Hurt(sidekick, self);
+                sidekick->shield = SHIELD_NONE;
+                destroyEntity(shield);
+            }
+            else
+                Player_Hurt(player, self);
+            break;
 
         case ITEMBOX_HYPERRING:
             RSDK.PlaySfx(ItemBox->sfxHyperRing, false, 255);
@@ -657,7 +732,10 @@ void ItemBox_GivePowerup(void)
                 }
                 else {
                     int32 charID = player->characterID;
-                    Player_ChangeCharacter(player, GET_STOCK_ID(1));
+                    if (self->sidekickBreak)
+                        Player_ChangeCharacter(sidekick, GET_STOCK_ID(1));
+                    else
+                        Player_ChangeCharacter(player, GET_STOCK_ID(1));
                     globals->stock >>= 8;
 
                     if (GET_STOCK_ID(1)) {
@@ -670,9 +748,16 @@ void ItemBox_GivePowerup(void)
                         }
                     }
                     globals->stock |= charID;
-                    EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
-                    explosion->drawGroup       = Zone->objectDrawGroup[1];
-                    RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                    if (self->sidekickBreak) {
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), sidekick->position.x, sidekick->position.y);
+                        explosion->drawGroup       = Zone->objectDrawGroup[1];
+                        RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                    }
+                    else {
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
+                        explosion->drawGroup       = Zone->objectDrawGroup[1];
+                        RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                    }
                 }
             }
             else if (globals->gameMode != MODE_COMPETITION) {
@@ -870,19 +955,36 @@ void ItemBox_GivePowerup(void)
                     RSDK.PlaySfx(ItemBox->sfxRecovery, false, 255);
                 }
                 else {
-                    switch (self->contentsAnimator.frameID) {
-                        case 0: Player_ChangeCharacter(player, ID_SONIC); break;
-                        case 1: Player_ChangeCharacter(player, ID_TAILS); break;
-                        case 2: Player_ChangeCharacter(player, ID_KNUCKLES); break;
-                        case 3: Player_ChangeCharacter(player, ID_MIGHTY); break;
-                        case 4: Player_ChangeCharacter(player, ID_RAY); break;
-                        case 5: Player_ChangeCharacter(player, ID_AMY); break;
-                        default: break;
-                    }
+                    if (self->sidekickBreak) {
+                        switch (self->contentsAnimator.frameID) {
+                            case 0: Player_ChangeCharacter(sidekick, ID_SONIC); break;
+                            case 1: Player_ChangeCharacter(sidekick, ID_TAILS); break;
+                            case 2: Player_ChangeCharacter(sidekick, ID_KNUCKLES); break;
+                            case 3: Player_ChangeCharacter(sidekick, ID_MIGHTY); break;
+                            case 4: Player_ChangeCharacter(sidekick, ID_RAY); break;
+                            case 5: Player_ChangeCharacter(sidekick, ID_AMY); break;
+                            default: break;
+                        }
 
-                    EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
-                    explosion->drawGroup       = Zone->objectDrawGroup[1];
-                    RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), sidekick->position.x, sidekick->position.y);
+                        explosion->drawGroup       = Zone->objectDrawGroup[1];
+                        RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                    }
+                    else {
+                        switch (self->contentsAnimator.frameID) {
+                            case 0: Player_ChangeCharacter(player, ID_SONIC); break;
+                            case 1: Player_ChangeCharacter(player, ID_TAILS); break;
+                            case 2: Player_ChangeCharacter(player, ID_KNUCKLES); break;
+                            case 3: Player_ChangeCharacter(player, ID_MIGHTY); break;
+                            case 4: Player_ChangeCharacter(player, ID_RAY); break;
+                            case 5: Player_ChangeCharacter(player, ID_AMY); break;
+                            default: break;
+                        }
+
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
+                        explosion->drawGroup       = Zone->objectDrawGroup[1];
+                        RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
+                    }
                 }
             }
             else {
@@ -905,19 +1007,28 @@ void ItemBox_GivePowerup(void)
         }
 
         case ITEMBOX_EMERALD:
-            SaveGame->saveRAM          = (SaveRAM *)SaveGame_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
             SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
-            saveRAM->collectedEmeralds = 0b01111111;
-            saveRAM->nextSpecialStage  = 7;
+            if (SaveGame_GetSaveRAM()->collectedEmeralds != 0b01111111) {
+                saveRAM->collectedEmeralds = 0b01111111;
+                saveRAM->nextSpecialStage  = 7;
+            }
+            else {
+                saveRAM->collectedEmeralds = 0b00000000;
+                saveRAM->nextSpecialStage  = 0;
+            }
             break;
 
         case ITEMBOX_TIMESTONE:
-            SaveGame->saveRAM                 = (SaveRAM *)SaveGame_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
             SaveRAM *saveData                 = SaveGame_GetSaveRAM();
-            SaveGame->addendumData            = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
             AddendumData *addendumData        = Addendum_GetSaveRAM();
-            addendumData->collectedTimeStones = 0b01111111;
-            saveData->nextSpecialStage        = 0;
+            if (Addendum_GetSaveRAM()->collectedTimeStones != 0b01111111) {
+                addendumData->collectedTimeStones = 0b01111111;
+                saveData->nextSpecialStage        = 0;
+            }
+            else {
+                addendumData->collectedTimeStones = 0b00000000;
+                saveData->nextSpecialStage        = 7;
+            }
             break;
 #endif
         default: break;

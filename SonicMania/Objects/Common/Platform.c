@@ -398,7 +398,7 @@ void Platform_Create(void *data)
 void Platform_StageLoad(void)
 {
     Platform->useClack = false;
-    if (RSDK.CheckSceneFolder("GHZ")) {
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Platform.bin", SCOPE_STAGE);
     }
     else if (RSDK.CheckSceneFolder("GHZCutscene")) {

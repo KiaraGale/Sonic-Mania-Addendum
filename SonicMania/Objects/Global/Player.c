@@ -153,15 +153,17 @@ void Player_Update(void)
     }
 
     int32 leaderRings = leader->rings;
-    if (leader->active) {
+    if (sidekick->active) {
         sidekick->rings = leaderRings;
     }
 
     if (leader->superState == SUPERSTATE_FADEIN) {
-        Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
+        if (sidekick->active)
+            Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
     }
 
     if (leader->superState == SUPERSTATE_SUPER) {
+            if (sidekick->active)
         sidekick->superState = SUPERSTATE_SUPER;
     }
 
@@ -177,7 +179,7 @@ void Player_Update(void)
     }
 
     // crappy "dev mode"
-    EntityUISaveSlot *saveSlot      = (EntityUISaveSlot *)SceneInfo->entity;
+    SaveRAM *saveRAM                = SaveGame_GetSaveRAM();
     RSDKControllerState *controller = &ControllerInfo[self->controllerID];
     if (globals->medalMods & MEDAL_DEBUGMODE) {
         if (controller->keyZ.press) {
@@ -196,14 +198,20 @@ void Player_Update(void)
                 self->rings += 50;
                 RSDK.PlaySfx(Ring->sfxRing, false, 0xFF);
             }
+
+            if (self->state == Player_State_Crouch) {
+                saveRAM->lives += 1;
+                self->lives += 1;
+            }
         }
     }
 
     RSDKControllerState *leadercontroller = &ControllerInfo[leader->controllerID];
     if (leader->superState == SUPERSTATE_SUPER && leadercontroller->keyY.press && leader->animator.animationID == ANI_JUMP
         && (!RSDK.CheckSceneFolder("ERZ"))) {
-        leader->superState   = SUPERSTATE_FADEOUT;
-        sidekick->superState = SUPERSTATE_FADEOUT;
+        leader->superState = SUPERSTATE_FADEOUT;
+        if (sidekick->active)
+            sidekick->superState = SUPERSTATE_FADEOUT;
     }
 }
 
@@ -535,7 +543,7 @@ void Player_Draw(void)
 
     // Copy the colours for any other players so stuff like super forms or etc don't effect the other players aside from P1
     // Used for sidekicks, competition players with the same player or etc
-    if (self->playerID == 1 && GET_CHARACTER_ID(1) == GET_CHARACTER_ID(2) && globals->gameMode != MODE_TIMEATTACK) {
+    if (self->playerID == 1 && GET_CHARACTER_ID(1) == GET_CHARACTER_ID(2) && globals->gameMode == MODE_COMPETITION) {
         uint32 colorStore[PLAYER_PRIMARY_COLOR_COUNT];
 
         switch (self->characterID) {
@@ -625,6 +633,8 @@ void Player_Draw(void)
 void Player_Create(void *data)
 {
     RSDK_THIS(Player);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     if (SceneInfo->inEditor) {
         RSDK.SetSpriteAnimation(Player->sonicFrames, ANI_IDLE, &self->animator, true, 0);
@@ -802,11 +812,18 @@ void Player_Create(void *data)
             Player->powerups &= ~0x80;
         }
 
-        if (Player->powerups) {
-            self->shield = Player->powerups;
-            Player_ApplyShield(self);
+        if (!(CPZ1Intro || SSZ1Intro)) {
+            leader->shield = globals->carryOverShieldP1;
+            Player_ApplyShield(leader);
+
+            if (sidekick->active) {
+                sidekick->shield = globals->carryOverShieldP2;
+                Player_ApplyShield(sidekick);
+            }
+
+            globals->carryOverShieldP1 = 0;
+            globals->carryOverShieldP2 = 0;
         }
-        Player->powerups = 0;
 
         // Handle Lives/Score setup
         EntityCompetitionSession *session = CompetitionSession_GetSession();
@@ -972,8 +989,8 @@ void Player_LoadSprites(void)
             switch (spawn->characterID) {
                 default:
                 case ID_SONIC:
-                    Player->sonicFrames = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
-                    Player->superFrames = RSDK.LoadSpriteAnimation("Players/SuperSonic.bin", SCOPE_STAGE);
+                    Player->sonicFrames   = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
+                    Player->superFrames   = RSDK.LoadSpriteAnimation("Players/SuperSonic.bin", SCOPE_STAGE);
                     Player->miracleFrames = RSDK.LoadSpriteAnimation("Players/MiracleSonic.bin", SCOPE_STAGE);
                     break;
 
@@ -985,15 +1002,23 @@ void Player_LoadSprites(void)
                     break;
 
                 case ID_KNUCKLES:
-                    Player->knuxFrames = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
-                    Player->superKnuxFrames = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
+                    Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
+                    Player->superKnuxFrames   = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
                     Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                     break;
 #if MANIA_USE_PLUS
-                case ID_MIGHTY: Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE); break;
-                case ID_RAY: Player->rayFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE); break;
+                case ID_MIGHTY:
+                    Player->mightyFrames        = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+                    Player->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/MiracleMighty.bin", SCOPE_STAGE);
+                    break;
+
+                case ID_RAY:
+                    Player->rayFrames        = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+                    Player->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/MiracleRay.bin", SCOPE_STAGE);
+                    break;
+
                 case ID_AMY:
-                    Player->amyFrames = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
+                    Player->amyFrames        = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
                     Player->miracleAmyFrames = RSDK.LoadSpriteAnimation("Players/MiracleAmy.bin", SCOPE_STAGE);
                     break;
 #endif
@@ -1047,8 +1072,16 @@ void Player_LoadSprites(void)
                 Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                 break;
 #if MANIA_USE_PLUS
-            case ID_MIGHTY: Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE); break;
-            case ID_RAY: Player->rayFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE); break;
+            case ID_MIGHTY:
+                Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+                Player->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/MiracleMighty.bin", SCOPE_STAGE);
+                break;
+
+            case ID_RAY:
+                Player->rayFrames        = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+                Player->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/MiracleRay.bin", SCOPE_STAGE);
+                break;
+
             case ID_AMY:
                 Player->amyFrames      = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
                 Player->miracleAmyFrames = RSDK.LoadSpriteAnimation("Players/MiracleAmy.bin", SCOPE_STAGE);
@@ -1091,8 +1124,16 @@ void Player_LoadSpritesVS(void)
                         Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                         break;
 #if MANIA_USE_PLUS
-                    case ID_MIGHTY: Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE); break;
-                    case ID_RAY: Player->rayFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE); break;
+                    case ID_MIGHTY:
+                        Player->mightyFrames        = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+                        Player->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/MiracleMighty.bin", SCOPE_STAGE);
+                        break;
+
+                    case ID_RAY:
+                        Player->rayFrames        = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+                        Player->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/MiracleRay.bin", SCOPE_STAGE);
+                        break;
+
                     case ID_AMY:
                         Player->amyFrames      = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
                         Player->miracleAmyFrames = RSDK.LoadSpriteAnimation("Players/MiracleAmy.bin", SCOPE_STAGE);
@@ -1111,10 +1152,27 @@ void Player_LoadSpritesVS(void)
 void Player_SaveValues(void)
 {
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     globals->restartLives[0] = Player->savedLives = player1->lives;
     globals->restartScore = Player->savedScore = player1->score;
     globals->restartScore1UP = Player->savedScore1UP = player1->score1UP;
+
+    switch (player1->shield) {
+        case SHIELD_NONE: globals->carryOverShieldP1 = 0; break;
+        case SHIELD_BLUE: globals->carryOverShieldP1 = 1; break;
+        case SHIELD_BUBBLE: globals->carryOverShieldP1 = 2; break;
+        case SHIELD_FIRE: globals->carryOverShieldP1 = 3; break;
+        case SHIELD_LIGHTNING: globals->carryOverShieldP1 = 4; break;
+    }
+
+    switch (player2->shield) {
+        case SHIELD_NONE: globals->carryOverShieldP2 = 0; break;
+        case SHIELD_BLUE: globals->carryOverShieldP2 = 1; break;
+        case SHIELD_BUBBLE: globals->carryOverShieldP2 = 2; break;
+        case SHIELD_FIRE: globals->carryOverShieldP2 = 3; break;
+        case SHIELD_LIGHTNING: globals->carryOverShieldP2 = 4; break;
+    }
 }
 void Player_GiveScore(EntityPlayer *player, int32 score)
 {
@@ -1276,7 +1334,15 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
-                entity->aniFrames  = Player->knuxFrames;
+                if (entity->superState == SUPERSTATE_SUPER) {
+                    if (entity->miracleState)
+                        entity->aniFrames = Player->miracleKnuxFrames;
+                    else
+                        entity->aniFrames = Player->superKnuxFrames;
+                }
+                else {
+                    entity->aniFrames = Player->knuxFrames;
+                }
                 entity->jumpOffset = TO_FIXED(5);
             }
 
@@ -1288,6 +1354,7 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
 #if MANIA_USE_PLUS
         case ID_MIGHTY:
             Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+            Player->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/MiracleMighty.bin", SCOPE_STAGE);
             if (SizeLaser)
                 SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE);
 
@@ -1296,7 +1363,10 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
-                entity->aniFrames  = Player->mightyFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
+                    entity->aniFrames = Player->miracleMightyFrames;
+                else
+                    entity->aniFrames  = Player->mightyFrames;
                 entity->jumpOffset = TO_FIXED(5);
             }
 
@@ -1307,6 +1377,7 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
 
         case ID_RAY:
             Player->rayFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+            Player->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/MiracleRay.bin", SCOPE_STAGE);
             if (SizeLaser)
                 SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE);
 
@@ -1315,7 +1386,10 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
-                entity->aniFrames  = Player->rayFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
+                    entity->aniFrames = Player->miracleRayFrames;
+                else
+                    entity->aniFrames = Player->rayFrames;
                 entity->jumpOffset = TO_FIXED(5);
             }
 
@@ -1571,24 +1645,48 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
             break;
 
         case ID_KNUCKLES:
-            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+            if (player->miracleState) {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
+            }
+            else {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
             }
             break;
 
 #if MANIA_USE_PLUS
         case ID_MIGHTY:
-            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+            if (player->miracleState) {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
+            }
+            else {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
             }
             break;
 
         case ID_RAY:
-            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+            if (player->miracleState) {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
+            }
+            else {
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                }
             }
             break;
 
@@ -1636,6 +1734,12 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
         else
             player->aniFrames = Player->superKnuxFrames;
     }
+
+    if (player->characterID == ID_MIGHTY && player->miracleState)
+        player->aniFrames = Player->miracleMightyFrames;
+
+    if (player->characterID == ID_RAY && player->miracleState)
+        player->aniFrames = Player->miracleRayFrames;
 
     if (player->characterID == ID_AMY && player->miracleState) {
         if (player->isChibi)
@@ -1833,8 +1937,18 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
             player->aniFrames = Player->superKnuxFrames;
     }
 
-    if (player->characterID == ID_AMY && player->miracleState)
-        player->aniFrames = Player->miracleAmyFrames;
+    if (player->characterID == ID_MIGHTY && player->miracleState)
+        player->aniFrames = Player->miracleMightyFrames;
+
+    if (player->characterID == ID_RAY && player->miracleState)
+        player->aniFrames = Player->miracleRayFrames;
+
+    if (player->characterID == ID_AMY && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleAmyFrames;
+        else
+            player->aniFrames = Player->miracleAmyFrames;
+    }
 
 #if MANIA_USE_PLUS
     if (emeraldMasks == 0xFF) {
@@ -2017,17 +2131,44 @@ void Player_BlendSuperKnuxColors(int32 bankID)
             break;
 
         case SUPERSTATE_SUPER:
-            if (self->superBlendState) {
-                if (self->superBlendAmount <= 0)
-                    self->superBlendState = 0;
-                else
-                    self->superBlendAmount -= 4;
+            if (self->miracleState) {
+                if (self->superBlendState & 1) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState &= ~1;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256) {
+                        self->superBlendState |= 1;
+
+                        if (self->superBlendState == 1) {
+                            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            }
+                            self->superBlendState  = 2;
+                            self->superBlendAmount = 0;
+                        }
+                    }
+                    else {
+                        self->superBlendAmount += 4;
+                    }
+                }
             }
             else {
-                if (self->superBlendAmount >= 256)
-                    self->superBlendState = 1;
-                else
-                    self->superBlendAmount += 4;
+                if (self->superBlendState) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState = 0;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256)
+                        self->superBlendState = 1;
+                    else
+                        self->superBlendAmount += 4;
+                }
             }
             break;
     }
@@ -2052,17 +2193,44 @@ void Player_BlendSuperMightyColors(int32 bankID)
             break;
 
         case SUPERSTATE_SUPER:
-            if (self->superBlendState) {
-                if (self->superBlendAmount <= 0)
-                    self->superBlendState = 0;
-                else
-                    self->superBlendAmount -= 4;
+            if (self->miracleState) {
+                if (self->superBlendState & 1) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState &= ~1;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256) {
+                        self->superBlendState |= 1;
+
+                        if (self->superBlendState == 1) {
+                            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            }
+                            self->superBlendState  = 2;
+                            self->superBlendAmount = 0;
+                        }
+                    }
+                    else {
+                        self->superBlendAmount += 4;
+                    }
+                }
             }
             else {
-                if (self->superBlendAmount >= 256)
-                    self->superBlendState = 1;
-                else
-                    self->superBlendAmount += 4;
+                if (self->superBlendState) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState = 0;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256)
+                        self->superBlendState = 1;
+                    else
+                        self->superBlendAmount += 4;
+                }
             }
             break;
     }
@@ -2086,17 +2254,44 @@ void Player_BlendSuperRayColors(int32 bankID)
             break;
 
         case SUPERSTATE_SUPER:
-            if (self->superBlendState) {
-                if (self->superBlendAmount <= 0)
-                    self->superBlendState = 0;
-                else
-                    self->superBlendAmount -= 4;
+            if (self->miracleState) {
+                if (self->superBlendState & 1) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState &= ~1;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256) {
+                        self->superBlendState |= 1;
+
+                        if (self->superBlendState == 1) {
+                            for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
+                                RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                                RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            }
+                            self->superBlendState  = 2;
+                            self->superBlendAmount = 0;
+                        }
+                    }
+                    else {
+                        self->superBlendAmount += 4;
+                    }
+                }
             }
             else {
-                if (self->superBlendAmount >= 256)
-                    self->superBlendState = 1;
-                else
-                    self->superBlendAmount += 4;
+                if (self->superBlendState) {
+                    if (self->superBlendAmount <= 0)
+                        self->superBlendState = 0;
+                    else
+                        self->superBlendAmount -= 4;
+                }
+                else {
+                    if (self->superBlendAmount >= 256)
+                        self->superBlendState = 1;
+                    else
+                        self->superBlendAmount += 4;
+                }
             }
             break;
     }
@@ -2293,7 +2488,7 @@ void Player_HandleSuperForm(void)
                 }
                 else if (HCZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails_HCZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails_HCZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails_HCZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
@@ -2321,7 +2516,7 @@ void Player_HandleSuperForm(void)
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
                         if (self->miracleState) {
                             RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         }
                         else {
                             RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->superPalette_Tails[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
@@ -2343,28 +2538,40 @@ void Player_HandleSuperForm(void)
                 }
                 else if (HCZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_HCZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_HCZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_HCZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperKnuxColors(1);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 else if (CPZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_CPZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_CPZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux_CPZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperKnuxColors(2);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 break;
@@ -2382,28 +2589,40 @@ void Player_HandleSuperForm(void)
                 }
                 else if (HCZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_HCZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_HCZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_HCZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperMightyColors(1);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 else if (CPZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_CPZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_CPZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty_CPZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperMightyColors(2);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 break;
@@ -2420,28 +2639,40 @@ void Player_HandleSuperForm(void)
                 }
                 else if (HCZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_HCZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_HCZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_HCZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperRayColors(1);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 else if (CPZSetup) {
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_CPZ[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_CPZ[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                         RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray_CPZ[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                     }
 
                     Player_BlendSuperRayColors(2);
 
                     for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        if (self->miracleState) {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
+                        else {
+                            RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                            RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        }
                     }
                 }
                 break;
@@ -2637,8 +2868,14 @@ void Player_HandleSuperForm(void)
             case ID_KNUCKLES:
                 self->stateAbility = Player_JumpAbility_Knux;
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    if (self->miracleState) {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
+                    else {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->superPalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
                 }
                 self->superBlendAmount = 256;
                 self->superBlendState  = 1;
@@ -2647,8 +2884,14 @@ void Player_HandleSuperForm(void)
             case ID_MIGHTY:
                 self->stateAbility = Player_JumpAbility_Mighty;
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    if (self->miracleState) {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
+                    else {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->superPalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
                 }
                 self->superBlendAmount = 256;
                 self->superBlendState  = 1;
@@ -2657,8 +2900,14 @@ void Player_HandleSuperForm(void)
             case ID_RAY:
                 self->stateAbility = Player_JumpAbility_Ray;
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    if (self->miracleState) {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
+                    else {
+                        RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                        RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->superPalette_Ray[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    }
                 }
                 self->superBlendAmount = 256;
                 self->superBlendState  = 1;
@@ -2717,8 +2966,40 @@ void Player_HandleSuperForm(void)
             RSDK.SetSpriteAnimation(self->aniFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
         }
 
+        if (self->characterID == ID_TAILS) {
+            self->aniFrames = Player->tailsFrames;
+            self->tailFrames = Player->tailsTailsFrames;
+            if (!self->animator.animationID)
+                self->animator.frameID = 0;
+
+            RSDK.SetSpriteAnimation(self->aniFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
+            RSDK.SetSpriteAnimation(self->tailFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
+        }
+
         if (self->characterID == ID_KNUCKLES && !self->isChibi) {
             self->aniFrames = Player->knuxFrames;
+            if (!self->animator.animationID)
+                self->animator.frameID = 0;
+
+            RSDK.SetSpriteAnimation(self->aniFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
+        }
+
+        if (self->characterID == ID_MIGHTY) {
+            if (self->isChibi)
+                self->aniFrames = SizeLaser->mightyFrames;
+            else
+                self->aniFrames = Player->mightyFrames;
+            if (!self->animator.animationID)
+                self->animator.frameID = 0;
+
+            RSDK.SetSpriteAnimation(self->aniFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
+        }
+
+        if (self->characterID == ID_RAY) {
+            if (self->isChibi)
+                self->aniFrames = SizeLaser->rayFrames;
+            else
+                self->aniFrames = Player->rayFrames;
             if (!self->animator.animationID)
                 self->animator.frameID = 0;
 
@@ -4836,6 +5117,12 @@ void Player_State_StartSuper(void)
             self->aniFrames = Player->superKnuxFrames;
     }
 
+    if (self->characterID == ID_MIGHTY && self->miracleState)
+        self->aniFrames = Player->miracleMightyFrames;
+
+    if (self->characterID == ID_RAY && self->miracleState)
+        self->aniFrames = Player->miracleRayFrames;
+
     if (self->characterID == ID_AMY && self->miracleState)
         self->aniFrames = Player->miracleAmyFrames;
 
@@ -4905,25 +5192,22 @@ void Player_State_Ground(void)
 
         Player_HandleGroundAnimation();
 
-        if (self->characterID == ID_AMY) {
-            if (self->jumpPress) {
-                if (ControllerInfo[self->controllerID].keyUp.down) {
-                    if (self->stateTallJump) {
-                        RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
-                        self->state = Player_Action_TallJump;
-                    }
+        if (self->stateTallJump) {
+            if (ControllerInfo[self->controllerID].keyUp.down) {
+                if (self->jumpPress) {
+                    RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
+                    self->state = Player_Action_TallJump;
                 }
-                else {
-                    Player_Action_Jump(self);
-                    self->timer = 0;
-                }
+            }
+            else if (TriggerInfoR[self->controllerID].keyBumper.press) {
+                RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
+                self->state = Player_Action_TallJump;
             }
         }
-        else {
-            if (self->jumpPress) {
-                Player_Action_Jump(self);
-                self->timer = 0;
-            }
+
+        if (self->jumpPress) {
+            Player_Action_Jump(self);
+            self->timer = 0;
         }
 
         if (self->groundVel) {
@@ -5736,7 +6020,10 @@ void Player_State_BubbleBounce(void)
             self->onGround = false;
 
             self->velocity.x = (self->groundVel * RSDK.Cos256(self->angle) + vel * RSDK.Sin256(self->angle)) >> 8;
-            self->velocity.y = (self->groundVel * RSDK.Sin256(self->angle) - vel * RSDK.Cos256(self->angle)) >> 8;
+            if (self->superState == SUPERSTATE_SUPER)
+                self->velocity.y = ((self->groundVel * RSDK.Sin256(self->angle) - vel * RSDK.Cos256(self->angle)) >> 8) * 1.25;
+            else
+                self->velocity.y = (self->groundVel * RSDK.Sin256(self->angle) - vel * RSDK.Cos256(self->angle)) >> 8;
 
             Player_Gravity_True();
 
@@ -7160,8 +7447,20 @@ void Player_FinishedReturnToPlayer(EntityPlayer *player, EntityPlayer *leader)
                     player->aniFrames = Player->knuxFrames;
                 break;
 #if MANIA_USE_PLUS
-            case ID_MIGHTY: player->aniFrames = Player->mightyFrames; break;
-            case ID_RAY: player->aniFrames = Player->rayFrames; break;
+            case ID_MIGHTY:
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    player->aniFrames = Player->miracleMightyFrames;
+                else
+                    player->aniFrames = Player->mightyFrames;
+                break;
+
+            case ID_RAY:
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    player->aniFrames = Player->miracleRayFrames;
+                else
+                    player->aniFrames = Player->rayFrames;
+                break;
+
             case ID_AMY:
                 if (player->miracleState)
                     player->aniFrames = Player->miracleAmyFrames;
@@ -7557,49 +7856,18 @@ void Player_JumpAbility_Tails(void)
 void Player_JumpAbility_Knux(void)
 {
     RSDK_THIS(Player);
-    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
 
-    if (self->superState == SUPERSTATE_SUPER && self->shield > SHIELD_BLUE && controller->keyA.press && self->jumpAbilityState == 1) {
-        EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(self), Shield);
-        switch (self->shield) {
-            case SHIELD_BUBBLE:
-                self->velocity.x >>= 1;
-                self->velocity.y      = 0x80000;
-                self->state           = Player_State_BubbleBounce;
-                self->nextGroundState = StateMachine_None;
-                self->nextAirState    = StateMachine_None;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
-                shield->state = Shield_State_BubbleDrop;
-                RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
-                break;
-
-            case SHIELD_FIRE:
-                self->jumpAbilityState = 0;
-                self->velocity.x       = self->direction == FLIP_X ? -0x80000 : 0x80000;
-                self->velocity.y       = 0;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
-                shield->state     = Shield_State_FireDash;
-                shield->direction = self->direction;
-                RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
-                break;
-
-            case SHIELD_LIGHTNING:
-                self->jumpAbilityState = 0;
-                self->velocity.y       = self->invertGravity ? 0x58000 : -0x58000;
-                shield->state          = Shield_State_LightningSparks;
-                RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
-                break;
-
-            default: break;
-        }
-    }
-
-    if ((controller->keyA.press && self->shield < SHIELD_BUBBLE || (controller->keyB.press || controller->keyC.press))
-        && self->jumpAbilityState == 1) {
-#if GAME_VERSION == VER_100
-        &&!Player_TryTransform(self, SaveGame_GetSaveRAM()->collectedEmeralds)
+    if (self->jumpPress && self->jumpAbilityState == 1
+        && (self->stateInput != Player_Input_P2_AI
+            || (self->up
+#if MANIA_USE_PLUS
+                && globals->gameMode != MODE_ENCORE
 #endif
+                ))
+#if GAME_VERSION == VER_100
+        && !Player_TryTransform(self, SaveGame_GetSaveRAM()->collectedEmeralds)
+#endif
+    ) {
         if (!self->invertGravity) {
             self->jumpAbilityState = 0;
             self->abilitySpeed     = 0x40000;
@@ -7653,47 +7921,19 @@ void Player_JumpAbility_Knux(void)
 void Player_JumpAbility_Mighty(void)
 {
     RSDK_THIS(Player);
-    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
-
-    if (self->superState == SUPERSTATE_SUPER && self->shield > SHIELD_BLUE && controller->keyA.press && self->jumpAbilityState == 1) {
-        EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(self), Shield);
-        switch (self->shield) {
-            case SHIELD_BUBBLE:
-                self->velocity.x >>= 1;
-                self->velocity.y      = 0x80000;
-                self->state           = Player_State_BubbleBounce;
-                self->nextGroundState = StateMachine_None;
-                self->nextAirState    = StateMachine_None;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
-                shield->state = Shield_State_BubbleDrop;
-                RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
-                break;
-
-            case SHIELD_FIRE:
-                self->jumpAbilityState = 0;
-                self->velocity.x       = self->direction == FLIP_X ? -0x80000 : 0x80000;
-                self->velocity.y       = 0;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
-                shield->state     = Shield_State_FireDash;
-                shield->direction = self->direction;
-                RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
-                break;
-
-            case SHIELD_LIGHTNING:
-                self->jumpAbilityState = 0;
-                self->velocity.y       = self->invertGravity ? 0x58000 : -0x58000;
-                shield->state          = Shield_State_LightningSparks;
-                RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
-                break;
-
-            default: break;
-        }
-    }
 
     if (self->jumpAbilityState <= 1) {
-        if ((controller->keyA.press && self->shield < SHIELD_BUBBLE || (controller->keyB.press || controller->keyC.press))
-            && self->jumpAbilityState == 1) {
+        if (self->jumpPress && self->jumpAbilityState == 1
+            && (self->stateInput != Player_Input_P2_AI
+                || (self->up
+#if MANIA_USE_PLUS
+                    && globals->gameMode != MODE_ENCORE
+#endif
+                    ))
+#if GAME_VERSION == VER_100
+            && !Player_TryTransform(self, SaveGame_GetSaveRAM()->collectedEmeralds)
+#endif
+        ) {
             if (!self->invertGravity) {
                 self->velocity.x >>= 1;
                 self->velocity.y = self->underwater ? 0x80000 : 0xC0000;
@@ -7723,46 +7963,18 @@ void Player_JumpAbility_Mighty(void)
 void Player_JumpAbility_Ray(void)
 {
     RSDK_THIS(Player);
-    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
 
-    if (self->superState == SUPERSTATE_SUPER && self->shield > SHIELD_BLUE && controller->keyA.press && self->jumpAbilityState == 1) {
-        EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(self), Shield);
-        switch (self->shield) {
-            case SHIELD_BUBBLE:
-                self->velocity.x >>= 1;
-                self->velocity.y      = 0x80000;
-                self->state           = Player_State_BubbleBounce;
-                self->nextGroundState = StateMachine_None;
-                self->nextAirState    = StateMachine_None;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
-                shield->state = Shield_State_BubbleDrop;
-                RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
-                break;
-
-            case SHIELD_FIRE:
-                self->jumpAbilityState = 0;
-                self->velocity.x       = self->direction == FLIP_X ? -0x80000 : 0x80000;
-                self->velocity.y       = 0;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
-                shield->state     = Shield_State_FireDash;
-                shield->direction = self->direction;
-                RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
-                break;
-
-            case SHIELD_LIGHTNING:
-                self->jumpAbilityState = 0;
-                self->velocity.y       = self->invertGravity ? 0x58000 : -0x58000;
-                shield->state          = Shield_State_LightningSparks;
-                RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
-                break;
-
-            default: break;
-        }
-    }
-
-    if ((controller->keyA.press && self->shield < SHIELD_BUBBLE || (controller->keyB.press || controller->keyC.press))
-        && self->jumpAbilityState == 1) {
+    if (self->jumpPress && self->jumpAbilityState == 1
+        && (self->stateInput != Player_Input_P2_AI
+            || (self->up
+#if MANIA_USE_PLUS
+                && globals->gameMode != MODE_ENCORE
+#endif
+                ))
+#if GAME_VERSION == VER_100
+        && !Player_TryTransform(self, SaveGame_GetSaveRAM()->collectedEmeralds)
+#endif
+    ) {
         if (!self->invertGravity) {
             self->jumpAbilityState = 0;
 
@@ -7823,46 +8035,18 @@ void Player_JumpAbility_Amy(void)
 {
     RSDK_THIS(Player);
     self->timer = 0;
-    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
 
-    if (self->superState == SUPERSTATE_SUPER && self->shield > SHIELD_BLUE && controller->keyA.press && self->jumpAbilityState == 1) {
-        EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(self), Shield);
-        switch (self->shield) {
-            case SHIELD_BUBBLE:
-                self->velocity.x >>= 1;
-                self->velocity.y      = 0x80000;
-                self->state           = Player_State_BubbleBounce;
-                self->nextGroundState = StateMachine_None;
-                self->nextAirState    = StateMachine_None;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
-                shield->state = Shield_State_BubbleDrop;
-                RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
-                break;
-
-            case SHIELD_FIRE:
-                self->jumpAbilityState = 0;
-                self->velocity.x       = self->direction == FLIP_X ? -0x80000 : 0x80000;
-                self->velocity.y       = 0;
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
-                shield->state     = Shield_State_FireDash;
-                shield->direction = self->direction;
-                RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
-                break;
-
-            case SHIELD_LIGHTNING:
-                self->jumpAbilityState = 0;
-                self->velocity.y       = self->invertGravity ? 0x58000 : -0x58000;
-                shield->state          = Shield_State_LightningSparks;
-                RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
-                break;
-
-            default: break;
-        }
-    }
-
-    if ((controller->keyA.press && self->shield < SHIELD_BUBBLE || (controller->keyB.press || controller->keyC.press))
-        && self->jumpAbilityState == 1) {
+    if (self->jumpPress && self->jumpAbilityState == 1
+        && (self->stateInput != Player_Input_P2_AI
+            || (self->up
+#if MANIA_USE_PLUS
+                && globals->gameMode != MODE_ENCORE
+#endif
+                ))
+#if GAME_VERSION == VER_100
+        && !Player_TryTransform(self, SaveGame_GetSaveRAM()->collectedEmeralds)
+#endif
+    ) {
         if (globals->medalMods & MEDAL_PEELOUT) {
             self->state = Player_State_AmyDoubleJump;
         }
@@ -7907,7 +8091,7 @@ void Player_State_AmyDoubleJump(void)
     if (dJump == 1) {
         int32 jumpForce        = self->gravityStrength + self->jumpStrength;
         self->velocity.x       = (self->groundVel * RSDK.Cos256(self->angle) + jumpForce * RSDK.Sin256(self->angle)) >> 8;
-        self->velocity.y       = ((self->groundVel * RSDK.Sin256(self->angle) - jumpForce * RSDK.Cos256(self->angle)) >> 8) * 0.6;
+        self->velocity.y       = ((self->groundVel * RSDK.Sin256(self->angle) - jumpForce * RSDK.Cos256(self->angle)) >> 8) * 0.67;
         self->jumpAbilityState = 0;
 
         RSDK.SetSpriteAnimation(self->aniFrames, ANI_JUMP, &self->animator, false, 0);
@@ -8272,19 +8456,19 @@ void Player_State_DrawMiracle(void)
 {
     RSDK_THIS(Player);
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
-        RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+        RSDK.SetPaletteEntry(0, 223 + c, Player->miracleColors[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 224 + c);
-        RSDK.SetPaletteEntry(1, 224 + c, Player->miracleColors_HCZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, 223 + c);
+        RSDK.SetPaletteEntry(1, 223 + c, Player->miracleColors_HCZ[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 224 + c);
-        RSDK.SetPaletteEntry(2, 224 + c, Player->miracleColors_CPZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        Player->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, 223 + c);
+        RSDK.SetPaletteEntry(2, 223 + c, Player->miracleColors_CPZ[c]);
     }
 
     if (self->tailFrames != (uint16)-1) {
@@ -8300,16 +8484,16 @@ void Player_State_DrawMiracle(void)
 
     RSDK.DrawSprite(&self->animator, NULL, false);
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(0, 223 + c, Player->colorStorage[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(1, 224 + c, Player->colorStorage_HCZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(1, 223 + c, Player->colorStorage_HCZ[c]);
     }
 
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(2, 224 + c, Player->colorStorage_CPZ[c]);
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(2, 223 + c, Player->colorStorage_CPZ[c]);
     }
 }
 

@@ -602,22 +602,22 @@ bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
 
         EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
         RSDK.CopyEntity(player3, player1, false);
-        player3->playerID = 3;
+        player3->playerID = 2;
         Player_ChangeCharacter(player3, ID_KNUCKLES);
 
         EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_POWERUP1, Player);
         RSDK.CopyEntity(player4, player1, false);
-        player4->playerID = 4;
+        player4->playerID = 3;
         Player_ChangeCharacter(player4, ID_MIGHTY);
 
         EntityPlayer *player5 = RSDK_GET_ENTITY(SLOT_POWERUP2, Player);
         RSDK.CopyEntity(player5, player1, false);
-        player5->playerID = 5;
+        player5->playerID = 4;
         Player_ChangeCharacter(player5, ID_RAY);
 
         EntityPlayer *player6 = RSDK_GET_ENTITY(SLOT_POWERUP3, Player);
         RSDK.CopyEntity(player6, player1, false);
-        player6->playerID = 6;
+        player6->playerID = 5;
         Player_ChangeCharacter(player6, ID_AMY);
 
         SceneInfo->timeEnabled = true;
@@ -628,15 +628,8 @@ bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
         Player_TryTransform(player4, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
         Player_TryTransform(player5, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
         Player_TryTransform(player6, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        EntitySuperSparkle *sparkle = RSDK_GET_ENTITY(Player->playerCount, SuperSparkle);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player1);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player2);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player3);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player4);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player5);
-        RSDK.ResetEntity(sparkle, SuperSparkle->classID, player6);
 
-        Player->playerCount = 7;
+        Player->playerCount = 6;
         int32 offsetX       = 0;
         for (int32 i = 0; i < Player->playerCount; ++i) {
             if (i != 2) {

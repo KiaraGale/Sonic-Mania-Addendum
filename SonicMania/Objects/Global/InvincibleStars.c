@@ -13,7 +13,7 @@ void InvincibleStars_Update(void)
 {
     RSDK_THIS(InvincibleStars);
 
-    EntityPlayer *player = self->player;
+    EntityPlayer *player   = self->player;
     EntityPlayer *sidekick = self->sidekick;
     if (player) {
         self->starFrame[0] = (self->starAngle[0] + 1) % 12;
@@ -111,7 +111,7 @@ void InvincibleStars_Draw(void)
 {
     RSDK_THIS(InvincibleStars);
 
-    EntityPlayer *player = self->player;
+    EntityPlayer *player   = self->player;
     EntityPlayer *sidekick = self->sidekick;
     if (player) {
         if (player->isChibi) {
@@ -228,13 +228,13 @@ void InvincibleStars_Draw(void)
 
 void InvincibleStars_Create(void *data)
 {
-    RSDK_THIS(InvincibleStars); 
+    RSDK_THIS(InvincibleStars);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     if (!SceneInfo->inEditor) {
-        self->active  = ACTIVE_NORMAL;
-        self->visible = true;
-        self->player  = (EntityPlayer *)data;
+        self->active   = ACTIVE_NORMAL;
+        self->visible  = true;
+        self->player   = (EntityPlayer *)data;
         self->sidekick = (EntityPlayer *)data;
 
         for (int32 i = 0; i < 8; ++i) {

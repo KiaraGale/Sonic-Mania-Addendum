@@ -241,6 +241,11 @@ void RubyPortal_State_Opened(void)
         }
         else {
             EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+            EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+            globals->carryOverShieldP1 = player1->shield;
+            globals->carryOverShieldP2 = player2->shield;
+
             if (Player_CheckCollisionTouch(player1, self, &RubyPortal->hitbox)) {
                 for (int32 p = 0; p < Player->playerCount; ++p) StarPost->postIDs[p] = 0;
 

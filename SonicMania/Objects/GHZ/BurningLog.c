@@ -60,7 +60,7 @@ void BurningLog_Create(void *data)
 
 void BurningLog_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("GHZ"))
+    if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         BurningLog->aniFrames = RSDK.LoadSpriteAnimation("GHZ/Fireball.bin", SCOPE_STAGE);
 
     BurningLog->hitboxPlatform.left   = -8;

@@ -64,7 +64,7 @@ void OOZSetup_StaticUpdate(void)
 
             int32 tileFlags = RSDK.GetTileFlags(tile, player->collisionPlane);
             if (tileFlags != OOZ_TFLAGS_NORMAL) {
-                if (player->shield == SHIELD_FIRE && player->superState != SUPERSTATE_SUPER && tileFlags != OOZ_TFLAGS_OILFALL) {
+                if (player->shield == SHIELD_FIRE && tileFlags != OOZ_TFLAGS_OILFALL) {
                     int32 tx = (player->position.x & 0xFFF00000) + 0x70000;
                     int32 ty = player->position.y + ((playerHitbox->bottom + 8) << 16);
                     if (tileFlags == OOZ_TFLAGS_OILPOOL) {

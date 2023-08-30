@@ -319,12 +319,62 @@ void HUD_Draw(void)
         case ID_KNUCKLES: self->lifeIconAnimator.frameID = 2; break;
     }
 #endif
-    if (player->miracleState)
-        HUD_Life_Miracle_Draw();
+    if (player->miracleState) {
+        for (int32 c = 0; c < 32; ++c) {
+            Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+            RSDK.SetPaletteEntry(0, 223 + c, Player->miracleColors[c]);
+        }
+
+        RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
+
+        for (int32 c = 0; c < 32; ++c) {
+            RSDK.SetPaletteEntry(0, 223 + c, Player->colorStorage[c]);
+        }
+    }
     else
         RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
 
 #if MANIA_USE_PLUS
+    if (globals->gameMode == MODE_MANIA) {
+        if (GET_CHARACTER_ID(2) > 0) {
+            drawPos.x += TO_FIXED(20);
+            EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+            // Draw Buddy Icon
+            self->lifeIconAnimator.frameID = HUD_CharacterIndexFromID(sidekick->characterID);
+
+            if (sidekick->characterID == ID_SONIC && sidekick->superState == SUPERSTATE_SUPER) {
+                if (sidekick->miracleState)
+                    self->lifeIconAnimator.frameID = 7;
+                else
+                    self->lifeIconAnimator.frameID = 6;
+            }
+
+            if (self->lifeIconAnimator.frameID < 0) {
+                self->lifeIconAnimator.frameID = self->lifeFrameIDs[player->playerID];
+                lives--;
+            }
+            else {
+                self->lifeFrameIDs[player->playerID] = self->lifeIconAnimator.frameID;
+                self->lives[player->playerID]        = player->lives;
+            }
+
+            if (sidekick->miracleState) {
+                for (int32 c = 0; c < 32; ++c) {
+                    Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+                    RSDK.SetPaletteEntry(0, 223 + c, Player->miracleColors[c]);
+                }
+
+                RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
+
+                for (int32 c = 0; c < 32; ++c) {
+                    RSDK.SetPaletteEntry(0, 223 + c, Player->colorStorage[c]);
+                }
+            }
+            else
+                RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
+        }
+    }
+
     if (globals->gameMode == MODE_ENCORE) {
         for (int32 p = 0; p < PLAYER_COUNT + 1; ++p) {
             if (HUD->stockFlashTimers[p] > 0)
@@ -339,14 +389,44 @@ void HUD_Draw(void)
             if (self->lifeIconAnimator.frameID >= 0 && !(HUD->stockFlashTimers[0] & 4)) {
                 if ((sidekick->state != Player_State_Death && sidekick->state != Player_State_Drown && sidekick->state != Player_State_EncoreRespawn)
                     || !sidekick->abilityValues[0]) {
-                    RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
+
+                    if (sidekick->characterID == ID_SONIC && sidekick->superState == SUPERSTATE_SUPER) {
+                        if (sidekick->miracleState)
+                            self->lifeIconAnimator.frameID = 7;
+                        else
+                            self->lifeIconAnimator.frameID = 6;
+                    }
+
+                    if (self->lifeIconAnimator.frameID < 0) {
+                        self->lifeIconAnimator.frameID = self->lifeFrameIDs[player->playerID];
+                        lives--;
+                    }
+                    else {
+                        self->lifeFrameIDs[player->playerID] = self->lifeIconAnimator.frameID;
+                        self->lives[player->playerID]        = player->lives;
+                    }
+
+                    if (sidekick->miracleState) {
+                        for (int32 c = 0; c < 32; ++c) {
+                            Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+                            RSDK.SetPaletteEntry(0, 223 + c, Player->miracleColors[c]);
+                        }
+
+                        RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
+
+                        for (int32 c = 0; c < 32; ++c) {
+                            RSDK.SetPaletteEntry(0, 223 + c, Player->colorStorage[c]);
+                        }
+                    }
+                    else
+                        RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
                 }
             }
 
             // Draw Stock Icons
             drawPos.x += TO_FIXED(20);
             RSDK.SetSpriteAnimation(HUD->aniFrames, 12, &self->lifeIconAnimator, true, 0);
-            for (int32 i = 1; i < 4; ++i) {
+            for (int32 i = 1; i < 5; ++i) {
                 self->lifeIconAnimator.frameID = HUD_CharacterIndexFromID(GET_STOCK_ID(i));
                 if (self->lifeIconAnimator.frameID >= 0 && !(HUD->stockFlashTimers[i] & 4))
                     RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
@@ -475,6 +555,13 @@ void HUD_Draw(void)
         RSDK.DrawSprite(&self->inputXAnimator, &drawPos, true);
         RSDK.DrawSprite(&self->inputYAnimator, &drawPos, true);
         RSDK.DrawSprite(&self->inputZAnimator, &drawPos, true);
+
+        // Bumpers
+        drawPos.x = inputPos.x + TO_FIXED(28);
+        drawPos.y = inputPos.y - TO_FIXED(28);
+        RSDK.DrawSprite(&self->inputBumperAnimator, &drawPos, true);
+        RSDK.DrawSprite(&self->inputLBumperAnimator, &drawPos, true);
+        RSDK.DrawSprite(&self->inputRBumperAnimator, &drawPos, true);
     }
 
     // Power-up Display
@@ -581,9 +668,9 @@ void HUD_Create(void *data)
         RSDK.SetSpriteAnimation(HUD->aniFrames, 8, &self->playerIDAnimator, true, 0);
 #endif
         RSDK.SetSpriteAnimation(HUD->aniFrames, 14, &self->readyUpIconAnimator, true, 0);
-        RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->itemBox1Animator, true, 0);
-        RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->itemBox2Animator, true, 0);
-        RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->itemBox3Animator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox1Animator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox2Animator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox3Animator, true, 0);
 
         if (globals->medalMods & MEDAL_DEBUGMODE || globals->superSecret) {
             RSDK.SetSpriteAnimation(HUD->aniFrames, 15, &self->inputDpadAnimator, true, 0);
@@ -599,6 +686,9 @@ void HUD_Create(void *data)
             RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputXAnimator, true, 1);
             RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputYAnimator, true, 2);
             RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputZAnimator, true, 3);
+            RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->inputBumperAnimator, true, 0);
+            RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputLBumperAnimator, true, 1);
+            RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputRBumperAnimator, true, 2);
         }
 
         RSDK.SetSpriteAnimation(HUD->bossFrames, 0, &self->bossIconAnimator, true, 8);
@@ -950,6 +1040,8 @@ void HUD_HandleInputViewer(void)
     RSDK_THIS(HUD);
     EntityPlayer *leader            = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     RSDKControllerState *controller = &ControllerInfo[leader->controllerID];
+    RSDKTriggerState *Ltrigger       = &TriggerInfoL[leader->controllerID];
+    RSDKTriggerState *Rtrigger       = &TriggerInfoR[leader->controllerID];
 
     if (controller->keyUp.press || controller->keyUp.down) {
         self->inputUpAnimator.frameID = 1;
@@ -1020,13 +1112,27 @@ void HUD_HandleInputViewer(void)
     else {
         self->inputZAnimator.frameID = 0;
     }
+
+    if (Ltrigger->keyBumper.press || Ltrigger->keyBumper.down) {
+        self->inputLBumperAnimator.frameID = 1;
+    }
+    else {
+        self->inputLBumperAnimator.frameID = 0;
+    }
+
+    if (Rtrigger->keyBumper.press || Rtrigger->keyBumper.down) {
+        self->inputRBumperAnimator.frameID = 2;
+    }
+    else {
+        self->inputRBumperAnimator.frameID = 0;
+    }
 }
 
 void HUD_HandleItemsHUD(void)
 {
     RSDK_THIS(HUD);
     EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    if (leader->state != Player_State_Transform && leader->superState < SUPERSTATE_SUPER) {
+    if (leader->state != Player_State_Transform && leader->superState != SUPERSTATE_SUPER) {
         if (leader->invincibleTimer > 0) {
             if (leader->invincibleTimer > 180) {
                 self->itemBox1Animator.frameID = 5;
@@ -1133,27 +1239,6 @@ void HUD_HandleItemsHUD(void)
     }
     else {
         self->itemBox3Animator.frameID = 0;
-    }
-}
-
-void HUD_Life_Miracle_Draw(void)
-{
-    RSDK_THIS(HUD);
-    Vector2 drawPos, lifePos;
-    lifePos.x = self->lifePos.x;
-    lifePos.y = self->lifePos.y;
-    drawPos.x = lifePos.x;
-    drawPos.y = lifePos.y;
-
-    for (int32 c = 0; c < 31; ++c) {
-        Player->colorStorage[c] = RSDK.GetPaletteEntry(0, 224 + c);
-        RSDK.SetPaletteEntry(0, 224 + c, Player->miracleColors[c]);
-    }
-
-    RSDK.DrawSprite(&self->lifeIconAnimator, &drawPos, true);
-
-    for (int32 c = 0; c < 31; ++c) {
-        RSDK.SetPaletteEntry(0, 224 + c, Player->colorStorage[c]);
     }
 }
 

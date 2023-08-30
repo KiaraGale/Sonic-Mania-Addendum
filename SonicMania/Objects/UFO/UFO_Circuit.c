@@ -123,13 +123,21 @@ void UFO_Circuit_StageLoad(void)
     UFO_Circuit->ufoModel = RSDK.LoadMesh("Special/UFOChase.bin", SCOPE_STAGE);
 
     switch (UFO_Setup->specialStageID) {
+        default:
+        case 0: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldGreen.bin", SCOPE_STAGE); break;
         case 1: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldYellow.bin", SCOPE_STAGE); break;
         case 2: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldBlue.bin", SCOPE_STAGE); break;
         case 3: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldPurple.bin", SCOPE_STAGE); break;
         case 4: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldGrey.bin", SCOPE_STAGE); break;
         case 5: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldCyan.bin", SCOPE_STAGE); break;
         case 6: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldRed.bin", SCOPE_STAGE); break;
-        default: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldGreen.bin", SCOPE_STAGE); break;
+        case 7: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneGreen.bin", SCOPE_STAGE); break;
+        case 8: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneOrange.bin", SCOPE_STAGE); break;
+        case 9: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneYellow.bin", SCOPE_STAGE); break;
+        case 10: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneBlue.bin", SCOPE_STAGE); break;
+        case 11: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneCyan.bin", SCOPE_STAGE); break;
+        case 12: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStonePurple.bin", SCOPE_STAGE); break;
+        case 13: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneRed.bin", SCOPE_STAGE); break;
     }
 
     UFO_Circuit->sceneIndex = RSDK.Create3DScene("View:Special", 4096, SCOPE_STAGE);

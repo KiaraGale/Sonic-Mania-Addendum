@@ -717,6 +717,8 @@ void ActClear_State_TallyScore(void)
 void ActClear_State_SaveGameProgress(void)
 {
     RSDK_THIS(ActClear);
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     if (++self->timer == 120) {
         self->timer            = 0;

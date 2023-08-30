@@ -99,6 +99,8 @@ struct ObjectZone {
     bool32 swapGameMode;
     bool32 teleportActionActive;
     int32 randSeed;
+    int32 startingShieldP1;
+    int32 startingShieldP2;
 #endif
 };
 
