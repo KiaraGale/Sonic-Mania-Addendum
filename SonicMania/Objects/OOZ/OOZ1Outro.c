@@ -99,6 +99,10 @@ bool32 OOZ1Outro_Cutscene_FadeIn(EntityCutsceneSeq *host)
         RSDK.PlaySfx(SignPost->sfxTwinkle, false, 0xFF);
         return true;
     }
+
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->actID        = 1;
+
     return false;
 }
 

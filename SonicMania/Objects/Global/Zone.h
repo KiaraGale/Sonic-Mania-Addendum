@@ -153,6 +153,7 @@ void Zone_HandlePlayerBounds(void);
 void Zone_ApplyWorldBounds(void);
 
 bool32 Zone_IsZoneLastAct(void);
+bool32 Zone_CheckLastActualAct(void);
 #if MANIA_USE_PLUS
 int32 Zone_GetListPos_EncoreMode(void);
 int32 Zone_GetListPos_ManiaMode(void);

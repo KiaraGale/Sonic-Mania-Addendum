@@ -707,6 +707,28 @@ bool32 Zone_IsZoneLastAct(void)
     return false;
 }
 
+// Similar to the function above, but accommodates for PGZ1 & OOZ1 "Act Clear"s technically happening in Act 2 by removing the PSZ2 + OOZ2 entries
+bool32 Zone_CheckLastActualAct(void)
+{
+    if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1)
+        || (RSDK.CheckSceneFolder("CPZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+        || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1)) {
+        return true;
+    }
+
+    if (RSDK.CheckSceneFolder("SSZ2")) {
+        if (RSDK.GetTileLayerID("Tower") < LAYER_COUNT)
+            return true;
+    }
+    else if ((RSDK.CheckSceneFolder("HCZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("MSZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("LRZ3")
+             || (RSDK.CheckSceneFolder("MMZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("TMZ3")
+             || RSDK.CheckSceneFolder("ERZ")) {
+        return true;
+    }
+
+    return false;
+}
+
 #if MANIA_USE_PLUS
 int32 Zone_GetListPos_EncoreMode(void)
 {

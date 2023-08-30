@@ -123,6 +123,9 @@ void OOZ2Outro_CheckSkip(void)
         Zone_StartFadeOut(20, 0x000000);
         Music_FadeOut(0.03);
     }
+
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->actID        = 0;
 }
 
 void OOZ2Outro_State_BoardSub(void)
@@ -233,6 +236,9 @@ void OOZ2Outro_State_SubLaunch(void)
         Zone_StartFadeOut(10, 0x000000);
         foreach_active(Player, playerPtr) { playerPtr->active = ACTIVE_NEVER; }
     }
+
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->actID        = 0;
 }
 
 #if GAME_INCLUDE_EDITOR

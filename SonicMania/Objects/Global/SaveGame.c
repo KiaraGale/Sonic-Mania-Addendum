@@ -434,15 +434,12 @@ void Addendum_SaveProgress(void)
 {
     AddendumData *addendumData = Addendum_GetSaveRAM();
 
-    if (!AIZSetup) {
-        if (RSDK.CheckSceneFolder("PSZ2") && Zone->actID == 0) {
-            addendumData->actID = 1;
-        }
-        else if (RSDK.CheckSceneFolder("OOZ2") && Zone->actID == 0) {
-            addendumData->actID = 1;
-        }
-        else if (Zone_IsZoneLastAct()) {
-                addendumData->actID = 0;
+    if (RSDK.CheckSceneFolder("OOZ1") || RSDK.CheckSceneFolder("OOZ2")) {
+        // do nothing, i fucking hate this zone
+    }
+    else if (!AIZSetup) {
+        if (Zone_CheckLastActualAct()) {
+            addendumData->actID = 0;
         }
         else {
             addendumData->actID += 1;

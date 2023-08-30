@@ -41,6 +41,9 @@ void PSZ2Outro_Create(void *data)
         self->active  = ACTIVE_NORMAL;
         self->visible = false;
     }
+
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->actID        = 0;
 }
 
 void PSZ2Outro_StageLoad(void) {}

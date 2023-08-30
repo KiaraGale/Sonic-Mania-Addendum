@@ -2217,6 +2217,7 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(Zone_StartTeleportAction);
     ADD_PUBLIC_FUNC(Zone_ApplyWorldBounds);
     ADD_PUBLIC_FUNC(Zone_IsZoneLastAct);
+    ADD_PUBLIC_FUNC(Zone_CheckLastActualAct);
 #if MANIA_USE_PLUS
     ADD_PUBLIC_FUNC(Zone_GetListPos_EncoreMode);
     ADD_PUBLIC_FUNC(Zone_GetListPos_ManiaMode);

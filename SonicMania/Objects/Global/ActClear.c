@@ -777,6 +777,7 @@ void ActClear_State_SaveGameProgress(void)
 
                     ActClear->isSavingGame = true;
                     SaveGame_SaveFile(ActClear_SaveGameCallback);
+                    Addendum_SaveFile(ActClear_SaveGameCallback);
                 }
 
                 ++SceneInfo->listPos;
