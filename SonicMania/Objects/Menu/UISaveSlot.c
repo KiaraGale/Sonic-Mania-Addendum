@@ -95,7 +95,8 @@ void UISaveSlot_Update(void)
         self->active = ACTIVE_BOUNDS;
     }
 
-    self->actNameAnimator.frameID = addendumData->actID;
+    if (self->state == UISaveSlot_State_ActiveSave)
+        self->actNameAnimator.frameID = addendumData->actID;
 
     if (self->actNameAnimator.animationID != 23) // failsafe in case the game does fucky shit while retrieving the act number data, which does happen a lot
         RSDK.SetSpriteAnimation(UISaveSlot->aniFrames, 23, &self->actNameAnimator, true, 0);
