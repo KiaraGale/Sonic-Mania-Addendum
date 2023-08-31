@@ -179,6 +179,24 @@ void CompetitionMenu_HandleMenuReturn(void)
     }
 }
 
+int32 CompetitionMenu_GetCompMods(void)
+{
+    EntityCompetitionSession *session = CompetitionSession_GetSession();
+    EntityUIControl *control          = CompetitionMenu->compRulesControl;
+
+    int32 compMods = 0;
+    if (control->buttons[3]->selection == 0)
+        compMods |= COMP_NORMALRUN;
+
+    if (control->buttons[3]->selection == 1)
+        compMods |= COMP_SUPERRUN;
+
+    if (control->buttons[3]->selection == 2)
+        compMods |= COMP_SUPERRUN;
+
+    return compMods;
+}
+
 int32 CompetitionMenu_HandleUnlocks(void)
 {
     int32 maxRounds = 0;
@@ -405,7 +423,11 @@ void CompetitionMenu_GotoCompRules(void)
     UIControl_MatchMenuTag("Competition Rules");
 }
 
-void CompetitionMenu_GotoCompZones(void) { UIControl_MatchMenuTag("Competition Zones"); }
+void CompetitionMenu_GotoCompZones(void)
+{
+    addendum->competitonMods = CompetitionMenu_GetCompMods();
+    UIControl_MatchMenuTag("Competition Zones");
+}
 
 void CompetitionMenu_VS_ProcessInputCB(void)
 {
@@ -545,6 +567,14 @@ void CompetitionMenu_RulesButton_ActionCB(void)
         case 0: itemMode = ITEMS_FIXED; break;
         case 1: itemMode = ITEMS_TELEPORT; break;
         case 2: itemMode = ITEMS_RANDOM; break;
+    }
+
+    int32 superMode = COMP_NORMALRUN;
+    switch (rulesControl->buttons[3]->selection) {
+        default: break;
+        case 0: superMode = COMP_NORMALRUN; break;
+        case 1: superMode = COMP_SUPERRUN; break;
+        case 2: superMode = COMP_MIRACLERUN; break;
     }
 
     Competition_ResetOptions();

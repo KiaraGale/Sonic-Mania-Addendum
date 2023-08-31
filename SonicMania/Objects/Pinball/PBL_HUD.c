@@ -54,7 +54,7 @@ void PBL_HUD_Create(void *data)
 
         RSDK.InitString(&self->text, "", 64);
 
-        if (globals->gameMode == MODE_ENCORE)
+        if (globals->gameMode == MODE_ENCORE && !GET_STOCK_ID(4))
             PBL_HUD_DisplayMessage(self, "BONUS STAGE! RESCUE YOUR BUDDIES!", PBL_HUD_MSG_SCROLL_LEFT);
         else
             PBL_HUD_DisplayMessage(self, "BONUS STAGE!", PBL_HUD_MSG_SCROLL_LEFT);

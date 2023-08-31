@@ -66,6 +66,16 @@ typedef enum {
 #endif
 } MedalMods;
 
+typedef enum {
+    COMP_FIXEDITEMS  = 1 << 0,
+    COMP_RANDOMITEMS = 1 << 1,
+    COMP_TELEPORTERS = 1 << 2,
+    COMP_ROUNDAMOUNT = 1 << 3,
+    COMP_NORMALRUN   = 1 << 4,
+    COMP_SUPERRUN    = 1 << 5,
+    COMP_MIRACLERUN  = 1 << 6,
+} CompetitionRules;
+
 typedef enum { MEDIA_DEMO } CategoryIDS;
 
 typedef enum { FORCE_SPLIT } ScreenSplit;
@@ -297,6 +307,7 @@ typedef struct {
     int32 noSaveSlot[0x400];
     int32 addendumMods;
     int32 saveActID;
+    int32 competitonMods;
 } AddendumVariables;
 
 extern AddendumVariables *addendum;

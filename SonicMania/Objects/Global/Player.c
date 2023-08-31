@@ -854,6 +854,21 @@ void Player_Create(void *data)
         self->minJogVelocity  = 0x40000;
         self->minRunVelocity  = 0x60000;
         self->minDashVelocity = 0xC0000;
+
+        if (globals->gameMode == MODE_COMPETITION) {
+            if (addendum->competitonMods & COMP_SUPERRUN) {
+                self->rings        = 55;
+                self->miracleState = false;
+                self->state = Player_State_StartSuper;
+                Player->powerups &= ~0x80;
+            }
+            else if (addendum->competitonMods & COMP_MIRACLERUN) {
+                self->rings        = 55;
+                self->miracleState = true;
+                self->state        = Player_State_StartSuper;
+                Player->powerups &= ~0x80;
+            }
+        }
     }
 }
 
@@ -6061,7 +6076,8 @@ void Player_State_TailsFlight(void)
     self->nextAirState = StateMachine_None;
 
     RSDKControllerState *controller = &ControllerInfo[self->controllerID];
-    if (controller->keyDown.down) {
+    RSDKAnalogState *analog         = &AnalogStickInfoL[self->controllerID];
+    if (controller->keyDown.down || analog->keyDown.down) {
         if (self->jumpPress) {
             self->state = Player_State_FlightCancel;
         }
@@ -6098,45 +6114,12 @@ void Player_State_TailsFlight(void)
         if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !leader->isChibi)
             Player_HandleFlyCarry(leader);
 
-        if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
-            if (!self->underwater) {
-                if (leader->state == Player_State_FlyCarried)
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
-                else
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
-            }
-            else {
-                if (leader->state == Player_State_FlyCarried)
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                else
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
-            }
-        }
-        else {
-            if (self->underwater) {
-                if (leader->state == Player_State_FlyCarried) {
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                }
-                else {
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
-                    self->animator.speed = 128;
-                    if (self->velocity.y >= 0)
-                        self->animator.speed = 64;
-                }
-            }
-            else {
-                if (leader->state != Player_State_FlyCarried || self->velocity.y >= 0)
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
-                else
-                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
+        EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+        if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !sidekick->isChibi)
+            Player_HandleFlyCarry(sidekick);
 
-                if (self->velocity.y >= 0)
-                    self->animator.speed = 128;
-                else
-                    self->animator.speed = 256;
-            }
-
-            if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
+        if (sidekick->state == Player_State_TailsFlight) {
+            if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
                 if (!self->underwater) {
                     if (leader->state == Player_State_FlyCarried)
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
@@ -6150,9 +6133,108 @@ void Player_State_TailsFlight(void)
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
                 }
             }
-            else if (self->jumpPress && (!self->underwater || leader->state != Player_State_FlyCarried)) {
-                self->abilitySpeed = -0x2000;
-                self->abilityValue = 0;
+            else {
+                if (self->underwater) {
+                    if (leader->state == Player_State_FlyCarried) {
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                    }
+                    else {
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
+                        self->animator.speed = 128;
+                        if (self->velocity.y >= 0)
+                            self->animator.speed = 64;
+                    }
+                }
+                else {
+                    if (leader->state != Player_State_FlyCarried || self->velocity.y >= 0)
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
+                    else
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
+
+                    if (self->velocity.y >= 0)
+                        self->animator.speed = 128;
+                    else
+                        self->animator.speed = 256;
+                }
+
+                if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
+                    if (!self->underwater) {
+                        if (leader->state == Player_State_FlyCarried)
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
+                        else
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
+                    }
+                    else {
+                        if (leader->state == Player_State_FlyCarried)
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                        else
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
+                    }
+                }
+                else if (self->jumpPress && (!self->underwater || leader->state != Player_State_FlyCarried)) {
+                    self->abilitySpeed = -0x2000;
+                    self->abilityValue = 0;
+                }
+            }
+        }
+        
+        if (leader->state == Player_State_TailsFlight) {
+            if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
+                if (!self->underwater) {
+                    if (sidekick->state == Player_State_FlyCarried)
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
+                    else
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
+                }
+                else {
+                    if (sidekick->state == Player_State_FlyCarried)
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                    else
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
+                }
+            }
+            else {
+                if (self->underwater) {
+                    if (sidekick->state == Player_State_FlyCarried) {
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                    }
+                    else {
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
+                        self->animator.speed = 128;
+                        if (self->velocity.y >= 0)
+                            self->animator.speed = 64;
+                    }
+                }
+                else {
+                    if (sidekick->state != Player_State_FlyCarried || self->velocity.y >= 0)
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
+                    else
+                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
+
+                    if (self->velocity.y >= 0)
+                        self->animator.speed = 128;
+                    else
+                        self->animator.speed = 256;
+                }
+
+                if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
+                    if (!self->underwater) {
+                        if (sidekick->state == Player_State_FlyCarried)
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
+                        else
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
+                    }
+                    else {
+                        if (sidekick->state == Player_State_FlyCarried)
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                        else
+                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
+                    }
+                }
+                else if (self->jumpPress && (!self->underwater || sidekick->state != Player_State_FlyCarried)) {
+                    self->abilitySpeed = -0x2000;
+                    self->abilityValue = 0;
+                }
             }
         }
     }

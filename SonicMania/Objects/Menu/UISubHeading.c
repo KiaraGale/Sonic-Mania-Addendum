@@ -404,6 +404,7 @@ void UISubHeading_SaveButton_ActionCB(void)
 
             saveRAM->characterID   = self->frameID;
             saveRAM->zoneID        = 0;
+            addendumRAM->actID     = 0;
             saveRAM->lives         = 3;
             saveRAM->collectedEmeralds = self->saveEmeralds;
             addendumRAM->collectedTimeStones = self->saveTimeStones;

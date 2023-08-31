@@ -75,6 +75,7 @@ void CompetitionMenu_ExitComp_YesCB(void);
 bool32 CompetitionMenu_CompRules_BackPressCB(void);
 bool32 CompetitionMenu_CompZones_BackPressCB(void);
 void CompetitionMenu_GotoPuyoVS(void);
+int32 CompetitionMenu_GetCompMods(void);
 #endif
 
 #endif //! OBJ_COMPETITIONMENU_H

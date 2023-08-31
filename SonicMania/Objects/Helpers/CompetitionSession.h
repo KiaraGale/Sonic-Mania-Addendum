@@ -56,6 +56,7 @@ struct EntityCompetitionSession {
     int32 itemMode;
 #if MANIA_USE_PLUS
     int32 swapType;
+    int32 superRunMode;
 #endif
     bool32 completedStages[COMPETITION_STAGE_COUNT];
     uint8 playerID[PLAYER_COUNT];
