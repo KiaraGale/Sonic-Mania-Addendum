@@ -65,6 +65,9 @@ int32 *Addendum_GetDataPtr(int32 slot, bool32 encore)
 
 void SaveGame_LoadSaveData(void)
 {
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     int32 slot = globals->saveSlotID;
 
     if (slot == NO_SAVE_SLOT)
@@ -121,13 +124,14 @@ void SaveGame_LoadSaveData(void)
             SceneInfo->seconds      = globals->tempSeconds;
             SceneInfo->minutes      = globals->tempMinutes;
 
-            Player->savedScore       = globals->restartScore;
-            Player->rings            = globals->restartRings;
-            Player->ringExtraLife    = globals->restart1UP;
-            Player->powerups         = globals->restartPowerups;
-            globals->restartRings    = 0;
-            globals->restart1UP      = 100;
-            globals->restartPowerups = 0;
+            Player->savedScore        = globals->restartScore;
+            Player->rings             = globals->restartRings;
+            Player->ringExtraLife     = globals->restart1UP;
+            player1->shield           = globals->restartShield;
+            player1->hyperRing        = globals->restartHyperRing;
+            player2->shield           = globals->restartShieldP2;
+            globals->restartRings     = 0;
+            globals->restart1UP       = 100;
 
             LogHelpers_Print("RecallCollectedEntities");
 
@@ -355,6 +359,7 @@ void SaveGame_SaveGameState(void)
     }
 
     EntityPlayer *player1        = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2        = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     globals->restartMilliseconds = StarPost->storedMS;
     globals->restartSeconds      = StarPost->storedSeconds;
     globals->restartMinutes      = StarPost->storedMinutes;
@@ -370,13 +375,15 @@ void SaveGame_SaveGameState(void)
     saveRAM->characterFlags = globals->characterFlags;
     saveRAM->stock          = globals->stock;
 #endif
-    saveRAM->score           = player1->score;
-    globals->restartScore    = player1->score;
-    saveRAM->score1UP        = player1->score1UP;
-    globals->restartScore1UP = player1->score1UP;
-    globals->restartRings    = player1->rings;
-    globals->restart1UP      = player1->ringExtraLife;
-    globals->restartPowerups = player1->shield | (player1->hyperRing << 6);
+    saveRAM->score             = player1->score;
+    globals->restartScore      = player1->score;
+    saveRAM->score1UP          = player1->score1UP;
+    globals->restartScore1UP   = player1->score1UP;
+    globals->restartRings      = player1->rings;
+    globals->restart1UP        = player1->ringExtraLife;
+    globals->restartHyperRing  = player1->hyperRing;
+    globals->restartShield     = player1->shield;
+    globals->restartShieldP2   = player2->shield;
 
     for (int32 i = RESERVE_ENTITY_COUNT; i < RESERVE_ENTITY_COUNT + SCENEENTITY_COUNT; ++i) {
         EntityItemBox *itemBox = RSDK_GET_ENTITY(i, ItemBox);
@@ -460,6 +467,7 @@ void SaveGame_SavePlayerState(void)
 {
     SaveRAM *saveRAM     = SaveGame_GetSaveRAM();
     EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     globals->restartSlot[0] = 0;
     globals->restartSlot[1] = 0;
@@ -486,37 +494,47 @@ void SaveGame_SavePlayerState(void)
 #endif
     }
 
-    globals->restartRings    = player->rings;
-    globals->restart1UP      = player->ringExtraLife;
-    globals->restartPowerups = player->shield | (player->hyperRing << 6);
+    globals->restartRings      = player->rings;
+    globals->restart1UP        = player->ringExtraLife;
+    globals->restartHyperRing  = player->hyperRing;
+    globals->restartShield     = player->shield;
+    globals->restartShieldP2   = sidekick->shield;
 }
 void SaveGame_LoadPlayerState(void)
 {
+    EntityPlayer *player    = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick  = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     SceneInfo->milliseconds = globals->restartMilliseconds;
     SceneInfo->seconds      = globals->restartSeconds;
     SceneInfo->minutes      = globals->restartMinutes;
 
     Player->rings         = globals->restartRings;
     Player->ringExtraLife = globals->restart1UP;
-    Player->powerups      = globals->restartPowerups;
 
-    globals->restartRings    = 0;
-    globals->restart1UP      = 100;
-    globals->restartPowerups = 0;
+    globals->restartRings      = 0;
+    globals->restart1UP        = 100;
 }
 void SaveGame_ResetPlayerState(void)
 {
+    EntityPlayer *player         = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick       = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     globals->restartMilliseconds = 0;
     globals->restartSeconds      = 0;
     globals->restartMinutes      = 0;
     globals->restartRings        = 0;
     globals->restart1UP          = 0;
-    globals->restartPowerups     = 0;
+    globals->restartShield       = 0;
+    globals->restartHyperRing    = 0;
+    globals->restartShieldP2     = 0;
 
     if (Player) {
         Player->rings         = globals->restartRings;
         Player->ringExtraLife = globals->restart1UP;
-        Player->powerups      = globals->restartPowerups;
+        player->shield        = globals->restartShield;
+        player->hyperRing     = globals->restartHyperRing;
+        sidekick->shield      = globals->restartShieldP2;
     }
 }
 void SaveGame_LoadFile_CB(int32 status)

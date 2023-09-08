@@ -82,16 +82,6 @@ void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer
 
     EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-    leader->shield = globals->carryOverShieldP1;
-    Player_ApplyShield(leader);
-    if (sidekick->classID == Player->classID) {
-        sidekick->shield = globals->carryOverShieldP2;
-        Player_ApplyShield(sidekick);
-    }
-
-    Player->powerups           = 0;
-    globals->carryOverShieldP1 = 0;
-    globals->carryOverShieldP2 = 0;
 
     int32 id = 0;
     for (int32 angle = 0; angle < 0x80; angle += 0x40) {
@@ -182,16 +172,6 @@ bool32 CPZ1Intro_CheckAmyAnimFinish(void)
 bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
 {
     MANIA_GET_PLAYER(player1, player2, camera);
-
-    player1->shield = globals->carryOverShieldP1;
-    Player_ApplyShield(player1);
-    if (player2->classID == Player->classID) {
-        player2->shield = globals->carryOverShieldP2;
-        Player_ApplyShield(player2);
-    }
-
-    globals->carryOverShieldP1 = 0;
-    globals->carryOverShieldP2 = 0;
 
     EntityFXRuby *fxRuby = CPZ1Intro->fxRuby;
     if (!host->timer) {

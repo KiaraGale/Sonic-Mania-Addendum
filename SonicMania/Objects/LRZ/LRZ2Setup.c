@@ -179,10 +179,6 @@ void LRZ2Setup_Trigger_StartOutro(void)
     if (isMainGameMode()) {
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
         EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
-        globals->carryOverShieldP1 = player1->shield;
-        globals->carryOverShieldP2 = player2->shield;
-
 #if MANIA_USE_PLUS
         if (globals->gameMode == MODE_ENCORE)
             globals->tempFlags = player1->position.y > (1024 << 16);
@@ -209,7 +205,7 @@ void LRZ2Setup_Trigger_StartOutro(void)
         }
 
         if (player1->superState == SUPERSTATE_SUPER || player1->state == Player_State_Transform)
-            globals->restartPowerups |= 0x80;
+            globals->startSuper = true;
 
 #if GAME_VERSION != VER_100
         globals->restartMusicID = Music->activeTrack;

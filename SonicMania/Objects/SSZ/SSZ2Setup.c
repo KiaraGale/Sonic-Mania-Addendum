@@ -220,7 +220,7 @@ void SSZ2Setup_Trigger_SSZ2BTransition(void)
         }
 
         if (player1->superState == SUPERSTATE_SUPER || player1->state == Player_State_Transform)
-            globals->restartPowerups |= 0x80;
+            globals->startSuper = true;
 
 #if GAME_VERSION != VER_100
         globals->restartMusicID = Music->activeTrack;

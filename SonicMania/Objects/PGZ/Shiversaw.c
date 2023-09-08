@@ -336,8 +336,6 @@ void Shiversaw_Hit(void)
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
         EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
         Player_GiveScore(player1, 1000);
-        globals->carryOverShieldP1 = player1->shield;
-        globals->carryOverShieldP2 = player2->shield;
     }
 }
 

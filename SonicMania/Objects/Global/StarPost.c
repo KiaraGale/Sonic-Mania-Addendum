@@ -207,8 +207,6 @@ void StarPost_CheckBonusStageEntry(void)
     if (self->starTimer >= 60) {
         if (!globals->recallEntities) {
             if (Player_CheckCollisionTouch(RSDK_GET_ENTITY(SLOT_PLAYER1, Player), self, &self->hitboxStars)) {
-                globals->carryOverShieldP1 = leader->shield;
-                globals->carryOverShieldP2 = sidekick->shield;
                 SaveGame_SaveGameState();
                 RSDK.PlaySfx(StarPost->sfxWarp, false, 0xFE);
                 RSDK.SetEngineState(ENGINESTATE_FROZEN);

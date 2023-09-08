@@ -629,7 +629,7 @@ bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
         Player_TryTransform(player5, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
         Player_TryTransform(player6, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
 
-        Player->playerCount = 6;
+        Player->playerCount = 7;
         int32 offsetX       = 0;
         for (int32 i = 0; i < Player->playerCount; ++i) {
             if (i != 2) {
@@ -700,7 +700,6 @@ bool32 TMZ2Outro_Cutscene_FinishSequence(EntityCutsceneSeq *host)
             if (Zone_IsZoneLastAct())
                 GameProgress_MarkZoneCompleted(Zone_GetZoneID());
 
-            GameProgress_GiveEnding(1);
             SaveGame_SaveFile(TMZ2Outro_SaveFileCB);
 
             UIWaitSpinner_StartWait();

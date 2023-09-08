@@ -367,12 +367,52 @@ void Ice_FreezePlayer(EntityPlayer *player)
 
 #if MANIA_USE_PLUS
         switch (player->characterID) {
-            case ID_SONIC: ice->animationID = 4 * (player->superState == SUPERSTATE_SUPER) + ICEANI_SONICIDLE; break;
-            case ID_TAILS: ice->animationID = ICEANI_TAILSIDLE; break;
-            case ID_KNUCKLES: ice->animationID = ICEANI_KNUXIDLE; break;
-            case ID_MIGHTY: ice->animationID = ICEANI_MIGHTYIDLE; break;
-            case ID_RAY: ice->animationID = ICEANI_RAYIDLE; break;
-            case ID_AMY: ice->animationID = ICEANI_AMYIDLE; break;
+            case ID_SONIC:
+                if (player->superState == SUPERSTATE_SUPER) {
+                    if (player->miracleState)
+                        ice->animationID = ICEANI_MIRACLESONICIDLE;
+                    else
+                        ice->animationID = ICEANI_SUPERSONICIDLE;
+                }
+                else
+                    ice->animationID = ICEANI_SONICIDLE;
+                break;
+
+            case ID_TAILS:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    ice->animationID = ICEANI_MIRACLETAILSIDLE;
+                else
+                    ice->animationID = ICEANI_TAILSIDLE;
+                break;
+
+            case ID_KNUCKLES:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    ice->animationID = ICEANI_MIRACLEKNUXIDLE;
+                else
+                    ice->animationID = ICEANI_KNUXIDLE;
+                break;
+
+            case ID_MIGHTY:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    ice->animationID = ICEANI_MIRACLEMIGHTYIDLE;
+                else
+                    ice->animationID = ICEANI_MIGHTYIDLE;
+                break;
+
+            case ID_RAY:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    ice->animationID = ICEANI_MIRACLERAYIDLE;
+                else
+                    ice->animationID = ICEANI_RAYIDLE;
+                break;
+
+            case ID_AMY:
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    ice->animationID = ICEANI_MIRACLEAMYIDLE;
+                else
+                    ice->animationID = ICEANI_AMYIDLE;
+                break;
+
             default: break;
         }
 #else
@@ -1331,7 +1371,17 @@ void Ice_Draw_PlayerBlock(void)
     self->inkEffect             = INK_NONE;
 #endif
 
+    for (int32 c = 0; c < 32; ++c) {
+        Ice->colorStorage[c] = RSDK.GetPaletteEntry(0, 223 + c);
+        RSDK.SetPaletteEntry(0, 223 + c, Ice->miracleColors[c]);
+    }
+
     RSDK.DrawSprite(&self->contentsAnimator, &drawPos, false);
+
+    for (int32 c = 0; c < 32; ++c) {
+        RSDK.SetPaletteEntry(0, 223 + c, Ice->colorStorage[c]);
+    }
+
     RSDK.DrawSprite(&self->blockAnimator, NULL, false);
 
     self->inkEffect = INK_ADD;

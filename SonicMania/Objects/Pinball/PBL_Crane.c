@@ -162,8 +162,8 @@ void PBL_Crane_HandlePrizes(void)
         case PBL_CRANE_PRIZE_SHIELD_BUBBLE:
         case PBL_CRANE_PRIZE_SHIELD_FIRE:
         case PBL_CRANE_PRIZE_SHIELD_ELECTRIC:
-            globals->restartPowerups &= ~0x3F;
-            globals->restartPowerups |= self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE; // Converts the frame ID to a shield ID
+            globals->restartShield   = self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE;
+            globals->restartShieldP2 = self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE;
 
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_ITEM;
             break;

@@ -251,7 +251,9 @@ typedef struct {
     int32 recallEntities;
     int32 restartRings;
     int32 restart1UP;
-    int32 restartPowerups;
+    int32 restartHyperRing;
+    int32 restartShield;
+    int32 restartShieldP2;
     int32 restartPos[8];
     int32 restartSlot[4];
     int32 restartDir[4];
@@ -289,8 +291,7 @@ typedef struct {
     int32 superMusicEnabled;
     int32 lastHasPlus;
     int32 hasPlusInitial;
-    int32 carryOverShieldP1;
-    int32 carryOverShieldP2;
+    bool32 startSuper;
 #endif
 } GlobalVariables;
 

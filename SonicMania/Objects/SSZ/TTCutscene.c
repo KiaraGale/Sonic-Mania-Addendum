@@ -36,7 +36,7 @@ void TTCutscene_Create(void *data)
 
 void TTCutscene_StageLoad(void)
 {
-    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     TTCutscene->fxFade = NULL;
@@ -47,8 +47,8 @@ void TTCutscene_StageLoad(void)
         foreach_break;
     }
 
-    globals->carryOverShieldP1 = leader->shield;
-    globals->carryOverShieldP2 = sidekick->shield;
+    leader->shield   = globals->restartShield;
+    sidekick->shield = globals->restartShieldP2;
 }
 
 void TTCutscene_StartCutscene(void)
@@ -66,12 +66,18 @@ void TTCutscene_StartCutscene(void)
 #if MANIA_USE_PLUS
 void TTCutscene_Cutscene_SkipCB(void)
 {
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     if (globals->gameMode == MODE_ENCORE)
         RSDK.SetScene("Encore Mode", "Stardust Speedway Zone+ 1");
     else
         RSDK.SetScene("Mania Mode", "Stardust Speedway Zone 1");
 
     ++SceneInfo->listPos;
+
+    globals->restartShield   = leader->shield;
+    globals->restartShieldP2 = sidekick->shield;
 }
 #endif
 
@@ -224,8 +230,15 @@ bool32 TTCutscene_Cutscene_FlyOut(EntityCutsceneSeq *host)
         player2->velocity.y = 0;
     }
 
-    if (host->timer == 75)
+    if (host->timer == 75) {
+        EntityPlayer *leader      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *sidekick    = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
         TTCutscene->fxFade->state = FXFade_State_FadeOut;
+
+        globals->restartShield    = leader->shield;
+        globals->restartShieldP2  = sidekick->shield;
+    }
 
     return host->timer == 75;
 }

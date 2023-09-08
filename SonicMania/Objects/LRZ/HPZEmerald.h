@@ -13,6 +13,8 @@ typedef enum {
 struct ObjectHPZEmerald {
     RSDK_OBJECT
     uint16 aniFrames;
+    TABLE(int32 masterColors[11], { 0x202020, 0x302040, 0x202040, 0x303070, 0x203060, 0x204080, 0x206040, 0x308060, 0x40A080, 0x60C0A0, 0x80E0C0 });
+    int32 colorStorage[11];
 };
 
 // Entity Class

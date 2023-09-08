@@ -303,6 +303,18 @@ void HUD_Draw(void)
             self->lifeIconAnimator.frameID = 6;
     }
 
+    if (player->superState == SUPERSTATE_SUPER && player->miracleState) {
+        switch (player->characterID) {
+            default: break;
+            case ID_SONIC: break;
+            case ID_TAILS: self->lifeIconAnimator.frameID = 8; break;
+            case ID_KNUCKLES: self->lifeIconAnimator.frameID = 9; break;
+            case ID_MIGHTY: self->lifeIconAnimator.frameID = 10; break;
+            case ID_RAY: self->lifeIconAnimator.frameID = 11; break;
+            case ID_AMY: self->lifeIconAnimator.frameID = 12; break;
+        }
+    }
+
     if (self->lifeIconAnimator.frameID < 0) {
         self->lifeIconAnimator.frameID = self->lifeFrameIDs[player->playerID];
         lives--;
@@ -347,6 +359,18 @@ void HUD_Draw(void)
                     self->lifeIconAnimator.frameID = 7;
                 else
                     self->lifeIconAnimator.frameID = 6;
+            }
+
+            if (sidekick->superState == SUPERSTATE_SUPER && sidekick->miracleState) {
+                switch (sidekick->characterID) {
+                    default: break;
+                    case ID_SONIC: break;
+                    case ID_TAILS: self->lifeIconAnimator.frameID = 8; break;
+                    case ID_KNUCKLES: self->lifeIconAnimator.frameID = 9; break;
+                    case ID_MIGHTY: self->lifeIconAnimator.frameID = 10; break;
+                    case ID_RAY: self->lifeIconAnimator.frameID = 11; break;
+                    case ID_AMY: self->lifeIconAnimator.frameID = 12; break;
+                }
             }
 
             if (self->lifeIconAnimator.frameID < 0) {
@@ -395,6 +419,18 @@ void HUD_Draw(void)
                             self->lifeIconAnimator.frameID = 7;
                         else
                             self->lifeIconAnimator.frameID = 6;
+                    }
+                    
+                    if (sidekick->superState == SUPERSTATE_SUPER && sidekick->miracleState) {
+                        switch (sidekick->characterID) {
+                            default: break;
+                            case ID_SONIC: break;
+                            case ID_TAILS: self->lifeIconAnimator.frameID = 8; break;
+                            case ID_KNUCKLES: self->lifeIconAnimator.frameID = 9; break;
+                            case ID_MIGHTY: self->lifeIconAnimator.frameID = 10; break;
+                            case ID_RAY: self->lifeIconAnimator.frameID = 11; break;
+                            case ID_AMY: self->lifeIconAnimator.frameID = 12; break;
+                        }
                     }
 
                     if (self->lifeIconAnimator.frameID < 0) {
@@ -448,8 +484,11 @@ void HUD_Draw(void)
             drawPos.x -= TO_FIXED(8);
         if (player->lives > 99)
             drawPos.x += TO_FIXED(8);
-        if (player->lives > 999) // how anyone would realistically be able to do this, i have no clue, but let's be safe just in case-
+        if (player->lives > 999)
             drawPos.x += TO_FIXED(8);
+        if (player->lives > 9999)
+            drawPos.x += TO_FIXED(8);
+        // how anyone would ever be able to realistically surpass 9999 lives, i have no idea, so there isn't a hardcoded exception for it
         HUD_DrawNumbersBase10(&drawPos, lives, 0);
     }
 #else

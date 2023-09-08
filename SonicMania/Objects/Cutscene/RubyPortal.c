@@ -234,6 +234,7 @@ void RubyPortal_State_Opening(void)
 void RubyPortal_State_Opened(void)
 {
     RSDK_THIS(RubyPortal);
+    AddendumData *addendumData = Addendum_GetSaveRAM();
 
     if (self->alpha >= 0x100) {
         if (RSDK.CheckSceneFolder("ERZ")) {
@@ -241,15 +242,14 @@ void RubyPortal_State_Opened(void)
         }
         else {
             EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-            EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
-            globals->carryOverShieldP1 = player1->shield;
-            globals->carryOverShieldP2 = player2->shield;
 
             if (Player_CheckCollisionTouch(player1, self, &RubyPortal->hitbox)) {
                 for (int32 p = 0; p < Player->playerCount; ++p) StarPost->postIDs[p] = 0;
 
                 SaveGame_SavePlayerState();
+
+                if (RSDK.CheckSceneFolder("TMZ2"))
+                    addendumData->actID += 1;
 
 #if !MANIA_USE_PLUS && GAME_VERSION != VER_100
                 if (player1->superState == SUPERSTATE_SUPER)
@@ -301,7 +301,7 @@ void RubyPortal_State_SaveGameState(void)
     EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     if (player->superState == SUPERSTATE_SUPER || player->state == Player_State_Transform)
-        globals->restartPowerups |= 0x80;
+        globals->startSuper = true;
 
     globals->restartMusicID = Music->activeTrack;
 }

@@ -13,6 +13,10 @@ void HPZEmerald_Update(void)
 {
     RSDK_THIS(HPZEmerald);
 
+    for (int32 c = 0; c < 11; ++c) {
+        RSDK.SetPaletteEntry(0, 240 + c, HPZEmerald->masterColors[c]);
+    }
+
     RSDK.ProcessAnimation(&self->emeraldAnimator);
 
     if (self->solid) {

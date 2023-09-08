@@ -82,6 +82,9 @@ bool32 LRZ3Cutscene_Cutscene_RunRight(EntityCutsceneSeq *host)
         {
             if (!player->sidekick)
                 player->stateInput = Player_Input_P1;
+
+            globals->restartShield   = 0;
+            globals->restartShieldP2 = 0;
         }
 
         return true;
@@ -90,7 +93,14 @@ bool32 LRZ3Cutscene_Cutscene_RunRight(EntityCutsceneSeq *host)
     return false;
 }
 
-void LRZ3Cutscene_StageLoad(void) {}
+void LRZ3Cutscene_StageLoad(void)
+{
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+    leader->shield   = globals->restartShield;
+    sidekick->shield = globals->restartShieldP2;
+}
 
 #if GAME_INCLUDE_EDITOR
 void LRZ3Cutscene_EditorDraw(void) {}

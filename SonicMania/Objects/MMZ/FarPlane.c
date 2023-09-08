@@ -193,21 +193,12 @@ void FarPlane_DrawHook_ApplyFarPlane(void)
             invincibleStars->scale.x    = 0x100;
             invincibleStars->scale.y    = 0x100;
 
-            invincibleStars->sidekickStarOffset = 10;
-            invincibleStars->drawFX             = FX_SCALE;
-            invincibleStars->scale.x            = 0x100;
-            invincibleStars->scale.y            = 0x100;
-
             for (int32 s = 0; s < 8; ++s) {
                 FarPlane->positionList[id].x         = invincibleStars->starPos[s].x;
                 FarPlane->positionList[id].y         = invincibleStars->starPos[s].y;
-                FarPlane->positionListSidekick[id].x = invincibleStars->sidekickStarPos[s].x;
-                FarPlane->positionListSidekick[id].y = invincibleStars->sidekickStarPos[s].y;
 
                 invincibleStars->starPos[s].x         = FarPlane->worldPos.x + ((invincibleStars->starPos[s].x - FarPlane->originPos.x) >> 1);
                 invincibleStars->starPos[s].y         = FarPlane->worldPos.y + ((invincibleStars->starPos[s].y - FarPlane->originPos.y) >> 1);
-                invincibleStars->sidekickStarPos[s].x = FarPlane->worldPos.x + ((invincibleStars->sidekickStarPos[s].x - FarPlane->originPos.x) >> 1);
-                invincibleStars->sidekickStarPos[s].y = FarPlane->worldPos.y + ((invincibleStars->sidekickStarPos[s].y - FarPlane->originPos.y) >> 1);
 
                 id++;
             }
@@ -270,8 +261,6 @@ void FarPlane_DrawHook_RemoveFarPlane(void)
             for (int32 s = 0; s < 8; ++s) {
                 invincibleStars->starPos[s].x = FarPlane->positionList[id].x;
                 invincibleStars->starPos[s].y = FarPlane->positionList[id].y;
-                invincibleStars->sidekickStarPos[s].x = FarPlane->positionList[id].x;
-                invincibleStars->sidekickStarPos[s].y = FarPlane->positionList[id].y;
                 id++;
             }
         }

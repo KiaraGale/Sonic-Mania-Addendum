@@ -83,11 +83,20 @@ bool32 PSZ2Outro_Cutscene_SetupCameraMove(EntityCutsceneSeq *host)
 bool32 PSZ2Outro_Cutscene_HandleCameraMovement(EntityCutsceneSeq *host)
 {
     RSDK_THIS(PSZ2Outro);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     EntityPSZEggman *eggman = self->eggman;
     EntityCamera *camera    = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
 
     if (host->timer == 180) {
+        globals->restartShield   = leader->shield;
+        globals->restartShieldP2 = sidekick->shield;
+
+        foreach_active(Shield, shield) {
+            destroyEntity(shield);
+        }
+
         foreach_active(Player, player)
         {
             player->position.x = camera->position.x - (ScreenInfo->center.x << 16) - 0x400000;

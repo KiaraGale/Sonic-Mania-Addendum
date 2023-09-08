@@ -38,6 +38,9 @@ void TMZ3Setup_Create(void *data) {}
 
 void TMZ3Setup_StageLoad(void)
 {
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
     TMZ3Setup->aniTiles = RSDK.LoadSpriteSheet("TMZ1/AniTiles.gif", SCOPE_STAGE);
 
     TMZ3Setup->palDuration = RSDK.Rand(2, 60);
@@ -52,6 +55,9 @@ void TMZ3Setup_StageLoad(void)
         SaveGame_LoadPlayerState();
         Zone_StartFadeIn(10, 0xF0F0F0);
     }
+
+    leader->shield   = globals->restartShield;
+    sidekick->shield = globals->restartShieldP2;
 
     RSDK.SetDrawGroupProperties(0, false, TMZ3Setup_DrawHook_ApplyDynTilesPalette);
     RSDK.SetDrawGroupProperties(1, false, TMZ3Setup_DrawHook_RemoveDynTilesPalette);

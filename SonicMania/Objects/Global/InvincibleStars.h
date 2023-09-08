@@ -19,11 +19,6 @@ struct EntityInvincibleStars {
     int32 starFrame[2];
     int32 starOffset;
     Animator starAnimator[4];
-    Vector2 sidekickStarPos[8];
-    int32 sidekickStarAngle[2];
-    int32 sidekickStarFrame[2];
-    int32 sidekickStarOffset;
-    Animator sidekickStarAnimator[4];
 };
 
 // Object Struct

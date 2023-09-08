@@ -166,6 +166,14 @@ void CompetitionMenu_HandleMenuReturn(void)
 
                 UIButton_SetChoiceSelectionWithCB(control->buttons[2], session->screenBorderType[2]);
                 CompetitionMenu_SetupSplitScreenChoices(session->playerCount);
+
+                if (addendum->competitonMods) {
+                    switch (addendum->competitonMods) {
+                        case COMP_NORMALRUN: UIButton_SetChoiceSelection(control->buttons[3], 0); break;
+                        case COMP_SUPERRUN: UIButton_SetChoiceSelection(control->buttons[3], 1); break;
+                        case COMP_MIRACLERUN: UIButton_SetChoiceSelection(control->buttons[3], 2); break;
+                    }
+                }
             }
 
             if (control == CompetitionMenu->compZoneControl) {
@@ -423,11 +431,7 @@ void CompetitionMenu_GotoCompRules(void)
     UIControl_MatchMenuTag("Competition Rules");
 }
 
-void CompetitionMenu_GotoCompZones(void)
-{
-    addendum->competitonMods = CompetitionMenu_GetCompMods();
-    UIControl_MatchMenuTag("Competition Zones");
-}
+void CompetitionMenu_GotoCompZones(void) { UIControl_MatchMenuTag("Competition Zones"); }
 
 void CompetitionMenu_VS_ProcessInputCB(void)
 {
@@ -530,10 +534,11 @@ void CompetitionMenu_StartMatch(void)
     // so only about 1/4th of the save slot is cleared, though nothin uses the extra space so it's not a big deal
     memset(globals->noSaveSlot, 0, 0x400);
 
-    globals->continues  = 0;
-    globals->saveSlotID = NO_SAVE_SLOT;
-    globals->gameMode   = MODE_COMPETITION;
-    globals->medalMods  = 0;
+    globals->continues       = 0;
+    globals->saveSlotID      = NO_SAVE_SLOT;
+    globals->gameMode        = MODE_COMPETITION;
+    globals->medalMods       = 0;
+    addendum->competitonMods = CompetitionMenu_GetCompMods();
 
     globals->playerID = ID_NONE;
     for (int32 p = 0; p < session->playerCount; ++p) globals->playerID |= session->playerID[p] << (8 * p);

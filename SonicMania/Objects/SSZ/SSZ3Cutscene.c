@@ -77,6 +77,9 @@ void SSZ3Cutscene_HandleRubyFX(void)
 
 bool32 SSZ3Cutscene_CutsceneIntro_EnterStageLeft(EntityCutsceneSeq *host)
 {
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
 #if MANIA_USE_PLUS
     if (!host->timer) {
 #else
@@ -103,6 +106,9 @@ bool32 SSZ3Cutscene_CutsceneIntro_EnterStageLeft(EntityCutsceneSeq *host)
         return true;
     }
 
+    leader->shield           = globals->restartShield;
+    sidekick->shield         = globals->restartShieldP2;
+
     return false;
 }
 bool32 SSZ3Cutscene_CutsceneIntro_PlayerRunLeft(EntityCutsceneSeq *host)
@@ -112,6 +118,9 @@ bool32 SSZ3Cutscene_CutsceneIntro_PlayerRunLeft(EntityCutsceneSeq *host)
         {
             if (!player->sidekick)
                 player->stateInput = Player_Input_P1;
+
+            globals->restartShield   = 0;
+            globals->restartShieldP2 = 0;
         }
 
         return true;
@@ -124,6 +133,8 @@ bool32 SSZ3Cutscene_CutsceneIntro_PlayerRunLeft(EntityCutsceneSeq *host)
 bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
 {
     RSDK_THIS(SSZ3Cutscene);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     foreach_active(Ring, ring)
     {
@@ -174,6 +185,9 @@ bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
         ruby->drawGroup  = Zone->objectDrawGroup[0];
         self->ruby       = ruby;
     }
+
+    globals->restartShield   = leader->shield;
+    globals->restartShieldP2 = sidekick->shield;
 
     return true;
 }

@@ -226,8 +226,7 @@ void PBL_Setup_GiveScore(int32 score)
         RSDK.PlaySfx(PBL_Setup->sfxContinue, false, 255);
 
         SaveRAM *saveRAM = SaveGame_GetSaveRAM();
-        if (saveRAM->continues < 20)
-            saveRAM->continues++;
+        saveRAM->continues++;
 
         while (PBL_Setup->score1UP <= PBL_Setup->score) PBL_Setup->score1UP += 10000;
 

@@ -12,6 +12,7 @@ ObjectUISaveSlot *UISaveSlot;
 void UISaveSlot_Update(void)
 {
     RSDK_THIS(UISaveSlot);
+    SaveRAM *saveRAM           = (SaveRAM *)SaveGame_GetDataPtr(self->slotID, self->encoreMode);
     AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(self->slotID, self->encoreMode);
 
     UISaveSlot_SetupButtonElements();
@@ -914,9 +915,17 @@ void UISaveSlot_HandleSaveIcons(void)
 #if MANIA_USE_PLUS
             if (self->encoreMode)
                 RSDK.CopyPalette(((self->saveZoneID >> 3) + 4), 32 * self->saveZoneID, 0, 224, 32);
-            else
+            else {
 #endif
-                RSDK.CopyPalette(((self->saveZoneID >> 3) + 1), 32 * self->saveZoneID, 0, 224, 32);
+                if (self->saveZoneID < ZONE_ERZ) {
+                    RSDK.CopyPalette(((self->saveZoneID >> 3) + 1), 32 * self->saveZoneID, 0, 224, 32);
+                }
+                else {
+                    for (int32 c = 0; c < 32; ++c) {
+                        RSDK.SetPaletteEntry(0, 224 + c, UISaveSlot->erzColors[c]);
+                    }
+                }
+            }
         }
     }
 }
@@ -1139,7 +1148,7 @@ void UISaveSlot_NextZone(void)
     }
     else {
         self->saveZoneID++;
-        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
+        if (!self->encoreMode && self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
             if (self->saveZoneID > ZONE_ERZ)
                 self->saveZoneID = ZONE_GHZ;
         }
@@ -1160,14 +1169,14 @@ void UISaveSlot_PrevZone(void)
     SaveRAM *saveRAM = (SaveRAM *)SaveGame_GetDataPtr(self->slotID, self->encoreMode);
 
     if (self->saveZoneID == NO_SAVE_SLOT) {
-        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111)
+        if (!self->encoreMode && self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111)
             self->saveZoneID = ZONE_ERZ;
         else
             self->saveZoneID = ZONE_TMZ;
     }
     else {
         self->saveZoneID--;
-        if (self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
+        if (!self->encoreMode && self->playersAnimator.frameID == 0 && saveRAM->collectedEmeralds == 0b01111111) {
             if (self->saveZoneID < ZONE_GHZ)
                 self->saveZoneID = ZONE_ERZ;
         }

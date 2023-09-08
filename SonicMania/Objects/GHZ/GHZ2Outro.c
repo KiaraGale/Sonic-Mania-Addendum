@@ -141,8 +141,8 @@ bool32 GHZ2Outro_Cutscene_HoleSceneFadeIn(EntityCutsceneSeq *host)
     EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
-    globals->carryOverShieldP1 = leader->shield;
-    globals->carryOverShieldP2 = sidekick->shield;
+    globals->restartShield   = leader->shield;
+    globals->restartShieldP2 = sidekick->shield;
 
     foreach_active(Shield, shield)
         destroyEntity(shield);

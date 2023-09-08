@@ -251,11 +251,6 @@ void SpecialRing_State_Flash(void)
 void SpecialRing_State_Warp(void)
 {
     RSDK_THIS(SpecialRing);
-    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
-    globals->carryOverShieldP1 = leader->shield;
-    globals->carryOverShieldP2 = sidekick->shield;
 
     if (++self->warpTimer == 30) {
         SaveGame_SaveGameState();

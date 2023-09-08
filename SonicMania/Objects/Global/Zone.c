@@ -394,13 +394,14 @@ void Zone_StoreEntities(int32 xOffset, int32 yOffset)
     EntityPlayer *player1    = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     globals->restartLives[0] = player1->lives;
     globals->restartScore    = player1->score;
-    globals->restartPowerups = player1->shield;
+    globals->restartShield   = player1->shield;
     globals->atlEntityCount  = count;
     globals->atlEnabled      = true;
 }
 
 void Zone_ReloadStoredEntities(int32 xOffset, int32 yOffset, bool32 setATLBounds)
 {
+    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     // reload any stored entities we have
     for (int32 e = 0; e < globals->atlEntityCount; ++e) {
         Entity *storedEntity = (Entity *)&globals->atlEntityData[e << 9];
@@ -453,7 +454,7 @@ void Zone_ReloadStoredEntities(int32 xOffset, int32 yOffset, bool32 setATLBounds
 
     Player->savedLives      = globals->restartLives[0];
     Player->savedScore      = globals->restartScore;
-    Player->powerups        = globals->restartPowerups;
+    leader->shield          = globals->restartShield;
     globals->atlEntityCount = 0;
 }
 
