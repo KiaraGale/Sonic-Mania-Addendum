@@ -21,6 +21,9 @@ struct EntityCamera {
     RSDK_ENTITY
     StateMachine(state);
     Entity *target;
+    Entity *target2;
+    Entity *target3;
+    Entity *target4;
     int32 screenID;
     Vector2 center;
     Vector2 targetMoveVel;

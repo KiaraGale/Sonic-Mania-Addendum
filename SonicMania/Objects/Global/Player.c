@@ -1027,7 +1027,6 @@ void Player_LoadSprites(void)
 
                 case ID_KNUCKLES:
                     Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
-                    Player->superKnuxFrames   = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
                     Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                     break;
 #if MANIA_USE_PLUS
@@ -1092,7 +1091,6 @@ void Player_LoadSprites(void)
 
             case ID_KNUCKLES:
                 Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
-                Player->superKnuxFrames   = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
                 Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                 break;
 #if MANIA_USE_PLUS
@@ -1144,7 +1142,6 @@ void Player_LoadSpritesVS(void)
 
                     case ID_KNUCKLES:
                         Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
-                        Player->superKnuxFrames   = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
                         Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
                         break;
 #if MANIA_USE_PLUS
@@ -1337,7 +1334,6 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
 
         case ID_KNUCKLES:
             Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
-            Player->superKnuxFrames   = RSDK.LoadSpriteAnimation("Players/SuperKnux.bin", SCOPE_STAGE);
             Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
             if (SizeLaser)
                 SizeLaser->knuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE);
@@ -1347,11 +1343,8 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
-                if (entity->superState == SUPERSTATE_SUPER) {
-                    if (entity->miracleState)
-                        entity->aniFrames = Player->miracleKnuxFrames;
-                    else
-                        entity->aniFrames = Player->superKnuxFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState) {
+                    entity->aniFrames = Player->miracleKnuxFrames;
                 }
                 else {
                     entity->aniFrames = Player->knuxFrames;
@@ -1602,8 +1595,13 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
 #endif
         }
 
-        if (entity->superState == SUPERSTATE_SUPER)
-            Player_TryTransform(entity, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        if (entity->superState == SUPERSTATE_SUPER) {
+            if (Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
+                entity->miracleState = true;
+            else
+                entity->miracleState = false;
+            entity->state = Player_State_StartSuper;
+        }
     }
 
     Player_UpdatePhysicsState(entity);
@@ -1807,11 +1805,8 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
         player->tailFrames = Player->miracleTailsTailsFrames;
     }
 
-    if (player->characterID == ID_KNUCKLES && !player->isChibi) {
-        if (player->miracleState)
-            player->aniFrames = Player->miracleKnuxFrames;
-        else
-            player->aniFrames = Player->superKnuxFrames;
+    if (player->characterID == ID_KNUCKLES && player->miracleState && !player->isChibi) {
+        player->aniFrames = Player->miracleKnuxFrames;
     }
 
     if (player->characterID == ID_MIGHTY && player->miracleState)
@@ -2033,11 +2028,8 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         player->tailFrames = Player->miracleTailsTailsFrames;
     }
 
-    if (player->characterID == ID_KNUCKLES && !player->isChibi) {
-        if (player->miracleState)
-            player->aniFrames = Player->miracleKnuxFrames;
-        else
-            player->aniFrames = Player->superKnuxFrames;
+    if (player->characterID == ID_KNUCKLES && player->miracleState && !player->isChibi) {
+        player->aniFrames = Player->miracleKnuxFrames;
     }
 
     if (player->characterID == ID_MIGHTY && player->miracleState)
@@ -5443,11 +5435,8 @@ void Player_State_StartSuper(void)
         self->tailFrames = Player->miracleTailsTailsFrames;
     }
 
-    if (self->characterID == ID_KNUCKLES) {
-        if (self->miracleState)
-            self->aniFrames = Player->miracleKnuxFrames;
-        else
-            self->aniFrames = Player->superKnuxFrames;
+    if (self->characterID == ID_KNUCKLES && self->miracleState) {
+        self->aniFrames = Player->miracleKnuxFrames;
     }
 
     if (self->characterID == ID_MIGHTY && self->miracleState)
@@ -6394,6 +6383,8 @@ void Player_State_BubbleBounce(void)
 void Player_State_TailsFlight(void)
 {
     RSDK_THIS(Player);
+    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     Player_HandleAirFriction();
     self->nextAirState = StateMachine_None;
@@ -6433,11 +6424,9 @@ void Player_State_TailsFlight(void)
         if (self->position.y < Zone->playerBoundsT[slot] + 0x100000 && self->velocity.y < 0)
             self->velocity.y = 0;
 
-        EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
         if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !leader->isChibi)
             Player_HandleFlyCarry(leader);
 
-        EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
         if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !sidekick->isChibi)
             Player_HandleFlyCarry(sidekick);
 
@@ -7842,11 +7831,8 @@ void Player_FinishedReturnToPlayer(EntityPlayer *player, EntityPlayer *leader)
                 break;
                 
             case ID_KNUCKLES:
-                if (self->superState == SUPERSTATE_SUPER) {
-                    if (player->miracleState)
-                        player->aniFrames = Player->miracleKnuxFrames;
-                    else
-                        player->aniFrames = Player->superKnuxFrames;
+                if (self->superState == SUPERSTATE_SUPER && player->miracleState) {
+                    player->aniFrames = Player->miracleKnuxFrames;
                 }
                 else
                     player->aniFrames = Player->knuxFrames;

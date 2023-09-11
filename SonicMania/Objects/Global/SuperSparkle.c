@@ -60,9 +60,16 @@ void SuperSparkle_Update(void)
                 case ID_AMY: RSDK.SetSpriteAnimation(SuperSparkle->superFrames, Zone->timer % 3 + 15, &sparkle->animator, true, 0); break;
             }
             int32 cnt = sparkle->animator.frameCount;
-            if (sparkle->animator.animationID == 2) {
+            switch (sparkle->animator.animationID) {
+                case 0:
+                case 3:
+                case 6:
+                case 9:
+                case 12:
+                case 15:
                 sparkle->alpha = 0xE0;
                 cnt >>= 1;
+                break;
             }
             sparkle->maxFrameCount  = cnt - 1;
             sparkle->animator.speed = RSDK.Rand(6, 8);
