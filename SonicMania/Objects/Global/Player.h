@@ -76,6 +76,7 @@ typedef enum {
     ANI_ABILITY_5,
     ANI_ABILITY_6,
     ANI_ABILITY_7,
+    ANI_CDSPINDASH = 55,
 
     // Sonic Ability Anim Aliases
     ANI_DROPDASH = ANI_ABILITY_0,
@@ -116,7 +117,6 @@ typedef enum {
     ANI_FREE_FALL     = ANI_ABILITY_3,
     ANI_HELI_HAMMER   = ANI_ABILITY_4,
     ANI_DASH_NOHAMMER = ANI_ABILITY_5,
-    ANI_CDSPINDASH    = ANI_ABILITY_6,
 #endif
 } PlayerAnimationIDs;
 

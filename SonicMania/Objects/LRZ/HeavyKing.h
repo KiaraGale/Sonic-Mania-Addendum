@@ -29,6 +29,7 @@ struct ObjectHeavyKing {
     uint16 sfxImpact6;
     uint16 aniFrames;
     uint16 cutsceneFrames;
+    uint16 miracleCutsceneFrames;
 };
 
 // Entity Class

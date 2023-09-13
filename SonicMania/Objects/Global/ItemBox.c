@@ -327,41 +327,6 @@ void ItemBox_State_Idle(void)
         RSDK.ProcessAnimation(&self->contentsAnimator);
     }
 
-    if (self->type == ITEMBOX_SUPER) {
-        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 10, &self->contentsAnimator, false, 0);
-#if MANIA_USE_PLUS
-        if (leader->characterID == ID_AMY) {
-            self->contentsAnimator.frameID = 1;
-        }
-        else {
-#endif
-            self->contentsAnimator.frameID = 0;
-        }
-        RSDK.ProcessAnimation(&self->contentsAnimator);
-    }
-
-    if (self->type == ITEMBOX_1UP_SONIC && leader->characterID == ID_SONIC) {
-        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 12, &self->contentsAnimator, false, 0);
-        if (leader->superState == SUPERSTATE_SUPER) {
-            self->contentsAnimator.frameID = 1;
-        }
-        else {
-            self->contentsAnimator.frameID = 0;
-        }
-        RSDK.ProcessAnimation(&self->contentsAnimator);
-    }
-
-    if (self->type == ITEMBOX_1UP_KNUX && leader->characterID == ID_KNUCKLES) {
-        RSDK.SetSpriteAnimation(ItemBox->aniFrames, 12, &self->contentsAnimator, false, 0);
-        if (leader->superState == SUPERSTATE_SUPER) {
-            self->contentsAnimator.frameID = 5;
-        }
-        else {
-            self->contentsAnimator.frameID = 4;
-        }
-        RSDK.ProcessAnimation(&self->contentsAnimator);
-    }
-
     if (self->timer) {
         self->timer--;
     }
@@ -1005,7 +970,7 @@ void ItemBox_GivePowerup(void)
             }
             break;
         }
-
+        /*
         case ITEMBOX_EMERALD:
             SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
             if (SaveGame_GetSaveRAM()->collectedEmeralds != 0b01111111) {
@@ -1029,6 +994,7 @@ void ItemBox_GivePowerup(void)
                 addendumData->collectedTimeStones = 0b00000000;
                 saveData->nextSpecialStage        = 7;
             }
+        */
             break;
 #endif
         default: break;

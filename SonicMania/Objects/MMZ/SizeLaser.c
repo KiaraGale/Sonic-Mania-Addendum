@@ -133,14 +133,25 @@ void SizeLaser_StageLoad(void)
         case ID_TAILS:
             SizeLaser->tailsFrames = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
             SizeLaser->tailFrames  = RSDK.LoadSpriteAnimation("Players/CTailSprite.bin", SCOPE_STAGE);
+            SizeLaser->miracleTailsFrames = RSDK.LoadSpriteAnimation("Players/MiracleChibiTails.bin", SCOPE_STAGE);
+            SizeLaser->miracleTailFrames  = RSDK.LoadSpriteAnimation("Players/MiracleCTailSprite.bin", SCOPE_STAGE);
             break;
 
-        case ID_KNUCKLES: SizeLaser->knuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE); break;
+        case ID_KNUCKLES:
+            SizeLaser->knuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE);
+            SizeLaser->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleKnux.bin", SCOPE_STAGE);
+            break;
 
 #if MANIA_USE_PLUS
-        case ID_MIGHTY: SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE); break;
+        case ID_MIGHTY:
+            SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE);
+            SizeLaser->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleMighty.bin", SCOPE_STAGE);
+            break;
 
-        case ID_RAY: SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE); break;
+        case ID_RAY:
+            SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE);
+            SizeLaser->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleRay.bin", SCOPE_STAGE);
+            break;
 
         case ID_AMY:
             SizeLaser->amyFrames        = RSDK.LoadSpriteAnimation("Players/ChibiAmy.bin", SCOPE_STAGE);
@@ -159,16 +170,27 @@ void SizeLaser_StageLoad(void)
             break;
 
         case ID_TAILS:
-            SizeLaser->tailsFrames = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
-            SizeLaser->tailFrames  = RSDK.LoadSpriteAnimation("Players/CTailSprite.bin", SCOPE_STAGE);
+            SizeLaser->tailsFrames        = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
+            SizeLaser->tailFrames         = RSDK.LoadSpriteAnimation("Players/CTailSprite.bin", SCOPE_STAGE);
+            SizeLaser->miracleTailsFrames = RSDK.LoadSpriteAnimation("Players/MiracleChibiTails.bin", SCOPE_STAGE);
+            SizeLaser->miracleTailFrames  = RSDK.LoadSpriteAnimation("Players/MiracleCTailSprite.bin", SCOPE_STAGE);
             break;
 
-        case ID_KNUCKLES: SizeLaser->knuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE); break;
+        case ID_KNUCKLES:
+            SizeLaser->knuxFrames        = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE);
+            SizeLaser->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleKnux.bin", SCOPE_STAGE);
+            break;
 
 #if MANIA_USE_PLUS
-        case ID_MIGHTY: SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE); break;
+        case ID_MIGHTY:
+            SizeLaser->mightyFrames        = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE);
+            SizeLaser->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleMighty.bin", SCOPE_STAGE);
+            break;
 
-        case ID_RAY: SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE); break;
+        case ID_RAY:
+            SizeLaser->rayFrames        = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE);
+            SizeLaser->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleRay.bin", SCOPE_STAGE);
+            break;
 
         case ID_AMY:
             SizeLaser->amyFrames        = RSDK.LoadSpriteAnimation("Players/ChibiAmy.bin", SCOPE_STAGE);
@@ -222,26 +244,41 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 break;
 
             case ID_TAILS:
-                player->aniFrames  = SizeLaser->tailsFrames;
-                player->tailFrames = SizeLaser->tailFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState) {
+                    player->aniFrames  = SizeLaser->miracleTailsFrames;
+                    player->tailFrames = SizeLaser->miracleTailFrames;
+                }
+                else {
+                    player->aniFrames  = SizeLaser->tailsFrames;
+                    player->tailFrames = SizeLaser->tailFrames;
+                }
                 player->isChibi    = isChibi;
                 break;
 
             case ID_KNUCKLES:
-                player->aniFrames  = SizeLaser->knuxFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = SizeLaser->miracleKnuxFrames;
+                else
+                    player->aniFrames = SizeLaser->knuxFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
 
 #if MANIA_USE_PLUS
             case ID_MIGHTY:
-                player->aniFrames  = SizeLaser->mightyFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = SizeLaser->miracleMightyFrames;
+                else
+                    player->aniFrames = SizeLaser->mightyFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
 
             case ID_RAY:
-                player->aniFrames  = SizeLaser->rayFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = SizeLaser->miracleRayFrames;
+                else
+                    player->aniFrames = SizeLaser->rayFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -274,26 +311,41 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 break;
 
             case ID_TAILS:
-                player->aniFrames  = Player->tailsFrames;
-                player->tailFrames = Player->tailsTailsFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState) {
+                    player->aniFrames  = Player->miracleTailsFrames;
+                    player->tailFrames = Player->miracleTailsTailsFrames;
+                }
+                else {
+                    player->aniFrames  = Player->tailsFrames;
+                    player->tailFrames = Player->tailsTailsFrames;
+                }
                 player->isChibi    = false;
                 break;
 
             case ID_KNUCKLES:
-                player->aniFrames  = Player->knuxFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames  = Player->miracleKnuxFrames;
+                else
+                    player->aniFrames  = Player->knuxFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
 
 #if MANIA_USE_PLUS
             case ID_MIGHTY:
-                player->aniFrames  = Player->mightyFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = Player->miracleMightyFrames;
+                else
+                    player->aniFrames = Player->mightyFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
 
             case ID_RAY:
-                player->aniFrames  = Player->rayFrames;
+                if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                    player->aniFrames = Player->rayFrames;
+                else
+                    player->aniFrames  = Player->rayFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -302,7 +354,7 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 if (player->superState == SUPERSTATE_SUPER && player->miracleState)
                     player->aniFrames = Player->miracleAmyFrames;
                 else
-                    player->aniFrames  = Player->amyFrames;
+                    player->aniFrames = Player->amyFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -416,23 +468,38 @@ void SizeLaser_PlayerState_ShrinkChibi(void)
                 break;
 
             case ID_TAILS:
-                self->aniFrames  = SizeLaser->tailsFrames;
-                self->tailFrames = SizeLaser->tailFrames;
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState) {
+                    self->aniFrames  = SizeLaser->miracleTailsFrames;
+                    self->tailFrames = SizeLaser->miracleTailFrames;
+                }
+                else {
+                    self->aniFrames  = SizeLaser->tailsFrames;
+                    self->tailFrames = SizeLaser->tailFrames;
+                }
                 break;
 
             case ID_KNUCKLES:
-                self->aniFrames  = SizeLaser->knuxFrames;
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    self->aniFrames = SizeLaser->knuxFrames;
+                else
+                    self->aniFrames = SizeLaser->knuxFrames;
                 self->tailFrames = -1;
                 break;
 
 #if MANIA_USE_PLUS
             case ID_MIGHTY:
-                self->aniFrames  = SizeLaser->mightyFrames;
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    self->aniFrames = SizeLaser->miracleMightyFrames;
+                else
+                    self->aniFrames = SizeLaser->mightyFrames;
                 self->tailFrames = -1;
                 break;
 
             case ID_RAY:
-                self->aniFrames  = SizeLaser->rayFrames;
+                if (self->superState == SUPERSTATE_SUPER && self->miracleState)
+                    self->aniFrames = SizeLaser->rayFrames;
+                else
+                    self->aniFrames  = SizeLaser->rayFrames;
                 self->tailFrames = -1;
                 break;
 
@@ -594,23 +661,38 @@ void SizeLaser_CheckPlayerCollisions(void)
                             break;
 
                         case ID_TAILS:
-                            player->aniFrames  = Player->tailsFrames;
-                            player->tailFrames = Player->tailsTailsFrames;
+                            if (player->superState == SUPERSTATE_SUPER && player->miracleState) {
+                                player->aniFrames  = Player->miracleTailsFrames;
+                                player->tailFrames = Player->miracleTailsTailsFrames;
+                            }
+                            else {
+                                player->aniFrames  = Player->tailsFrames;
+                                player->tailFrames = Player->tailsTailsFrames;
+                            }
                             break;
 
                         case ID_KNUCKLES:
-                            player->aniFrames  = Player->knuxFrames;
+                            if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                                player->aniFrames = Player->miracleKnuxFrames;
+                            else
+                                player->aniFrames = Player->knuxFrames;
                             player->tailFrames = -1;
                             break;
 
 #if MANIA_USE_PLUS
                         case ID_MIGHTY:
-                            player->aniFrames  = Player->mightyFrames;
+                            if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                                player->aniFrames = Player->miracleMightyFrames;
+                            else
+                                player->aniFrames = Player->mightyFrames;
                             player->tailFrames = -1;
                             break;
 
                         case ID_RAY:
-                            player->aniFrames  = Player->rayFrames;
+                            if (player->superState == SUPERSTATE_SUPER && player->miracleState)
+                                player->aniFrames = Player->miracleRayFrames;
+                            else
+                                player->aniFrames = Player->rayFrames;
                             player->tailFrames = -1;
                             break;
 
@@ -618,7 +700,7 @@ void SizeLaser_CheckPlayerCollisions(void)
                             if (player->superState == SUPERSTATE_SUPER && player->miracleState)
                                 player->aniFrames = Player->miracleAmyFrames;
                             else
-                                player->aniFrames  = Player->amyFrames;
+                                player->aniFrames = Player->amyFrames;
                             player->tailFrames = -1;
                             break;
 #endif

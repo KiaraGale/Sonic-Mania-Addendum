@@ -24,8 +24,8 @@ typedef enum {
     ITEMBOX_1UP_RAY,
     ITEMBOX_1UP_AMY,
     ITEMBOX_STOCK,
-    ITEMBOX_EMERALD,
-    ITEMBOX_TIMESTONE,
+    // ITEMBOX_EMERALD,
+    // ITEMBOX_TIMESTONE,
 #endif
     ITEMBOX_COUNT
 } ItemBoxTypes;

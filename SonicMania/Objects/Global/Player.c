@@ -152,19 +152,21 @@ void Player_Update(void)
         }
     }
 
-    int32 leaderRings = leader->rings;
-    if (sidekick->active) {
-        sidekick->rings = leaderRings;
-    }
-
-    if (leader->superState == SUPERSTATE_FADEIN) {
-        if (sidekick->active)
-            Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
-    }
-
-    if (leader->superState == SUPERSTATE_SUPER) {
+    if (globals->gameMode != MODE_COMPETITION) {
+        int32 leaderRings = leader->rings;
+        if (sidekick->active) {
+            sidekick->rings = leaderRings;
+        }
+    
+        if (leader->superState == SUPERSTATE_FADEIN) {
             if (sidekick->active)
-        sidekick->superState = SUPERSTATE_SUPER;
+                Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
+        }
+
+        if (leader->superState == SUPERSTATE_SUPER) {
+            if (sidekick->active)
+                sidekick->superState = SUPERSTATE_SUPER;
+        }
     }
 
     Hitbox *playerHitbox = Player_GetHitbox(self);
@@ -181,7 +183,7 @@ void Player_Update(void)
     // crappy "dev mode"
     SaveRAM *saveRAM                = SaveGame_GetSaveRAM();
     RSDKControllerState *controller = &ControllerInfo[self->controllerID];
-    if (globals->medalMods & MEDAL_DEBUGMODE) {
+    if (SceneInfo->debugMode) {
         if (controller->keyZ.press) {
             if (self->state == Player_State_Ground) {
                 switch (self->characterID) {
@@ -206,12 +208,14 @@ void Player_Update(void)
         }
     }
 
-    RSDKControllerState *leadercontroller = &ControllerInfo[leader->controllerID];
-    if (leader->superState == SUPERSTATE_SUPER && leadercontroller->keyY.press && leader->animator.animationID == ANI_JUMP
-        && (!RSDK.CheckSceneFolder("ERZ"))) {
-        leader->superState = SUPERSTATE_FADEOUT;
-        if (sidekick->active)
-            sidekick->superState = SUPERSTATE_FADEOUT;
+    if (globals->gameMode != MODE_COMPETITION) {
+        RSDKControllerState *leadercontroller = &ControllerInfo[leader->controllerID];
+        if (leader->superState == SUPERSTATE_SUPER && leadercontroller->keyY.press && leader->animator.animationID == ANI_JUMP
+            && (!RSDK.CheckSceneFolder("ERZ"))) {
+            leader->superState = SUPERSTATE_FADEOUT;
+            if (sidekick->active)
+                sidekick->superState = SUPERSTATE_FADEOUT;
+        }
     }
 }
 
@@ -648,12 +652,12 @@ void Player_Create(void *data)
         switch (self->characterID) {
             default:
             case ID_SONIC:
-                self->aniFrames    = Player->sonicFrames;
-                self->tailFrames   = -1;
-                self->jumpOffset   = TO_FIXED(5);
+                self->aniFrames     = Player->sonicFrames;
+                self->tailFrames    = -1;
+                self->jumpOffset    = TO_FIXED(5);
                 self->stateAbility  = Player_JumpAbility_Sonic;
                 self->stateTallJump = StateMachine_None;
-                self->sensorY      = TO_FIXED(20);
+                self->sensorY       = TO_FIXED(20);
 
                 if (globals->medalMods & MEDAL_PEELOUT) {
                     self->statePeelout = Player_Action_Peelout;
@@ -838,14 +842,12 @@ void Player_Create(void *data)
 
         if (globals->gameMode == MODE_COMPETITION) {
             if (addendum->competitonMods & COMP_SUPERRUN) {
-                self->rings        = 55;
-                self->miracleState = false;
-                self->state        = Player_State_StartSuper;
+                self->rings = 55;
+                Player_TryTransform(self, 0xFF, 0x00);
             }
             else if (addendum->competitonMods & COMP_MIRACLERUN) {
-                self->rings        = 55;
-                self->miracleState = true;
-                self->state        = Player_State_StartSuper;
+                self->rings = 55;
+                Player_TryTransform(self, 0xFF, 0xFF);
             }
         }
 
@@ -1238,7 +1240,7 @@ void Player_ApplyShield(EntityPlayer *player)
 {
     if (player->shield && player->superState != SUPERSTATE_SUPER && player->invincibleTimer <= 0) {
         EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(player), Shield);
-        RSDK.ResetEntity(shield, Shield->classID, player);
+        RSDK.ResetEntity(shield, Shield->classID, player);  
     }
 }
 void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
@@ -1297,6 +1299,15 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                     *dst = *src;
                 }
             }
+
+            if (globals->medalMods & MEDAL_SPINDASH) {
+                for (int32 s = 0; s < 16; ++s) {
+                    SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_SPINDASH, s);
+                    SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, 55, s);
+
+                    *dst = *src;
+                }
+            }
             break;
 
         case ID_TAILS:
@@ -1307,11 +1318,19 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
             if (SizeLaser) {
                 SizeLaser->tailsFrames = RSDK.LoadSpriteAnimation("Players/ChibiTails.bin", SCOPE_STAGE);
                 SizeLaser->tailFrames  = RSDK.LoadSpriteAnimation("Players/CTailSprite.bin", SCOPE_STAGE);
+                SizeLaser->miracleTailsFrames = RSDK.LoadSpriteAnimation("Player/ChibiMiracleTails.bin", SCOPE_STAGE);
+                SizeLaser->miracleTailFrames = RSDK.LoadSpriteAnimation("Player/MiracleCTailSprite.bin", SCOPE_STAGE);
             }
 
             if (entity->isChibi) {
-                entity->aniFrames  = SizeLaser->tailsFrames;
-                entity->tailFrames = SizeLaser->tailFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState) {
+                    entity->aniFrames  = SizeLaser->miracleTailsFrames;
+                    entity->tailFrames = SizeLaser->miracleTailFrames;
+                }
+                else {
+                    entity->aniFrames  = SizeLaser->tailsFrames;
+                    entity->tailFrames = SizeLaser->tailFrames;
+                }
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
@@ -1335,11 +1354,16 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
         case ID_KNUCKLES:
             Player->knuxFrames        = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
             Player->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnux.bin", SCOPE_STAGE);
-            if (SizeLaser)
+            if (SizeLaser) {
                 SizeLaser->knuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiKnux.bin", SCOPE_STAGE);
+                SizeLaser->miracleKnuxFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleKnux.bin", SCOPE_STAGE);
+            }
 
             if (entity->isChibi) {
-                entity->aniFrames  = SizeLaser->knuxFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
+                    entity->aniFrames = SizeLaser->miracleKnuxFrames;
+                else
+                    entity->aniFrames = SizeLaser->knuxFrames;
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
@@ -1357,24 +1381,38 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
             entity->statePeelout  = StateMachine_None;
             entity->stateTallJump = StateMachine_None;
             entity->sensorY       = TO_FIXED(20);
+
+            if (globals->medalMods & MEDAL_SPINDASH) {
+                for (int32 s = 0; s < 16; ++s) {
+                    SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_SPINDASH, s);
+                    SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, 55, s);
+
+                    *dst = *src;
+                }
+            }
             break;
 
 #if MANIA_USE_PLUS
         case ID_MIGHTY:
             Player->mightyFrames = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
             Player->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/MiracleMighty.bin", SCOPE_STAGE);
-            if (SizeLaser)
+            if (SizeLaser) {
                 SizeLaser->mightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMighty.bin", SCOPE_STAGE);
+                SizeLaser->miracleMightyFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleMighty.bin", SCOPE_STAGE);
+            }
 
             if (entity->isChibi) {
-                entity->aniFrames  = SizeLaser->mightyFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
+                    entity->aniFrames = SizeLaser->miracleMightyFrames;
+                else
+                    entity->aniFrames = SizeLaser->mightyFrames;
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
                 if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
                     entity->aniFrames = Player->miracleMightyFrames;
                 else
-                    entity->aniFrames  = Player->mightyFrames;
+                    entity->aniFrames = Player->mightyFrames;
                 entity->jumpOffset = TO_FIXED(5);
             }
 
@@ -1383,16 +1421,30 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
             entity->statePeelout  = StateMachine_None;
             entity->stateTallJump = StateMachine_None;
             entity->sensorY       = TO_FIXED(20);
+
+            if (globals->medalMods & MEDAL_SPINDASH) {
+                for (int32 s = 0; s < 16; ++s) {
+                    SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_SPINDASH, s);
+                    SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, 55, s);
+
+                    *dst = *src;
+                }
+            }
             break;
 
         case ID_RAY:
             Player->rayFrames = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
             Player->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/MiracleRay.bin", SCOPE_STAGE);
-            if (SizeLaser)
+            if (SizeLaser) {
                 SizeLaser->rayFrames = RSDK.LoadSpriteAnimation("Players/ChibiRay.bin", SCOPE_STAGE);
+                SizeLaser->miracleRayFrames = RSDK.LoadSpriteAnimation("Players/ChibiMiracleRay.bin", SCOPE_STAGE);
+            }
 
             if (entity->isChibi) {
-                entity->aniFrames  = SizeLaser->rayFrames;
+                if (entity->superState == SUPERSTATE_SUPER && entity->miracleState)
+                    entity->aniFrames = SizeLaser->miracleRayFrames;
+                else
+                    entity->aniFrames = SizeLaser->rayFrames;
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
@@ -1408,6 +1460,15 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
             entity->statePeelout  = StateMachine_None;
             entity->stateTallJump = StateMachine_None;
             entity->sensorY       = TO_FIXED(20);
+
+            if (globals->medalMods & MEDAL_SPINDASH) {
+                for (int32 s = 0; s < 16; ++s) {
+                    SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_SPINDASH, s);
+                    SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, 55, s);
+
+                    *dst = *src;
+                }
+            }
             break;
 
         case ID_AMY:
@@ -1422,14 +1483,14 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 if (entity->miracleState)
                     entity->aniFrames = SizeLaser->miracleAmyFrames;
                 else
-                    entity->aniFrames  = SizeLaser->amyFrames;
+                    entity->aniFrames = SizeLaser->amyFrames;
                 entity->jumpOffset = TO_FIXED(4);
             }
             else {
                 if (entity->miracleState)
                     entity->aniFrames = Player->miracleAmyFrames;
                 else
-                    entity->aniFrames  = Player->amyFrames;
+                    entity->aniFrames = Player->amyFrames;
                 entity->jumpOffset = TO_FIXED(5);
             }
 
@@ -1444,6 +1505,15 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
                 for (int32 f = 0; f < 5; ++f) {
                     SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_DASH, f);
                     SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, ANI_DASH_NOHAMMER, f);
+
+                    *dst = *src;
+                }
+            }
+
+            if (globals->medalMods & MEDAL_SPINDASH) {
+                for (int32 s = 0; s < 16; ++s) {
+                    SpriteFrame *dst = RSDK.GetFrame(entity->aniFrames, ANI_SPINDASH, s);
+                    SpriteFrame *src = RSDK.GetFrame(entity->aniFrames, 55, s);
 
                     *dst = *src;
                 }
@@ -1595,19 +1665,15 @@ void Player_ChangeCharacter(EntityPlayer *entity, int32 character)
 #endif
         }
 
-        if (entity->superState == SUPERSTATE_SUPER) {
-            if (Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
-                entity->miracleState = true;
-            else
-                entity->miracleState = false;
-            entity->state = Player_State_StartSuper;
-        }
+        if (entity->superState == SUPERSTATE_SUPER)
+            Player_TryTransform(entity, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
     }
 
     Player_UpdatePhysicsState(entity);
 }
 bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeStoneMasks)
 {
+    RSDK_THIS(Player);
     EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     if (globals->gameMode != MODE_COMPETITION) {
         if (!SceneInfo->timeEnabled && !ERZStart && (!PhantomEgg || PhantomEgg->disableSuperForm))
@@ -1617,10 +1683,13 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
     uint8 emeralds = emeraldMasks;
     uint8 timeStones = timeStoneMasks;
 #if MANIA_USE_PLUS
-    if (emeraldMasks == 0xFF) // 0xFF seems to be the "force transform" flag
-        emeralds = 0b01111111;
+    if (emeraldMasks == 0xFF) { // 0xFF seems to be the "force transform" flag
+        emeralds           = 0b01111111;
+        self->miracleState = false;
+    }
     if (timeStoneMasks == 0xFF) {
-        timeStones = 0b01111111;
+        timeStones         = 0b01111111;
+        self->miracleState = true;
     }
 
     if (Player->canSuperCB) {
@@ -1633,51 +1702,53 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
     if ((player->superState >= SUPERSTATE_SUPER || (emeralds != 0b01111111 && timeStones != 0b01111111) || player->rings < 50) && (emeraldMasks != 0xFF && timeStoneMasks != 0xFF))
         return false;
 
-    if (emeralds == 0b01111111 && timeStones == 0b1111111) {
-        foreach_active(Player, entity)
-        {
-            int32 angle = 0;
-            for (int32 p = 0; p < 14; ++p) {
-                EntityDebris *powerStone = CREATE_ENTITY(Debris, NULL, entity->position.x, entity->position.y);
-                powerStone->state        = Debris_State_Rotate;
-                powerStone->drawGroup    = Zone->objectDrawGroup[1];
-                powerStone->active       = ACTIVE_NORMAL;
-                powerStone->originPos.x  = entity->position.x;
-                powerStone->originPos.y  = entity->position.y;
-                powerStone->angle        = angle;
-                powerStone->radius       = 0x10000;
-                powerStone->groundVel    = 1024;
-
-                angle += 0x1249; // how far out each emerald/time stone is spaced out from each other
-
-                RSDK.SetSpriteAnimation(Debris->powerFrames, 0, &powerStone->powerAnimator, true, p);
-            }
-
-            entity->miracleState = true;
-        }
-    }
-    else {
-        if (emeralds == 0b01111111 && timeStones != 0b01111111) {
+    if (player->superState != SUPERSTATE_SUPER) {
+        if (emeralds == 0b01111111 && timeStones == 0b1111111) {
             foreach_active(Player, entity)
             {
                 int32 angle = 0;
-                for (int32 i = 0; i < 7; ++i) {
-                    EntityDebris *emerald = CREATE_ENTITY(Debris, NULL, entity->position.x, entity->position.y);
-                    emerald->state        = Debris_State_Rotate;
-                    emerald->drawGroup    = Zone->objectDrawGroup[1];
-                    emerald->active       = ACTIVE_NORMAL;
-                    emerald->originPos.x  = entity->position.x;
-                    emerald->originPos.y  = entity->position.y;
-                    emerald->angle        = angle;
-                    emerald->radius       = 0x10000;
-                    emerald->groundVel    = 1024;
+                for (int32 p = 0; p < 14; ++p) {
+                    EntityDebris *powerStone = CREATE_ENTITY(Debris, NULL, entity->position.x, entity->position.y);
+                    powerStone->state        = Debris_State_Rotate;
+                    powerStone->drawGroup    = Zone->objectDrawGroup[1];
+                    powerStone->active       = ACTIVE_NORMAL;
+                    powerStone->originPos.x  = entity->position.x;
+                    powerStone->originPos.y  = entity->position.y;
+                    powerStone->angle        = angle;
+                    powerStone->radius       = 0x10000;
+                    powerStone->groundVel    = 1024;
 
-                    angle += 0x2492;
+                    angle += 0x1249; // how far out each emerald/time stone is spaced out from each other
 
-                    RSDK.SetSpriteAnimation(Debris->emeraldFrames, 0, &emerald->emeraldsAnimator, true, i);
+                    RSDK.SetSpriteAnimation(Debris->powerFrames, 0, &powerStone->powerAnimator, true, p);
                 }
 
-                entity->miracleState = false;
+                entity->miracleState = true;
+            }
+        }
+        else {
+            if (emeralds == 0b01111111 && timeStones != 0b01111111) {
+                foreach_active(Player, entity)
+                {
+                    int32 angle = 0;
+                    for (int32 i = 0; i < 7; ++i) {
+                        EntityDebris *emerald = CREATE_ENTITY(Debris, NULL, entity->position.x, entity->position.y);
+                        emerald->state        = Debris_State_Rotate;
+                        emerald->drawGroup    = Zone->objectDrawGroup[1];
+                        emerald->active       = ACTIVE_NORMAL;
+                        emerald->originPos.x  = entity->position.x;
+                        emerald->originPos.y  = entity->position.y;
+                        emerald->angle        = angle;
+                        emerald->radius       = 0x10000;
+                        emerald->groundVel    = 1024;
+
+                        angle += 0x2492;
+
+                        RSDK.SetSpriteAnimation(Debris->emeraldFrames, 0, &emerald->emeraldsAnimator, true, i);
+                    }
+
+                    entity->miracleState = false;
+                }
             }
         }
     }
@@ -1800,26 +1871,54 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
         }
     }
 
-    if (player->characterID == ID_TAILS && player->miracleState && !player->isChibi) {
-        player->aniFrames = Player->miracleTailsFrames;
-        player->tailFrames = Player->miracleTailsTailsFrames;
+    if (player->characterID == ID_TAILS && player->miracleState) {
+        if (player->isChibi) {
+            player->aniFrames  = SizeLaser->miracleTailsFrames;
+            player->tailFrames = SizeLaser->miracleTailFrames;
+        }
+        else {
+            player->aniFrames  = Player->miracleTailsFrames;
+            player->tailFrames = Player->miracleTailsTailsFrames;
+        }
     }
 
-    if (player->characterID == ID_KNUCKLES && player->miracleState && !player->isChibi) {
-        player->aniFrames = Player->miracleKnuxFrames;
+    if (player->characterID == ID_KNUCKLES && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleKnuxFrames;
+        else
+            player->aniFrames = Player->miracleKnuxFrames;
     }
 
-    if (player->characterID == ID_MIGHTY && player->miracleState)
-        player->aniFrames = Player->miracleMightyFrames;
+    if (player->characterID == ID_MIGHTY && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleMightyFrames;
+        else
+            player->aniFrames = Player->miracleMightyFrames;
+    }
 
-    if (player->characterID == ID_RAY && player->miracleState)
-        player->aniFrames = Player->miracleRayFrames;
+    if (player->characterID == ID_RAY && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleRayFrames;
+        else
+            player->aniFrames = Player->miracleRayFrames;
+    }
 
     if (player->characterID == ID_AMY && player->miracleState) {
         if (player->isChibi)
             player->aniFrames = SizeLaser->miracleAmyFrames;
         else
             player->aniFrames = Player->miracleAmyFrames;
+    }
+
+    if (player->characterID != ID_TAILS) {
+        if (globals->medalMods & MEDAL_SPINDASH) {
+            for (int32 s = 0; s < 16; ++s) {
+                SpriteFrame *dst = RSDK.GetFrame(player->aniFrames, ANI_SPINDASH, s);
+                SpriteFrame *src = RSDK.GetFrame(player->aniFrames, 55, s);
+
+                *dst = *src;
+            }
+        }
     }
 
 #if MANIA_USE_PLUS
@@ -1932,8 +2031,8 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         case ID_TAILS:
             if (player->miracleState) {
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->miraclePalette_Tails[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_TAILS + c, Player->miraclePalette_Tails[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_TAILS + c, Player->miraclePalette_Tails[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_TAILS + c, Player->miraclePalette_Tails[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                 }
             }
             else {
@@ -1947,8 +2046,8 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         case ID_KNUCKLES:
             if (player->miracleState) {
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_KNUX + c, Player->miraclePalette_Knux[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                 }
             }
             else {
@@ -1963,8 +2062,8 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         case ID_MIGHTY:
             if (player->miracleState) {
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(2 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(0 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_MIGHTY + c, Player->miraclePalette_Mighty[(1 * PLAYER_PRIMARY_COLOR_COUNT) + c]);
                 }
             }
             else {
@@ -1978,8 +2077,8 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         case ID_RAY:
             if (player->miracleState) {
                 for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT + 1; ++c) {
-                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * (PLAYER_PRIMARY_COLOR_COUNT + 1)) + c]);
-                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(2 * (PLAYER_PRIMARY_COLOR_COUNT + 1)) + c]);
+                    RSDK.SetPaletteEntry(6, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(0 * (PLAYER_PRIMARY_COLOR_COUNT + 1)) + c]);
+                    RSDK.SetPaletteEntry(7, PLAYER_PALETTE_INDEX_RAY + c, Player->miraclePalette_Ray[(1 * (PLAYER_PRIMARY_COLOR_COUNT + 1)) + c]);
                 }
             }
             else {
@@ -2023,26 +2122,54 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
         }
     }
 
-    if (player->characterID == ID_TAILS && player->miracleState && !player->isChibi) {
-        player->aniFrames  = Player->miracleTailsFrames;
-        player->tailFrames = Player->miracleTailsTailsFrames;
+    if (player->characterID == ID_TAILS && player->miracleState) {
+        if (player->isChibi) {
+            player->aniFrames  = SizeLaser->miracleTailsFrames;
+            player->tailFrames = SizeLaser->miracleTailFrames;
+        }
+        else {
+            player->aniFrames  = Player->miracleTailsFrames;
+            player->tailFrames = Player->miracleTailsTailsFrames;
+        }
     }
 
-    if (player->characterID == ID_KNUCKLES && player->miracleState && !player->isChibi) {
-        player->aniFrames = Player->miracleKnuxFrames;
+    if (player->characterID == ID_KNUCKLES && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleKnuxFrames;
+        else
+            player->aniFrames = Player->miracleKnuxFrames;
     }
 
-    if (player->characterID == ID_MIGHTY && player->miracleState)
-        player->aniFrames = Player->miracleMightyFrames;
+    if (player->characterID == ID_MIGHTY && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleMightyFrames;
+        else
+            player->aniFrames = Player->miracleMightyFrames;
+    }
 
-    if (player->characterID == ID_RAY && player->miracleState)
-        player->aniFrames = Player->miracleRayFrames;
+    if (player->characterID == ID_RAY && player->miracleState) {
+        if (player->isChibi)
+            player->aniFrames = SizeLaser->miracleRayFrames;
+        else
+            player->aniFrames = Player->miracleRayFrames;
+    }
 
     if (player->characterID == ID_AMY && player->miracleState) {
         if (player->isChibi)
             player->aniFrames = SizeLaser->miracleAmyFrames;
         else
             player->aniFrames = Player->miracleAmyFrames;
+    }
+
+    if (player->characterID != ID_TAILS) {
+        if (globals->medalMods & MEDAL_SPINDASH) {
+            for (int32 s = 0; s < 16; ++s) {
+                SpriteFrame *dst = RSDK.GetFrame(player->aniFrames, ANI_SPINDASH, s);
+                SpriteFrame *src = RSDK.GetFrame(player->aniFrames, 55, s);
+
+                *dst = *src;
+            }
+        }
     }
 
 #if MANIA_USE_PLUS
@@ -3292,8 +3419,14 @@ void Player_HandleSuperForm(void)
         }
 
         if (self->characterID == ID_TAILS) {
-            self->aniFrames = Player->tailsFrames;
-            self->tailFrames = Player->tailsTailsFrames;
+            if (self->isChibi) {
+                self->aniFrames  = SizeLaser->tailsFrames;
+                self->tailFrames = SizeLaser->tailFrames;
+            }
+            else {
+                self->aniFrames  = Player->tailsFrames;
+                self->tailFrames = Player->tailsTailsFrames;
+            }
             if (!self->animator.animationID)
                 self->animator.frameID = 0;
 
@@ -3301,8 +3434,11 @@ void Player_HandleSuperForm(void)
             RSDK.SetSpriteAnimation(self->tailFrames, self->animator.animationID, &self->animator, true, self->animator.frameID);
         }
 
-        if (self->characterID == ID_KNUCKLES && !self->isChibi) {
-            self->aniFrames = Player->knuxFrames;
+        if (self->characterID == ID_KNUCKLES) {
+            if (self->isChibi)
+                self->aniFrames = SizeLaser->knuxFrames;
+            else
+                self->aniFrames = Player->knuxFrames;
             if (!self->animator.animationID)
                 self->animator.frameID = 0;
 

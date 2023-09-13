@@ -12,6 +12,8 @@ ObjectTornado *Tornado;
 void Tornado_Update(void)
 {
     RSDK_THIS(Tornado);
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityCamera *camera  = TornadoPath->camera;
 
     self->prevPosY = self->position.y;
     StateMachine_Run(self->state);
@@ -22,6 +24,23 @@ void Tornado_Update(void)
     RSDK.ProcessAnimation(&self->animatorPilot);
     RSDK.ProcessAnimation(&self->animatorFlame);
     RSDK.ProcessAnimation(&self->animatorKnux);
+
+    if (player1->superState == SUPERSTATE_SUPER) {
+        player1->groundVel       = CLAMP(player1->groundVel, -self->offsetX, self->offsetX);
+        player1->velocity.x      = player1->groundVel;
+        player1->acceleration    = CLAMP(player1->acceleration, -0x270000, 0x270000);
+        player1->airAcceleration = CLAMP(player1->airAcceleration, -0x270000, 0x270000);
+    }
+
+    if (player1->state == ERZStart_State_PlayerSuperFly) {
+        if (player1->up) {
+            self->position.y -= 0x20000;
+        }
+
+        if (player1->down) {
+            self->position.y += 0x20000;
+        }
+    }
 }
 
 void Tornado_LateUpdate(void) {}
@@ -192,6 +211,11 @@ void Tornado_HandlePlayerCollisions(void)
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     Hitbox *hitbox        = RSDK.GetHitbox(&self->animatorTornado, 0);
 
+    if (player1->state == ERZStart_State_PlayerSuperFly) {
+        player1->position.x += TornadoPath->moveVel.x;
+        player1->position.y += self->moveVelocityY;
+    }
+
     self->prevPosY     = self->position.y;
     self->turnAngle    = 32;
     player1->drawGroup = self->drawGroup + 1;
@@ -201,33 +225,48 @@ void Tornado_HandlePlayerCollisions(void)
     self->isStood       = false;
 
     int32 velY = player1->velocity.y;
-    if (Player_CheckCollisionPlatform(player1, self, hitbox)) {
-        player1->position.x += TornadoPath->moveVel.x;
-        player1->position.y += self->moveVelocityY;
-        player1->flailing = false;
-        self->isStood     = true;
+    if (player1->state != ERZStart_State_PlayerSuperFly) {
+        if (Player_CheckCollisionPlatform(player1, self, hitbox)) {
+            player1->position.x += TornadoPath->moveVel.x;
+            player1->position.y += self->moveVelocityY;
+            player1->flailing = false;
+            self->isStood     = true;
 
-        if (velY > 0x10000) {
-            self->collideTimer = 0;
-            self->gravityForce = 0x20000;
-            self->mode         = TORNADO_MODE_LAND;
+            if (velY > 0x10000) {
+                self->collideTimer = 0;
+                self->gravityForce = 0x20000;
+                self->mode         = TORNADO_MODE_LAND;
+            }
         }
     }
 
     EntityCamera *camera = TornadoPath->camera;
     if (camera) {
         int32 screenX = camera->position.x - (ScreenInfo->center.x << 16) + 0xC0000;
-        if (player1->position.x < screenX)
+        if (player1->position.x < screenX) {
             player1->position.x = screenX;
+            if (player1->left)
+                player1->velocity.x = 0;
+        }
 
         int32 screenY = ((ScreenInfo->center.x - 12) << 16) + camera->position.x;
-        if (player1->position.x > screenY)
+        if (player1->position.x > screenY) {
             player1->position.x = screenY;
+            if (player1->right)
+                player1->velocity.x = 0;
+        }
 
         if (player1->classID == Player->classID) {
             int32 deathBounds = (camera->position.y + ((ScreenInfo[camera->screenID].center.y + 16) << 16));
-            if (player1->position.y > deathBounds)
+            int32 superBounds = ((camera->position.y + ((ScreenInfo[camera->screenID].center.y + 16) << 16)) - 0x130000);
+            if (player1->state != ERZStart_State_PlayerSuperFly && player1->position.y > deathBounds)
                 player1->deathType = PLAYER_DEATH_DIE_USESFX;
+
+            if (player1->superState == SUPERSTATE_SUPER && player1->position.y > superBounds) {
+                player1->position.y = superBounds;
+                if (player1->down)
+                    player1->velocity.y = 0;
+            }
         }
     }
 }
@@ -342,20 +381,22 @@ void Tornado_State_PlayerControlled(void)
     int32 velY          = player1->velocity.y;
     int32 posX          = self->position.x;
 
-    if (Player_CheckCollisionPlatform(player1, self, hitbox)) {
-        player1->position.x += TornadoPath->moveVel.x;
-        player1->position.y += self->moveVelocityY;
-        player1->flailing = false;
-        self->isStood     = true;
+    if (player1->state != ERZStart_State_PlayerSuperFly) {
+        if (Player_CheckCollisionPlatform(player1, self, hitbox)) {
+            player1->position.x += TornadoPath->moveVel.x;
+            player1->position.y += self->moveVelocityY;
+            player1->flailing = false;
+            self->isStood     = true;
 
-        if (velY > 0x10000) {
-            self->collideTimer = 0;
-            self->gravityForce = 0x20000;
-            self->mode         = TORNADO_MODE_LAND;
+            if (velY > 0x10000) {
+                self->collideTimer = 0;
+                self->gravityForce = 0x20000;
+                self->mode         = TORNADO_MODE_LAND;
+            }
         }
-    }
-    else if (TornadoPath->hitboxID == 1) {
-        player1->position.x += TornadoPath->moveVel.x;
+        else if (TornadoPath->hitboxID == 1) {
+            player1->position.x += TornadoPath->moveVel.x;
+        }
     }
 
     int32 offsetX = 0;
@@ -383,16 +424,29 @@ void Tornado_State_PlayerControlled(void)
     EntityCamera *camera = TornadoPath->camera;
     if (camera) {
         int32 screenX = camera->position.x - (ScreenInfo->center.x << 16) + 0xC0000;
-        if (player1->position.x < screenX)
+        if (player1->position.x < screenX) {
             player1->position.x = screenX;
+            if (player1->left)
+                player1->velocity.x = 0;
+        }
 
         int32 screenY = ((ScreenInfo->center.x - 12) << 16) + camera->position.x;
-        if (player1->position.x > screenY)
+        if (player1->position.x > screenY) {
             player1->position.x = screenY;
+            if (player1->right)
+                player1->velocity.x = 0;
+        }
 
         if (player1->classID == Player->classID) {
-            if (player1->position.y > (camera->position.y + ((ScreenInfo[camera->screenID].center.y + 16) << 16)))
-                player1->deathType = PLAYER_DEATH_DIE_USESFX;
+            if (player1->position.y > ((camera->position.y + ((ScreenInfo[camera->screenID].center.y + 16) << 16)) - 0x130000)) {
+                if (player1->state == ERZStart_State_PlayerSuperFly) {
+                    player1->position.y = ((camera->position.y + ((ScreenInfo[camera->screenID].center.y + 16) << 16)) - 0x130000);
+                    if (player1->down)
+                        player1->velocity.y = 0;
+                }
+                else
+                    player1->deathType = PLAYER_DEATH_DIE_USESFX;
+            }
         }
     }
 

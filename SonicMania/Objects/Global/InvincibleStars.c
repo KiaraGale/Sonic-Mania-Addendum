@@ -14,6 +14,11 @@ void InvincibleStars_Update(void)
     RSDK_THIS(InvincibleStars);
 
     EntityPlayer *player = self->player;
+
+    if (player->superState != SUPERSTATE_NONE) {
+        destroyEntity(self);
+    }
+
     if (player) {
         self->starFrame[0] = (self->starAngle[0] + 1) % 12;
         self->starFrame[1] = (self->starAngle[1] + 1) % 10;

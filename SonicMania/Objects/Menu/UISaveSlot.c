@@ -1447,6 +1447,12 @@ void UISaveSlot_State_Selected(void)
 
     ++self->timer;
 
+    // helps counteract an issue to where the player could get a carry-over shield in one file and enter another file with that shield
+    globals->restartShield    = 0;
+    globals->restartShieldP2  = 0;
+    globals->restartHyperRing = 0;
+    globals->startSuper       = 0;
+
 #if MANIA_USE_PLUS
     if (self->encoreMode && (self->isNewSave || self->type == UISAVESLOT_NOSAVE)) {
         EntityFXRuby *fxRuby = self->fxRuby;

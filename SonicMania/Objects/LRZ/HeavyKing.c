@@ -75,6 +75,7 @@ void HeavyKing_StageLoad(void)
 {
     HeavyKing->aniFrames      = RSDK.LoadSpriteAnimation("LRZ3/HeavyKing.bin", SCOPE_STAGE);
     HeavyKing->cutsceneFrames = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
+    HeavyKing->miracleCutsceneFrames = RSDK.LoadSpriteAnimation("Players/MiracleKnuxCutsceneHPZ.bin", SCOPE_STAGE);
 
     HeavyKing->attackPatternPos = 0;
 
@@ -91,12 +92,12 @@ void HeavyKing_StageLoad(void)
     HeavyKing->sfxTwinCharge = RSDK.GetSfx("LRZ/TwinCharge.wav");
 
     HeavyKing->hitboxBody.left   = -24;
-    HeavyKing->hitboxBody.top    = 40;
+    HeavyKing->hitboxBody.top    = -40;
     HeavyKing->hitboxBody.right  = 24;
     HeavyKing->hitboxBody.bottom = 44;
 
     HeavyKing->hitboxBoss.left   = -20;
-    HeavyKing->hitboxBoss.top    = 20;
+    HeavyKing->hitboxBoss.top    = -20;
     HeavyKing->hitboxBoss.right  = 20;
     HeavyKing->hitboxBoss.bottom = 16;
 
@@ -571,7 +572,10 @@ void HeavyKing_StateCutscene_ReturnCamToPlayer(void)
 #if MANIA_USE_PLUS
         if (player1->characterID == ID_KNUCKLES) {
 #endif
-            RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 0, &player1->animator, false, 0);
+            if (player1->superState == SUPERSTATE_SUPER && player1->miracleState)
+                RSDK.SetSpriteAnimation(HeavyKing->miracleCutsceneFrames, 0, &player1->animator, false, 0);
+            else
+                RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 0, &player1->animator, false, 0);
             CREATE_ENTITY(ThoughtBubble, NULL, player1->position.x - 0x300000, player1->position.y - 0x500000);
 #if MANIA_USE_PLUS
         }
@@ -601,9 +605,13 @@ void HeavyKing_StateCutscene_GrabMasterEmerald(void)
 
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 #if MANIA_USE_PLUS
-        if (player1->characterID == ID_KNUCKLES)
+        if (player1->characterID == ID_KNUCKLES) {
 #endif
-            RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 1, &player1->animator, false, 0);
+            if (player1->superState == SUPERSTATE_SUPER && player1->miracleState)
+                RSDK.SetSpriteAnimation(HeavyKing->miracleCutsceneFrames, 1, &player1->animator, false, 0);
+            else
+                RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 1, &player1->animator, false, 0);
+        }
 
         self->state = HeavyKing_StateCutscene_FinishThinking;
     }
@@ -621,7 +629,10 @@ void HeavyKing_StateCutscene_FinishThinking(void)
     if (player1->characterID == ID_KNUCKLES) {
 #endif
         if (player1->animator.frameID == player1->animator.frameCount - 1) {
-            RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 2, &player1->animator, false, 0);
+            if (player1->superState == SUPERSTATE_SUPER && player1->miracleState)
+                RSDK.SetSpriteAnimation(HeavyKing->miracleCutsceneFrames, 2, &player1->animator, false, 0);
+            else
+                RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 2, &player1->animator, false, 0);
             self->state = HeavyKing_StateCutscene_GetHigherGround;
         }
 #if MANIA_USE_PLUS
@@ -647,9 +658,13 @@ void HeavyKing_StateCutscene_GetHigherGround(void)
     switch (++self->timer) {
         case 30:
 #if MANIA_USE_PLUS
-            if (player1->characterID == ID_KNUCKLES)
+            if (player1->characterID == ID_KNUCKLES) {
 #endif
-                RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 4, &player1->animator, false, 0);
+                if (player1->superState == SUPERSTATE_SUPER && player1->miracleState)
+                    RSDK.SetSpriteAnimation(HeavyKing->miracleCutsceneFrames, 4, &player1->animator, false, 0);
+                else
+                    RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 4, &player1->animator, false, 0);
+            }
             break;
 
         case 90:
@@ -678,9 +693,13 @@ void HeavyKing_StateCutscene_GetHigherGround(void)
         default:
             if (self->timer > 144 && player1->onGround) {
 #if MANIA_USE_PLUS
-                if (player1->characterID == ID_KNUCKLES)
+                if (player1->characterID == ID_KNUCKLES) {
 #endif
-                    RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 3, &player1->animator, false, 0);
+                    if (player1->superState == SUPERSTATE_SUPER && player1->miracleState)
+                        RSDK.SetSpriteAnimation(HeavyKing->miracleCutsceneFrames, 3, &player1->animator, false, 0);
+                    else
+                        RSDK.SetSpriteAnimation(HeavyKing->cutsceneFrames, 3, &player1->animator, false, 0);
+                }
 #if MANIA_USE_PLUS
                 else
                     RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, false, 0);

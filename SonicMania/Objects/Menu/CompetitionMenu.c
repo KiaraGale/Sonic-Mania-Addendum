@@ -200,7 +200,7 @@ int32 CompetitionMenu_GetCompMods(void)
         compMods |= COMP_SUPERRUN;
 
     if (control->buttons[3]->selection == 2)
-        compMods |= COMP_SUPERRUN;
+        compMods |= COMP_MIRACLERUN;
 
     return compMods;
 }

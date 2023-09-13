@@ -981,7 +981,7 @@ void ERZStart_State_PlayerSuperFly(void)
             if (player->abilityValues[0]) {
                 player->abilityValues[0]--;
             }
-            else if (player->jumpPress) {
+            else if (player->jumpPress && !MSZSetup) {
                 if (player->rings > 10)
                     ERZStart_Player_HandleSuperDash(player);
             }
