@@ -155,7 +155,7 @@ void PhantomEgg_Hit(void)
     --self->health;
     if (Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
         if (!(self->health & 2)) {
-            int32 id = (-2 - RSDK.GetEntityCount(TMZCable->classID, true)) & 2;
+            int32 id = (-2 - RSDK.GetEntityCount(TMZCable->classID, true)) & 3;
 
             foreach_active(TMZCable, cable)
             {
@@ -1187,6 +1187,7 @@ void PhantomEgg_State_StartGoodEnd(void)
     RSDK_THIS(PhantomEgg);
     SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
     AddendumData *addendumData = Addendum_GetSaveRAM();
+    EntityPlayer *player1      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     globals->restartShield   = 0;
     globals->restartShieldP2 = 0;
@@ -1221,8 +1222,10 @@ void PhantomEgg_State_StartGoodEnd(void)
                 if (Zone_IsZoneLastAct())
                     GameProgress_MarkZoneCompleted(Zone_GetZoneID());
 
-                saveRAM->zoneID     = ZONE_ERZ;
-                addendumData->actID = 0;
+                if (player1->characterID == ID_SONIC) {
+                    saveRAM->zoneID     = ZONE_ERZ;
+                    addendumData->actID = 0;
+                }
 
                 SaveGame_SaveFile(PhantomEgg_SaveGameCB);
                 UIWaitSpinner_StartWait();

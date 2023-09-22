@@ -142,7 +142,7 @@ void TMZCable_State_Live(void)
         foreach_active(Player, player)
         {
             if (Player_CheckCollisionTouch(player, self, &TMZCable->hitbox)) {
-                Player_Hurt(player, self);
+                Player_ElementHurt(player, self, SHIELD_LIGHTNING);
             }
         }
     }

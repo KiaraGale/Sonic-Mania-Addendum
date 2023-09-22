@@ -21,7 +21,8 @@ void HUD_Update(void)
         RSDK.ProcessAnimation(&self->replayClapAnimator);
 #endif
     HUD_HandleInputViewer();
-    HUD_HandleItemsHUD();
+    if (!RSDK.CheckSceneFolder("ERZ"))
+        HUD_HandleItemsHUD();
 }
 
 void HUD_LateUpdate(void)
@@ -84,6 +85,7 @@ void HUD_Draw(void)
 {
     RSDK_THIS(HUD);
     EntityPlayer *player = RSDK_GET_ENTITY(SceneInfo->currentScreenID, Player);
+    EntityPlayer *superSonic = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
     Vector2 drawPos;
     Vector2 scorePos, timePos, ringPos, lifePos, inputPos, itemPos, bossBarPos, bossIconPos, bossNamePos;
@@ -104,8 +106,6 @@ void HUD_Draw(void)
     bossBarPos.y  = self->bossBarPos.y;
     bossIconPos.x = self->bossIconPos.x;
     bossIconPos.y = self->bossIconPos.y;
-    bossNamePos.x = self->bossNamePos.x;
-    bossNamePos.y = self->bossNamePos.y;
     if (globals->gameMode == MODE_COMPETITION) {
 #if MANIA_USE_PLUS
         scorePos.x = self->vsScorePos[SceneInfo->currentScreenID].x;
@@ -140,7 +140,10 @@ void HUD_Draw(void)
     }
 #endif
 
-    self->ringFlashFrame = player->rings ? 0 : ((Zone->persistentTimer >> 3) & 1);
+    if (RSDK.CheckSceneFolder("ERZ") && superSonic->rings <= 10)
+        self->ringFlashFrame = ((Zone->persistentTimer >> 3) & 1);
+    else
+        self->ringFlashFrame = player->rings ? 0 : ((Zone->persistentTimer >> 3) & 1);
 
 #if GAME_VERSION != VER_100
 #if MANIA_USE_PLUS
@@ -565,7 +568,7 @@ void HUD_Draw(void)
 #endif
     }
 
-    if ((globals->medalMods & MEDAL_DEBUGMODE) || globals->superSecret || globals->gameMode == MODE_TIMEATTACK) {
+    if (SceneInfo->debugMode || globals->superSecret || globals->gameMode == MODE_TIMEATTACK) {
         Vector2 inputPos;
         inputPos.x = self->inputPos.x;
         inputPos.y = self->inputPos.y;
@@ -603,44 +606,30 @@ void HUD_Draw(void)
         RSDK.DrawSprite(&self->inputRBumperAnimator, &drawPos, true);
     }
 
-    // Power-up Display
     itemPos.x = self->itemPos.x;
     itemPos.y = self->itemPos.y;
 
-    // Icon 1
     drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
     RSDK.DrawSprite(&self->itemBox1Animator, &drawPos, true);
 
-    // Icon 2
-    drawPos.x = itemPos.x + TO_FIXED(18);
+    if (self->invincibilityActive)
+        drawPos.x = itemPos.x + TO_FIXED(18);
+    else
+        drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
     RSDK.DrawSprite(&self->itemBox2Animator, &drawPos, true);
 
-    // Icon 3
-    drawPos.x = itemPos.x + TO_FIXED(36);
+    if (self->invincibilityActive && !self->speedShoesActive)
+        drawPos.x = itemPos.x + TO_FIXED(18);
+    else if (self->speedShoesActive && !self->invincibilityActive)
+        drawPos.x = itemPos.x + TO_FIXED(18);
+    else if (self->invincibilityActive && self->speedShoesActive)
+        drawPos.x = itemPos.x + TO_FIXED(36);
+    else
+        drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
     RSDK.DrawSprite(&self->itemBox3Animator, &drawPos, true);
-
-    // BossBar
-    bossBarPos.x  = self->bossBarPos.x;
-    bossBarPos.y  = self->bossBarPos.y;
-    bossIconPos.x = self->bossIconPos.x;
-    bossIconPos.y = self->bossIconPos.y;
-    bossNamePos.x = self->bossNamePos.x;
-    bossNamePos.y = self->bossNamePos.y;
-
-    drawPos.x = bossIconPos.x;
-    drawPos.y = bossIconPos.y;
-    RSDK.DrawSprite(&self->bossIconAnimator, &drawPos, true);
-
-    drawPos.x = bossBarPos.x;
-    drawPos.y = bossBarPos.y;
-    RSDK.DrawSprite(&self->bossBarAnimator, &drawPos, true);
-
-    drawPos.x = bossNamePos.x;
-    drawPos.y = bossNamePos.y;
-    RSDK.SetSpriteString(UIWidgets->fontFrames, 0, &self->bossNameString);
 }
 
 void HUD_Create(void *data)
@@ -672,8 +661,6 @@ void HUD_Create(void *data)
         self->bossIconPos.y = TO_FIXED(ScreenInfo->size.y - 52);
         self->bossBarPos.x  = TO_FIXED(18);
         self->bossBarPos.y  = TO_FIXED(ScreenInfo->size.y - 52);
-        self->bossNamePos.x = TO_FIXED(ScreenInfo->center.x);
-        self->bossNamePos.y = TO_FIXED(ScreenInfo->size.y - 12);
 #if GAME_VERSION != VER_100
         self->actionPromptPos = -TO_FIXED(32);
 #endif
@@ -710,29 +697,22 @@ void HUD_Create(void *data)
         RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox1Animator, true, 0);
         RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox2Animator, true, 0);
         RSDK.SetSpriteAnimation(HUD->aniFrames, 23, &self->itemBox3Animator, true, 0);
-
-        if (globals->medalMods & MEDAL_DEBUGMODE || globals->superSecret) {
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 15, &self->inputDpadAnimator, true, 0);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputUpAnimator, true, 1);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputDownAnimator, true, 2);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputLeftAnimator, true, 3);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputRightAnimator, true, 4);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 17, &self->inputABCAnimator, true, 0);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputAAnimator, true, 1);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputBAnimator, true, 2);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputCAnimator, true, 3);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 19, &self->inputXYZAnimator, true, 0);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputXAnimator, true, 1);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputYAnimator, true, 2);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputZAnimator, true, 3);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->inputBumperAnimator, true, 0);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputLBumperAnimator, true, 1);
-            RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputRBumperAnimator, true, 2);
-        }
-
-        RSDK.SetSpriteAnimation(HUD->bossFrames, 0, &self->bossIconAnimator, true, 8);
-        RSDK.SetSpriteAnimation(HUD->bossFrames, 0, &self->bossBarAnimator, true, 8);
-        RSDK.SetString(&self->bossNameString, "");
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 15, &self->inputDpadAnimator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputUpAnimator, true, 1);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputDownAnimator, true, 2);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputLeftAnimator, true, 3);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 16, &self->inputRightAnimator, true, 4);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 17, &self->inputABCAnimator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputAAnimator, true, 1);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputBAnimator, true, 2);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 18, &self->inputCAnimator, true, 3);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 19, &self->inputXYZAnimator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputXAnimator, true, 1);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputYAnimator, true, 2);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 20, &self->inputZAnimator, true, 3);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 21, &self->inputBumperAnimator, true, 0);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputLBumperAnimator, true, 1);
+        RSDK.SetSpriteAnimation(HUD->aniFrames, 22, &self->inputRBumperAnimator, true, 2);
 
 #if GAME_VERSION != VER_100
         RSDK.SetSpriteAnimation(HUD->superButtonFrames, 0, &self->superIconAnimator, true, 0);
@@ -1171,8 +1151,10 @@ void HUD_HandleItemsHUD(void)
 {
     RSDK_THIS(HUD);
     EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+
     if (leader->state != Player_State_Transform && leader->superState != SUPERSTATE_SUPER) {
         if (leader->invincibleTimer > 0) {
+            self->invincibilityActive = true;
             if (leader->invincibleTimer > 180) {
                 self->itemBox1Animator.frameID = 5;
             }
@@ -1183,11 +1165,14 @@ void HUD_HandleItemsHUD(void)
                     self->itemBox1Animator.frameID = 5;
             }
         }
-        else
+        else {
             self->itemBox1Animator.frameID = 0;
+            self->invincibilityActive      = false;
+        }
     }
     else {
         if (leader->rings > 0) {
+            self->invincibilityActive = true;
             if (leader->rings > 3) {
                 if (leader->miracleState)
                     self->itemBox1Animator.frameID = 13;
@@ -1205,11 +1190,14 @@ void HUD_HandleItemsHUD(void)
                 }
             }
         }
-        else
+        else {
             self->itemBox1Animator.frameID = 0;
+            self->invincibilityActive      = false;
+        }
     }
 
     if (leader->speedShoesTimer > 0) {
+        self->speedShoesActive = true;
         if (leader->speedShoesTimer > 180) {
             switch (leader->characterID) {
                 default:
@@ -1265,9 +1253,11 @@ void HUD_HandleItemsHUD(void)
     }
     else {
         self->itemBox2Animator.frameID = 0;
+        self->speedShoesActive         = false;
     }
 
     if (leader->shield > SHIELD_NONE) {
+        self->shieldActive = true;
         switch (leader->shield) {
             default:
             case SHIELD_BLUE: self->itemBox3Animator.frameID = 1; break;
@@ -1278,98 +1268,8 @@ void HUD_HandleItemsHUD(void)
     }
     else {
         self->itemBox3Animator.frameID = 0;
+        self->shieldActive             = false;
     }
-}
-
-void HUD_InitializeBossBar(void *b, int32 icon, const char *bossName)
-{
-    RSDK_THIS(HUD);
-    Vector2 drawPos, bossBarPos, bossIconPos, bossNamePos;
-    bossBarPos.x = self->bossBarPos.x;
-    bossBarPos.y = self->bossBarPos.y;
-    drawPos.x    = bossBarPos.x;
-    drawPos.y    = bossBarPos.y;
-
-    Entity *entity = (Entity *)b;
-    for (int32 h = 0; h < entity->maxHealth; ++h) {
-        if (h == 1)
-            self->bossBarAnimator.frameID = 0;
-        else if (h > 1 && h < entity->maxHealth) {
-            drawPos.x += 0x150000;
-            self->bossBarAnimator.frameID = 1;
-        }
-        else if (h == entity->maxHealth) {
-            drawPos.x += 0x150000;
-            self->bossBarAnimator.frameID = 2;
-        }
-
-        RSDK.DrawSprite(&self->bossBarAnimator, &drawPos, true);
-    }
-
-    bossIconPos.x = self->bossIconPos.x;
-    bossIconPos.y = self->bossIconPos.y;
-    drawPos.x     = bossIconPos.x;
-    drawPos.y     = bossIconPos.y;
-    if (!icon)
-        self->bossIconAnimator.frameID = 3;
-    else
-        self->bossIconAnimator.frameID = icon;
-    RSDK.DrawSprite(&self->bossIconAnimator, &drawPos, true);
-
-    bossNamePos.x = self->bossNamePos.x;
-    bossNamePos.y = self->bossNamePos.y;
-    drawPos.x     = bossNamePos.x;
-    drawPos.y     = bossNamePos.y;
-
-    if (!bossName)
-        RSDK.SetString(&self->bossNameString, "UNDEFINED");
-    else
-        RSDK.SetString(&self->bossNameString, bossName);
-    RSDK.SetSpriteString(UIWidgets->fontFrames, 0, &self->bossNameString);
-}
-
-void HUD_UpdateBossBar(void *b)
-{
-    RSDK_THIS(HUD);
-
-    Entity *entity = (Entity *)b;
-
-    if (entity->classID) {
-        for (int32 h = 0; h < entity->maxHealth; ++h) {
-            if (entity->health > entity->maxHealth) {
-                if (self->bossBarAnimator.frameID == 0)
-                    self->bossBarAnimator.animationID = 2;
-                if (self->bossBarAnimator.frameID == 1)
-                    self->bossBarAnimator.animationID = 3;
-                if (self->bossBarAnimator.frameID == 2)
-                    self->bossBarAnimator.animationID = 4;
-                if (self->bossBarAnimator.frameID == 3)
-                    self->bossBarAnimator.animationID = 5;
-            }
-        }
-
-        if (entity->health <= 0)
-            HUD_HandleBossDefeat();
-    }
-}
-
-void HUD_HandleBossDefeat(void)
-{
-    RSDK_THIS(HUD);
-
-    self->timer = 0;
-    self->bossIconAnimator.frameID += 4;
-
-    if (self->timer >= 180) {
-        RSDK.SetSpriteAnimation(HUD->bossFrames, 0, &self->bossIconAnimator, true, 8);
-        RSDK.DrawSprite(&self->bossIconAnimator, NULL, true);
-        RSDK.SetSpriteAnimation(HUD->bossFrames, 0, &self->bossBarAnimator, true, 8);
-        RSDK.DrawSprite(&self->bossBarAnimator, NULL, true);
-        RSDK.SetString(&self->bossNameString, "");
-        RSDK.SetSpriteString(UIWidgets->fontFrames, 0, &self->bossNameString);
-    }
-    else
-        ++self->timer;
 }
 
 #if GAME_INCLUDE_EDITOR

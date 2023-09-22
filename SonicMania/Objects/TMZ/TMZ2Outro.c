@@ -679,6 +679,7 @@ bool32 TMZ2Outro_Cutscene_FadeOut(EntityCutsceneSeq *host)
 }
 bool32 TMZ2Outro_Cutscene_FinishSequence(EntityCutsceneSeq *host)
 {
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     bool32 hasGoodEnding = false;
 
 #if MANIA_USE_PLUS
@@ -700,6 +701,7 @@ bool32 TMZ2Outro_Cutscene_FinishSequence(EntityCutsceneSeq *host)
             if (Zone_IsZoneLastAct())
                 GameProgress_MarkZoneCompleted(Zone_GetZoneID());
 
+            GameProgress_GiveEnding(1);
             SaveGame_SaveFile(TMZ2Outro_SaveFileCB);
 
             UIWaitSpinner_StartWait();

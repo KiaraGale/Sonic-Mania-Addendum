@@ -13,8 +13,6 @@ void DERobot_Update(void)
 {
     RSDK_THIS(DERobot);
     StateMachine_Run(self->state);
-
-    HUD_UpdateBossBar(DERobot);
 }
 
 void DERobot_LateUpdate(void) {}
@@ -32,7 +30,6 @@ void DERobot_Create(void *data)
     RSDK_THIS(DERobot);
     if (!SceneInfo->inEditor) {
         if (globals->gameMode < MODE_TIMEATTACK) {
-            HUD_InitializeBossBar(DERobot, 0, "DEATH EGG ROBOT");
             self->drawGroup     = Zone->objectDrawGroup[0];
             self->updateRange.x = 0x800000;
             self->updateRange.y = 0x800000;
@@ -57,7 +54,6 @@ void DERobot_Create(void *data)
                     self->arms[2]       = RSDK_GET_ENTITY(slotID + 5, DERobot);
                     self->arms[3]       = RSDK_GET_ENTITY(slotID + 6, DERobot);
                     self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
-                    self->maxHealth     = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     self->state         = DERobot_State_SetupArena;
                     self->stateDraw     = DERobot_Draw_Simple;
                     RSDK.SetSpriteAnimation(DERobot->aniFrames, self->aniID, &self->mainAnimator, true, self->frameID);

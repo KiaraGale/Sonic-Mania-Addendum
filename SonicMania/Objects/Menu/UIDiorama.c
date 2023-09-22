@@ -965,15 +965,15 @@ void UIDiorama_Draw_Options(void)
         }
 
         self->inkEffect = INK_NONE;
-        drawPos.x       = self->position.x + 0x380000;
+        drawPos.x       = self->position.x + 0x370000;
         drawPos.y       = self->position.y + 0x1E0000;
         RSDK.DrawSprite(&info->knuxAnimator, &drawPos, false);
 
         drawPos.x = self->position.x + 0x6C0000;
-        drawPos.y = self->position.y + 0x210000;
+        drawPos.y = self->position.y + 0x220000;
         RSDK.DrawSprite(&info->tailsAnimator, &drawPos, false);
 
-        drawPos.y -= 0x30000;
+        drawPos.y -= 0x40000;
         drawPos.x += 0x180000;
         RSDK.DrawSprite(&info->sonicAnimator, &drawPos, false);
     }

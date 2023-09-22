@@ -521,7 +521,7 @@ void Water_State_Water(void)
                     Water->unused1[playerID]          = 0;
                 }
                 else {
-                    if (player->invincibleTimer <= 0) {
+                    if (player->invincibleTimer <= 0 || player->superInvulnTimer <= 0) {
                         if (player->shield == SHIELD_FIRE) {
                             // No cool smoke fx in mania, just a loss of shield :(
                             player->shield = SHIELD_NONE;

@@ -157,14 +157,7 @@ void CPZBoss_State_SetupArena(void)
 
         switch (GET_CHARACTER_ID(1)) {
             default:
-            case ID_SONIC: {
-                EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-                if (player->superState == SUPERSTATE_SUPER)
-                    CPZBoss->playerFrames = RSDK.LoadSpriteAnimation("CPZ/MBMSuperSonic.bin", SCOPE_STAGE);
-                else
-                    CPZBoss->playerFrames = RSDK.LoadSpriteAnimation("CPZ/MBMSonic.bin", SCOPE_STAGE);
-                break;
-            }
+            case ID_SONIC: CPZBoss->playerFrames = RSDK.LoadSpriteAnimation("CPZ/MBMSonic.bin", SCOPE_STAGE); break;
             case ID_TAILS: CPZBoss->playerFrames = RSDK.LoadSpriteAnimation("CPZ/MBMTails.bin", SCOPE_STAGE); break;
             case ID_KNUCKLES: CPZBoss->playerFrames = RSDK.LoadSpriteAnimation("CPZ/MBMKnux.bin", SCOPE_STAGE); break;
 #if MANIA_USE_PLUS
@@ -223,7 +216,6 @@ void CPZBoss_State_CheckPlayerReady(void)
                     player->velocity.y = 0;
                     RSDK.SetSpriteAnimation(-1, 0, &self->enterAnimator, true, 0);
                     RSDK.SetSpriteAnimation(CPZBoss->playerFrames, 1, &self->characterAnimator, true, 1);
-                    self->direction = FLIP_X;
                     self->state     = CPZBoss_State_PlayPlayerEnterAnim;
                 }
             }

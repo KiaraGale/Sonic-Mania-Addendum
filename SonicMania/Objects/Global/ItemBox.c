@@ -435,6 +435,8 @@ void ItemBox_CheckHit(void)
             EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
             EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
+            int32 attacking = player->animator.animationID;
+
             int32 leaderanim = leader->animator.animationID;
             bool32 leaderattacking =
                 leaderanim == ANI_JUMP && (leader->velocity.y >= 0 || leader->onGround || self->direction || leader->state == Ice_PlayerState_Frozen);
@@ -458,30 +460,27 @@ void ItemBox_CheckHit(void)
                 case ID_AMY: sidekickattacking |= sidekickanim == ANI_HAMMER_HIT || sidekickanim == ANI_SPIN_JUMP || sidekickanim == ANI_HELI_HAMMER; break;
 #endif
             }
-
-            if (leader->classID == Player->classID) { // prevents ItemBox collision being active while in Debug Mode
-                if (leaderattacking) {
-                    if (Player_CheckBadnikTouch(leader, self, &ItemBox->hitboxItemBox)) {
-                        ItemBox_Break(self, leader);
-                        self->sidekickBreak = false;
+            if (globals->gameMode == MODE_COMPETITION) {
+                if (attacking && !player->sidekick) {
+                    if (Player_CheckBadnikTouch(player, self, &ItemBox->hitboxItemBox)) {
+                        ItemBox_Break(self, player);
                         foreach_break;
                     }
                 }
                 else {
                     self->position.x -= self->moveOffset.x;
                     self->position.y -= self->moveOffset.y;
-                    int32 lx = leader->position.x;
-                    int32 ly = leader->position.y;
+                    int32 px = player->position.x;
+                    int32 py = player->position.y;
 
-                    uint8 leaderside = Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox);
+                    uint8 side = Player_CheckCollisionBox(player, self, &ItemBox->hitboxItemBox);
 
-                    leader->position.x = lx;
-                    leader->position.y = ly;
-
+                    player->position.x = px;
+                    player->position.y = py;
                     self->position.x += self->moveOffset.x;
                     self->position.y += self->moveOffset.y;
 
-                    if (leaderside == C_BOTTOM) {
+                    if (side == C_BOTTOM) {
                         self->active = ACTIVE_NORMAL;
 
                         if (!self->lrzConvPhys)
@@ -489,65 +488,113 @@ void ItemBox_CheckHit(void)
 
                         self->velocity.y = -TO_FIXED(2);
 
-                        if (!leader->onGround)
-                            leader->velocity.y = TO_FIXED(2);
+                        if (!player->onGround)
+                            player->velocity.y = TO_FIXED(2);
                     }
-                    else if (leaderside == C_TOP) {
-                        leader->position.x += self->moveOffset.x;
-                        leader->position.y += self->moveOffset.y;
+                    else if (side == C_TOP) {
+                        player->position.x += self->moveOffset.x;
+                        player->position.y += self->moveOffset.y;
                     }
 
-                    if (Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
-                        if (leader->onGround) {
-                            leader->position.x = lx;
-                            leader->position.y = ly;
+                    if (Player_CheckCollisionBox(player, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
+                        if (player->onGround) {
+                            player->position.x = px;
+                            player->position.y = py;
                         }
                     }
                 }
             }
+            else {
+                if (leader->classID == Player->classID) { // prevents ItemBox collision being active while in Debug Mode
+                    if (leaderattacking) {
+                        if (Player_CheckBadnikTouch(leader, self, &ItemBox->hitboxItemBox)) {
+                            ItemBox_Break(self, leader);
+                            self->sidekickBreak = false;
+                            foreach_break;
+                        }
+                    }
+                    else {
+                        self->position.x -= self->moveOffset.x;
+                        self->position.y -= self->moveOffset.y;
+                        int32 lx = leader->position.x;
+                        int32 ly = leader->position.y;
 
-            if (sidekick->classID == Player->classID) {
-                if (sidekickattacking && sidekick->stateInput == Player_Input_P2_Player) {
-                    if (Player_CheckBadnikTouch(sidekick, self, &ItemBox->hitboxItemBox)) {
-                        ItemBox_Break(self, sidekick);
-                        self->sidekickBreak = true;
-                        foreach_break;
+                        uint8 leaderside = Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox);
+
+                        leader->position.x = lx;
+                        leader->position.y = ly;
+
+                        self->position.x += self->moveOffset.x;
+                        self->position.y += self->moveOffset.y;
+
+                        if (leaderside == C_BOTTOM) {
+                            self->active = ACTIVE_NORMAL;
+
+                            if (!self->lrzConvPhys)
+                                self->state = ItemBox_State_Falling;
+
+                            self->velocity.y = -TO_FIXED(2);
+
+                            if (!leader->onGround)
+                                leader->velocity.y = TO_FIXED(2);
+                        }
+                        else if (leaderside == C_TOP) {
+                            leader->position.x += self->moveOffset.x;
+                            leader->position.y += self->moveOffset.y;
+                        }
+
+                        if (Player_CheckCollisionBox(leader, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
+                            if (leader->onGround) {
+                                leader->position.x = lx;
+                                leader->position.y = ly;
+                            }
+                        }
                     }
                 }
-                else {
-                    self->position.x -= self->moveOffset.x;
-                    self->position.y -= self->moveOffset.y;
-                    int32 sx = sidekick->position.x;
-                    int32 sy = sidekick->position.y;
 
-                    uint8 buddyside = Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox);
-
-                    sidekick->position.x = sx;
-                    sidekick->position.y = sy;
-
-                    self->position.x += self->moveOffset.x;
-                    self->position.y += self->moveOffset.y;
-
-                    if (buddyside == C_BOTTOM) {
-                        self->active = ACTIVE_NORMAL;
-
-                        if (!self->lrzConvPhys)
-                            self->state = ItemBox_State_Falling;
-
-                        self->velocity.y = -TO_FIXED(2);
-
-                        if (!sidekick->onGround)
-                            sidekick->velocity.y = TO_FIXED(2);
+                if (sidekick->classID == Player->classID) {
+                    if (sidekickattacking && sidekick->stateInput == Player_Input_P2_Player) {
+                        if (Player_CheckBadnikTouch(sidekick, self, &ItemBox->hitboxItemBox)) {
+                            ItemBox_Break(self, sidekick);
+                            self->sidekickBreak = true;
+                            foreach_break;
+                        }
                     }
-                    else if (buddyside == C_TOP) {
-                        sidekick->position.x += self->moveOffset.x;
-                        sidekick->position.y += self->moveOffset.y;
-                    }
+                    else {
+                        self->position.x -= self->moveOffset.x;
+                        self->position.y -= self->moveOffset.y;
+                        int32 sx = sidekick->position.x;
+                        int32 sy = sidekick->position.y;
 
-                    if (Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
-                        if (sidekick->onGround) {
-                            sidekick->position.x = sx;
-                            sidekick->position.y = sy;
+                        uint8 buddyside = Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox);
+
+                        sidekick->position.x = sx;
+                        sidekick->position.y = sy;
+
+                        self->position.x += self->moveOffset.x;
+                        self->position.y += self->moveOffset.y;
+
+                        if (buddyside == C_BOTTOM) {
+                            self->active = ACTIVE_NORMAL;
+
+                            if (!self->lrzConvPhys)
+                                self->state = ItemBox_State_Falling;
+
+                            self->velocity.y = -TO_FIXED(2);
+
+                            if (!sidekick->onGround)
+                                sidekick->velocity.y = TO_FIXED(2);
+                        }
+                        else if (buddyside == C_TOP) {
+                            sidekick->position.x += self->moveOffset.x;
+                            sidekick->position.y += self->moveOffset.y;
+                        }
+
+                        if (Player_CheckCollisionBox(sidekick, self, &ItemBox->hitboxItemBox) == C_BOTTOM) {
+                            if (sidekick->onGround) {
+                                sidekick->position.x = sx;
+                                sidekick->position.y = sy;
+                            }
                         }
                     }
                 }

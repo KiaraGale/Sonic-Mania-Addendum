@@ -181,7 +181,7 @@ void Hatch_State_SubEntryHatch(void)
     RSDK.ProcessAnimation(&self->hatchAnimator);
 
     int32 entered = 0;
-    foreach_active(Player, player) {
+    foreach_all(Player, player) {
         if (Player_CheckValidState(player)) {
             if (Player_CheckCollisionBox(player, self, &Hatch->hitboxL) == C_TOP) {
                 entered = 1;

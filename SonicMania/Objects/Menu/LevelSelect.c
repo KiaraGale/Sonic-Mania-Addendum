@@ -520,17 +520,7 @@ void LevelSelect_ManagePlayerIcon(void)
     switch (self->leaderCharacterID) {
         case LSELECT_PLAYER_SONIC:
         case LSELECT_PLAYER_TAILS:
-            // Bug Details(?):
-            if (self->sidekickCharacterID == LSELECT_PLAYER_TAILS) // if leader is sonic or tails, and the sidekick is tails... change to knux...?
-                self->leaderCharacterID = LSELECT_PLAYER_TAILS;
-            // playerID 3 may have been meant to be "S&T" before it was rearranged?
-            // v4 support this, with the player ids being: Sonic, Tails, Knux, Sonic & Tails
-
-            player1->animator.frameID = self->leaderCharacterID;
-            break;
-
         case LSELECT_PLAYER_KNUCKLES: player1->animator.frameID = self->leaderCharacterID; break;
-
 #if MANIA_USE_PLUS
         case LSELECT_PLAYER_MIGHTY:
         case LSELECT_PLAYER_RAY:
@@ -549,31 +539,23 @@ void LevelSelect_ManagePlayerIcon(void)
     }
 
     switch (self->sidekickCharacterID) {
+        case LSELECT_PLAYER_SONIC:
         case LSELECT_PLAYER_TAILS:
-            player2->animator.frameID = self->sidekickCharacterID;
+        case LSELECT_PLAYER_KNUCKLES: player2->animator.frameID = self->sidekickCharacterID; break;
+#if MANIA_USE_PLUS
+        case LSELECT_PLAYER_MIGHTY:
+        case LSELECT_PLAYER_RAY:
+        case LSELECT_PLAYER_AMY:
+            if (!API.CheckDLC(DLC_PLUS))
+                self->sidekickCharacterID = LSELECT_PLAYER_SONIC;
 
-            // if leader is sonic & sidekick is tails, show ST icon. otherwise remove sidekick
-            if (self->leaderCharacterID != LSELECT_PLAYER_SONIC) {
-                self->sidekickCharacterID = LSELECT_PLAYER_NONE;
-                player2->animator.frameID = LSELECT_PLAYER_NONE;
-            }
+            player2->animator.frameID = self->sidekickCharacterID;
             break;
+#endif
 
         default:
             self->sidekickCharacterID = LSELECT_PLAYER_NONE;
             player2->animator.frameID = LSELECT_PLAYER_NONE;
-            break;
-
-        // if P2 is sonic, no he's not thats tails actually
-        case LSELECT_PLAYER_SONIC:
-            self->sidekickCharacterID = LSELECT_PLAYER_TAILS;
-            player2->animator.frameID = LSELECT_PLAYER_TAILS;
-
-            // if leader is sonic & sidekick is tails, show ST icon. otherwise remove sidekick
-            if (self->leaderCharacterID != LSELECT_PLAYER_SONIC) {
-                self->sidekickCharacterID = LSELECT_PLAYER_NONE;
-                player2->animator.frameID = LSELECT_PLAYER_NONE;
-            }
             break;
     }
 }

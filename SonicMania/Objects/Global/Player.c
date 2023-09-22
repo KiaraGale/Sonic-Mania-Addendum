@@ -154,17 +154,17 @@ void Player_Update(void)
 
     if (globals->gameMode != MODE_COMPETITION) {
         int32 leaderRings = leader->rings;
-        if (sidekick->active) {
+        if (sidekick->classID == Player->classID) {
             sidekick->rings = leaderRings;
         }
     
         if (leader->superState == SUPERSTATE_FADEIN) {
-            if (sidekick->active)
+            if (sidekick->classID == Player->classID)
                 Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
         }
 
         if (leader->superState == SUPERSTATE_SUPER) {
-            if (sidekick->active)
+            if (sidekick->classID == Player->classID)
                 sidekick->superState = SUPERSTATE_SUPER;
         }
     }
@@ -182,6 +182,7 @@ void Player_Update(void)
 
     // crappy "dev mode"
     SaveRAM *saveRAM                = SaveGame_GetSaveRAM();
+    AddendumData *addendumData      = Addendum_GetSaveRAM();
     RSDKControllerState *controller = &ControllerInfo[self->controllerID];
     if (SceneInfo->debugMode) {
         if (controller->keyZ.press) {
@@ -205,6 +206,21 @@ void Player_Update(void)
                 saveRAM->lives += 1;
                 self->lives += 1;
             }
+
+            if (self->state == Player_State_Spindash || self->state == Player_State_Spindash_CD) {
+                if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones == 0b01111111) {
+                    saveRAM->collectedEmeralds        = 0b00000000;
+                    addendumData->collectedTimeStones = 0b00000000;
+                }
+                else if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones != 0b01111111) {
+                    saveRAM->collectedEmeralds        = 0b01111111;
+                    addendumData->collectedTimeStones = 0b01111111;
+                }
+                else if (saveRAM->collectedEmeralds != 0b01111111) {
+                    saveRAM->collectedEmeralds        = 0b01111111;
+                    addendumData->collectedTimeStones = 0b00000000;
+                }
+            }
         }
     }
 
@@ -227,7 +243,8 @@ void Player_LateUpdate(void)
 
     if (self->superState == SUPERSTATE_FADEIN && self->state != Player_State_Transform) {
         Player_TryTransform(leader, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
+        if (sidekick->classID == Player->classID)
+            Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
     }
 
     if (self->state == Player_State_FlyCarried) {
@@ -547,8 +564,9 @@ void Player_Draw(void)
 
     // Copy the colours for any other players so stuff like super forms or etc don't effect the other players aside from P1
     // Used for sidekicks, competition players with the same player or etc
+    /* Addendum shouldn't even use this anymore, seeing as P2 Super in Mania Mode and Super Run in Competition are now base-game features.
     if (self->playerID == 1 && GET_CHARACTER_ID(1) == GET_CHARACTER_ID(2) && globals->gameMode == MODE_COMPETITION) {
-        uint32 colorStore[PLAYER_PRIMARY_COLOR_COUNT];
+        uint32 colorStore[PLAYER_PRIMARY_COLOR_COUNT + 1];
 
         switch (self->characterID) {
             case ID_SONIC:
@@ -604,7 +622,7 @@ void Player_Draw(void)
 
                 RSDK.DrawSprite(&self->animator, NULL, false);
 
-                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT; ++c) RSDK.SetPaletteEntry(0, PLAYER_PALETTE_INDEX_RAY + c, colorStore[c]);
+                for (int32 c = 0; c < PLAYER_PRIMARY_COLOR_COUNT + 1; ++c) RSDK.SetPaletteEntry(0, PLAYER_PALETTE_INDEX_RAY + c, colorStore[c]);
                 break;
 
             case ID_AMY:
@@ -620,13 +638,10 @@ void Player_Draw(void)
 #endif
         }
     }
-    else {
+    else { */
         // Draw the Player, no fancy stuff
-        if (self->miracleState)
-            Player_State_DrawMiracle();
-        else
-            RSDK.DrawSprite(&self->animator, NULL, false);
-    }
+        Player_State_DrawMiracle();
+    // }
 
     if (self->state == Player_State_FlyToPlayer && parent) {
         self->position.x = posStore.x;
@@ -1935,6 +1950,7 @@ bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeS
 
 #if GAME_VERSION != VER_100
         player->superInvulnTimer = 60;
+        player->invincibleTimer  = 1;
 #endif
         player->velocity.x      = 0;
         player->velocity.y      = 0;
@@ -2186,6 +2202,7 @@ bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 t
 
 #if GAME_VERSION != VER_100
         player->superInvulnTimer = 60;
+        player->invincibleTimer  = 1;
 #endif
         player->velocity.x      = 0;
         player->velocity.y      = 0;
@@ -3273,6 +3290,7 @@ void Player_HandleSuperForm(void)
 
         if (!canStopSuper) {
             self->superInvulnTimer = 60;
+            self->invincibleTimer  = 0;
             if (--self->superRingLossTimer <= 0) {
                 self->superRingLossTimer = self->miracleState ? 80 : 60;
                 if (--self->rings <= 0) {
@@ -4006,7 +4024,7 @@ bool32 Player_CheckCollisionBox(EntityPlayer *player, void *e, Hitbox *entityHit
         case C_LEFT:
             player->controlLock = 0;
             if (player->left && player->onGround) {
-                if (player->state != Player_State_Spindash || player->state != Player_State_Spindash_CD) {
+                if (!(player->state == Player_State_Spindash || player->state == Player_State_Spindash_CD)) {
                     player->groundVel = -0x8000;
                     player->position.x &= 0xFFFF0000;
                 }
@@ -4274,6 +4292,8 @@ bool32 Player_CheckBadnikBreak(EntityPlayer *player, void *e, bool32 destroy)
             destroyEntity(badnik);
             badnik->active = ACTIVE_DISABLED;
         }
+
+        player->jumpAbilityState = 1;
 
         return true;
     }
@@ -5588,6 +5608,7 @@ void Player_State_StartSuper(void)
 
     destroyEntity(RSDK_GET_ENTITY(self->playerID + Player->playerCount, Shield));
     self->superInvulnTimer = 60;
+    self->invincibleTimer  = 0;
     self->superState       = SUPERSTATE_SUPER;
     Player_UpdatePhysicsState(self);
 
@@ -5650,17 +5671,6 @@ void Player_State_Ground(void)
 
         Player_HandleGroundAnimation();
 
-        if (ControllerInfo[self->controllerID].keyUp.down && self->jumpPress) {
-            if (self->stateTallJump) {
-                RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
-                self->state = Player_Action_TallJump;
-            }
-            else {
-                Player_Action_Jump(self);
-                self->timer = 0;
-            }
-        }
-
         if (TriggerInfoR[self->controllerID].keyBumper.press) {
             if (self->stateTallJump) {
                 RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
@@ -5669,27 +5679,34 @@ void Player_State_Ground(void)
         }
 
         if (self->jumpPress) {
-            Player_Action_Jump(self);
-            self->timer = 0;
-        }
-
-        if (self->groundVel) {
-            int32 minRollVel = self->state == Player_State_Crouch ? 0x11000 : 0x8800;
-            if (abs(self->groundVel) >= minRollVel && !self->left && !self->right && self->down) {
-                Player_Action_Roll();
-                RSDK.PlaySfx(Player->sfxRoll, false, 255);
+            if (self->characterID == ID_AMY && self->stateTallJump && ControllerInfo[self->controllerID].keyUp.down) {
+                RSDK.SetSpriteAnimation(self->aniFrames, 48, &self->animator, true, 0);
+                self->state = Player_Action_TallJump;
+            }
+            else {
+                Player_Action_Jump(self);
+                self->timer = 0;
             }
         }
-        else if (((self->angle < 0x20 || self->angle > 0xE0) && !self->collisionMode) || (self->invertGravity && self->angle == 0x80)) {
-            if (self->up) {
-                RSDK.SetSpriteAnimation(self->aniFrames, ANI_LOOK_UP, &self->animator, true, 1);
-                self->timer = 0;
-                self->state = Player_State_LookUp;
+        else {
+            if (self->groundVel) {
+                int32 minRollVel = self->state == Player_State_Crouch ? 0x11000 : 0x8800;
+                if (abs(self->groundVel) >= minRollVel && !self->left && !self->right && self->down) {
+                    Player_Action_Roll();
+                    RSDK.PlaySfx(Player->sfxRoll, false, 255);
+                }
             }
-            else if (self->down) {
-                RSDK.SetSpriteAnimation(self->aniFrames, ANI_CROUCH, &self->animator, true, 1);
-                self->timer = 0;
-                self->state = Player_State_Crouch;
+            else if (((self->angle < 0x20 || self->angle > 0xE0) && !self->collisionMode) || (self->invertGravity && self->angle == 0x80)) {
+                if (self->up) {
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_LOOK_UP, &self->animator, true, 1);
+                    self->timer = 0;
+                    self->state = Player_State_LookUp;
+                }
+                else if (self->down) {
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_CROUCH, &self->animator, true, 1);
+                    self->timer = 0;
+                    self->state = Player_State_Crouch;
+                }
             }
         }
     }
@@ -5749,7 +5766,18 @@ void Player_State_Air(void)
                     self->skidding--;
                 break;
 
+            case ANI_SPINDASH: RSDK.SetSpriteAnimation(self->aniFrames, ANI_JUMP, &self->animator, false, 0); break;
+
             default: break;
+        }
+    }
+
+    if (self->animator.animationID != ANI_JUMP) {
+        RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+        RSDKAnalogState *analog         = &AnalogStickInfoL[self->controllerID];
+        if (controller->keyDown.down && self->jumpPress || analog->keyDown.down && self->jumpPress) {
+            RSDK.SetSpriteAnimation(self->aniFrames, ANI_JUMP, &self->animator, false, 0);
+            self->jumpAbilityState = 0;
         }
     }
 }
@@ -6027,7 +6055,7 @@ void Player_State_Spindash_CD(void)
     self->timer = 0;
 
     if (self->abilityTimer < 0x112520)
-        self->abilityTimer += 0x3516; // 1.599715606114469
+        self->abilityTimer += 0x8929; // 1.599715606114469
 
     if (self->spindashCharge < 32)
         self->spindashCharge += 1;
@@ -6214,6 +6242,7 @@ void Player_State_Transform(void)
 
 #if GAME_VERSION != VER_100
     self->superInvulnTimer = 60;
+    self->invincibleTimer  = 1;
 #endif
 
     RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, TO_FIXED(20), true);
@@ -6519,11 +6548,8 @@ void Player_State_BubbleBounce(void)
 void Player_State_TailsFlight(void)
 {
     RSDK_THIS(Player);
-    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     Player_HandleAirFriction();
-    self->nextAirState = StateMachine_None;
 
     RSDKControllerState *controller = &ControllerInfo[self->controllerID];
     RSDKAnalogState *analog         = &AnalogStickInfoL[self->controllerID];
@@ -6560,129 +6586,65 @@ void Player_State_TailsFlight(void)
         if (self->position.y < Zone->playerBoundsT[slot] + 0x100000 && self->velocity.y < 0)
             self->velocity.y = 0;
 
+        EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
         if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !leader->isChibi)
             Player_HandleFlyCarry(leader);
 
-        if (globals->gameMode != MODE_COMPETITION && !self->isChibi && !sidekick->isChibi)
-            Player_HandleFlyCarry(sidekick);
-
-        if (sidekick->state == Player_State_TailsFlight) {
-            if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
-                if (!self->underwater) {
-                    if (leader->state == Player_State_FlyCarried)
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
-                    else
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
-                }
-                else {
-                    if (leader->state == Player_State_FlyCarried)
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                    else
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
-                }
+        if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
+            if (!self->underwater) {
+                if (leader->state == Player_State_FlyCarried)
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
+                else
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
             }
             else {
-                if (self->underwater) {
-                    if (leader->state == Player_State_FlyCarried) {
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                    }
-                    else {
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
-                        self->animator.speed = 128;
-                        if (self->velocity.y >= 0)
-                            self->animator.speed = 64;
-                    }
-                }
-                else {
-                    if (leader->state != Player_State_FlyCarried || self->velocity.y >= 0)
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
-                    else
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
-
-                    if (self->velocity.y >= 0)
-                        self->animator.speed = 128;
-                    else
-                        self->animator.speed = 256;
-                }
-
-                if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
-                    if (!self->underwater) {
-                        if (leader->state == Player_State_FlyCarried)
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
-                        else
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
-                    }
-                    else {
-                        if (leader->state == Player_State_FlyCarried)
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                        else
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
-                    }
-                }
-                else if (self->jumpPress && (!self->underwater || leader->state != Player_State_FlyCarried)) {
-                    self->abilitySpeed = -0x2000;
-                    self->abilityValue = 0;
-                }
+                if (leader->state == Player_State_FlyCarried)
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                else
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
             }
         }
-        
-        if (leader->state == Player_State_TailsFlight) {
-            if (self->timer >= 480 && self->superState != SUPERSTATE_SUPER) {
+        else {
+            if (self->underwater) {
+                if (leader->state == Player_State_FlyCarried) {
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
+                }
+                else {
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
+                    self->animator.speed = 128;
+                    if (self->velocity.y >= 0)
+                        self->animator.speed = 64;
+                }
+            }
+            else {
+                if (leader->state != Player_State_FlyCarried || self->velocity.y >= 0)
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
+                else
+                    RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
+
+                if (self->velocity.y >= 0)
+                    self->animator.speed = 128;
+                else
+                    self->animator.speed = 256;
+            }
+
+            if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
                 if (!self->underwater) {
-                    if (sidekick->state == Player_State_FlyCarried)
+                    if (leader->state == Player_State_FlyCarried)
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
                     else
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
                 }
                 else {
-                    if (sidekick->state == Player_State_FlyCarried)
+                    if (leader->state == Player_State_FlyCarried)
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
                     else
                         RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
                 }
             }
-            else {
-                if (self->underwater) {
-                    if (sidekick->state == Player_State_FlyCarried) {
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                    }
-                    else {
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM, &self->animator, false, 0);
-                        self->animator.speed = 128;
-                        if (self->velocity.y >= 0)
-                            self->animator.speed = 64;
-                    }
-                }
-                else {
-                    if (sidekick->state != Player_State_FlyCarried || self->velocity.y >= 0)
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY, &self->animator, false, 0);
-                    else
-                        RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT, &self->animator, false, 0);
-
-                    if (self->velocity.y >= 0)
-                        self->animator.speed = 128;
-                    else
-                        self->animator.speed = 256;
-                }
-
-                if (++self->timer == 480 && self->superState != SUPERSTATE_SUPER) {
-                    if (!self->underwater) {
-                        if (sidekick->state == Player_State_FlyCarried)
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_LIFT_TIRED, &self->animator, false, 0);
-                        else
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_FLY_TIRED, &self->animator, false, 0);
-                    }
-                    else {
-                        if (sidekick->state == Player_State_FlyCarried)
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_LIFT, &self->animator, false, 0);
-                        else
-                            RSDK.SetSpriteAnimation(self->aniFrames, ANI_SWIM_TIRED, &self->animator, false, 0);
-                    }
-                }
-                else if (self->jumpPress && (!self->underwater || sidekick->state != Player_State_FlyCarried)) {
-                    self->abilitySpeed = -0x2000;
-                    self->abilityValue = 0;
-                }
+            else if (self->jumpPress && (!self->underwater || leader->state != Player_State_FlyCarried)) {
+                self->abilitySpeed = -0x2000;
+                self->abilityValue = 0;
             }
         }
     }
@@ -6968,8 +6930,10 @@ void Player_State_KnuxGlideRight(void)
 void Player_State_KnuxGlideDrop(void)
 {
     RSDK_THIS(Player);
+    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+    RSDKAnalogState *analog         = &AnalogStickInfoL[self->controllerID];
 
-    if (self->onGround) {
+    if (self->onGround && self->animator.animationID != ANI_JUMP) {
         if (!self->timer)
             RSDK.PlaySfx(Player->sfxLand, false, 255);
 
@@ -6989,21 +6953,37 @@ void Player_State_KnuxGlideDrop(void)
         else {
             self->groundVel  = 0;
             self->velocity.x = 0;
-            RSDK.SetSpriteAnimation(self->aniFrames, ANI_GLIDE_LAND, &self->animator, false, 0);
+            if (controller->keyDown.down)
+                RSDK.SetSpriteAnimation(self->aniFrames, ANI_CROUCH, &self->animator, false, 2);
+            else
+                RSDK.SetSpriteAnimation(self->aniFrames, ANI_GLIDE_LAND, &self->animator, false, 0);
         }
 
-        if (self->timer >= 16) {
-            self->state    = Player_State_Ground;
+        if (controller->keyDown.down || analog->keyDown.down) {
+            self->state    = Player_State_Crouch;
             self->skidding = 0;
             self->timer    = 0;
         }
         else {
-            self->timer++;
+            if (self->timer >= 16) {
+                self->state    = Player_State_Ground;
+                self->skidding = 0;
+                self->timer    = 0;
+            }
+            else {
+                self->timer++;
+            }
         }
     }
     else {
         Player_HandleAirFriction();
         Player_HandleAirMovement();
+
+        if (controller->keyDown.down && self->jumpPress || analog->keyDown.down && self->jumpPress) {
+            RSDK.SetSpriteAnimation(self->aniFrames, ANI_JUMP, &self->animator, false, 0);
+            self->jumpAbilityState = 0;
+            self->state = Player_State_Air;
+        }
     }
 }
 void Player_State_KnuxGlideSlide(void)
@@ -7165,8 +7145,13 @@ void Player_State_KnuxWallClimb(void)
                     RSDK.SetSpriteAnimation(self->aniFrames, ANI_CLIMB_IDLE, &self->animator, false, 0);
                 else if (self->velocity.y > 0)
                     RSDK.SetSpriteAnimation(self->aniFrames, ANI_CLIMB_DOWN, &self->animator, false, 0);
-                else if (self->velocity.y < 0)
+                else if (self->velocity.y < 0) {
+                    if (self->superState == SUPERSTATE_SUPER)
+                        self->animator.speed = 2;
+                    else
+                        self->animator.speed = 1;
                     RSDK.SetSpriteAnimation(self->aniFrames, ANI_CLIMB_UP, &self->animator, false, 0);
+                }
 
                 self->velocity.y = 0;
             }
@@ -8259,63 +8244,81 @@ void Player_JumpAbility_Sonic(void)
                         ++self->jumpAbilityState;
                 }
 
-                switch (self->shield) {
-                    case SHIELD_NONE:
-                    if (globals->medalMods & MEDAL_INSTASHIELD && !self->invincibleTimer) {
-                        self->jumpAbilityState = 0;
-                        RSDK.PlaySfx(Shield->sfxInstaShield, false, 255);
-                        RSDK.ResetEntity(shield, Shield->classID, self);
-                        shield->inkEffect = INK_ADD;
-                        shield->alpha     = 0x100;
-                        if (self->superState == SUPERSTATE_SUPER)
-                            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_SUPERINSTA, &shield->shieldAnimator, true, 0);
-                        else
-                            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_INSTA, &shield->shieldAnimator, true, 0);
-                        shield->state = Shield_State_Insta;
+                if (globals->medalMods & MEDAL_INSTASHIELD && globals->medalMods & MEDAL_NODROPDASH && self->superState == SUPERSTATE_SUPER) {
+                    self->jumpAbilityState = 0;
+                    RSDK.PlaySfx(Shield->sfxInstaShield, false, 255);
+                    RSDK.ResetEntity(shield, Shield->classID, self);
+                    shield->inkEffect = INK_ADD;
+                    shield->alpha     = 0x100;
+                    if (self->miracleState)
+                        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_MIRACLEINSTA, &shield->shieldAnimator, true, 0);
+                    else
+                        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_SUPERINSTA, &shield->shieldAnimator, true, 0);
+                    shield->state = Shield_State_Insta;
+                }
+                else {
+                    switch (self->shield) {
+                        case SHIELD_NONE:
+                            if (globals->medalMods & MEDAL_INSTASHIELD && !self->invincibleTimer) {
+                                self->jumpAbilityState = 0;
+                                RSDK.PlaySfx(Shield->sfxInstaShield, false, 255);
+                                RSDK.ResetEntity(shield, Shield->classID, self);
+                                shield->inkEffect = INK_ADD;
+                                shield->alpha     = 0x100;
+                                if (self->superState == SUPERSTATE_SUPER) {
+                                    if (self->miracleState)
+                                        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_MIRACLEINSTA, &shield->shieldAnimator, true, 0);
+                                    else
+                                        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_SUPERINSTA, &shield->shieldAnimator, true, 0);
+                                }
+                                else
+                                    RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_INSTA, &shield->shieldAnimator, true, 0);
+                                shield->state = Shield_State_Insta;
+                            }
+                        // [Fallthrough]
+                        case SHIELD_BLUE:
+                            // returns 0 if dropdash (bit 4) is disabled
+                            // returns 2 if dropdash is enabled
+                            self->jumpAbilityState = (~(globals->medalMods & 0xFF) >> 3) & 2;
+                            break;
+
+                        case SHIELD_BUBBLE:
+                            self->velocity.x >>= 1;
+                            self->velocity.y      = self->superState == SUPERSTATE_SUPER ? 0xC0000 : 0x80000;
+                            self->state           = Player_State_BubbleBounce;
+                            self->nextGroundState = StateMachine_None;
+                            self->nextAirState    = StateMachine_None;
+                            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
+                            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
+                            shield->state = Shield_State_BubbleDrop;
+                            RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
+                            break;
+
+                        case SHIELD_FIRE:
+                            self->jumpAbilityState = 0;
+                            self->velocity.x       = self->superState == SUPERSTATE_SUPER ? (self->direction == FLIP_X ? -0xC0000 : 0xC0000)
+                                                                                          : (self->direction == FLIP_X ? -0x80000 : 0x80000);
+                            self->velocity.y       = 0;
+                            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
+                            shield->state     = Shield_State_FireDash;
+                            shield->direction = self->direction;
+                            RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
+                            if (self->superState == SUPERSTATE_SUPER)
+                                self->jumpAbilityState = 22;
+                            break;
+
+                        case SHIELD_LIGHTNING:
+                            self->jumpAbilityState = 0;
+                            self->velocity.y       = self->superState == SUPERSTATE_SUPER ? (self->invertGravity ? 0x84000 : -0x84000)
+                                                                                          : (self->invertGravity ? 0x58000 : -0x58000);
+                            shield->state          = Shield_State_LightningSparks;
+                            RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
+                            if (self->superState == SUPERSTATE_SUPER)
+                                self->jumpAbilityState = 22;
+                            break;
+
+                        default: break;
                     }
-                    // [Fallthrough]
-                    case SHIELD_BLUE:
-                    // returns 0 if dropdash (bit 4) is disabled
-                    // returns 2 if dropdash is enabled
-                    self->jumpAbilityState = (~(globals->medalMods & 0xFF) >> 3) & 2;
-                    break;
-
-                    case SHIELD_BUBBLE:
-                    self->velocity.x >>= 1;
-                    self->velocity.y      = self->superState == SUPERSTATE_SUPER ? 0xC0000 : 0x80000;
-                    self->state           = Player_State_BubbleBounce;
-                    self->nextGroundState = StateMachine_None;
-                    self->nextAirState    = StateMachine_None;
-                    RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKDADD, &shield->fxAnimator, true, 0);
-                    RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEATTACKD, &shield->shieldAnimator, true, 0);
-                    shield->state = Shield_State_BubbleDrop;
-                    RSDK.PlaySfx(Shield->sfxBubbleBounce, false, 255);
-                    break;
-
-                    case SHIELD_FIRE:
-                    self->jumpAbilityState = 0;
-                    self->velocity.x       = self->superState == SUPERSTATE_SUPER ? (self->direction == FLIP_X ? -0xC0000 : 0xC0000)
-                                                                                    : (self->direction == FLIP_X ? -0x80000 : 0x80000);
-                    self->velocity.y       = 0;
-                    RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_FIREATTACK, &shield->shieldAnimator, true, 0);
-                    shield->state     = Shield_State_FireDash;
-                    shield->direction = self->direction;
-                    RSDK.PlaySfx(Shield->sfxFireDash, false, 255);
-                    if (self->superState == SUPERSTATE_SUPER)
-                        self->jumpAbilityState = 22;
-                    break;
-
-                    case SHIELD_LIGHTNING:
-                    self->jumpAbilityState = 0;
-                    self->velocity.y       = self->superState == SUPERSTATE_SUPER ? (self->invertGravity ? 0x84000 : -0x84000)
-                                                                                    : (self->invertGravity ? 0x58000 : -0x58000);
-                    shield->state          = Shield_State_LightningSparks;
-                    RSDK.PlaySfx(Shield->sfxLightningJump, false, 255);
-                    if (self->superState == SUPERSTATE_SUPER)
-                        self->jumpAbilityState = 22;
-                    break;
-
-                    default: break;
                 }
             }
 #if GAME_VERSION != VER_100
