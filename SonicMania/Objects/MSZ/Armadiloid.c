@@ -133,7 +133,7 @@ void Armadiloid_State_PlatformFlying(void)
 
     foreach_active(Player, player)
     {
-        if (player->superState != SUPERSTATE_SUPER) {
+        if (player->state != ERZStart_State_PlayerSuperFly) {
             if (Player_CheckCollisionPlatform(player, self, &self->hitbox))
                 player->position.x += self->velocity.x;
         }
@@ -156,7 +156,7 @@ void Armadiloid_PlatformShootDelay(void)
 
         foreach_active(Player, player)
         {
-            if (player->superState != SUPERSTATE_SUPER) {
+            if (player->state != ERZStart_State_PlayerSuperFly) {
                 if (Player_CheckCollisionPlatform(player, self, &self->hitbox))
                     player->position.x += self->velocity.x;
             }
@@ -207,7 +207,7 @@ void Armadiloid_State_PlatformShoot(void)
 
     foreach_active(Player, player)
     {
-        if (player->superState != SUPERSTATE_SUPER) {
+        if (player->state != ERZStart_State_PlayerSuperFly) {
             if (Player_CheckCollisionPlatform(player, self, &self->hitbox))
                 player->position.x += self->velocity.x;
         }

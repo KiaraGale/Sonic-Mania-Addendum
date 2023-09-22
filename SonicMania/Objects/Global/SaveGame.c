@@ -418,16 +418,24 @@ void SaveGame_SaveProgress(void)
                 if (saveRAM->zoneID < Zone_GetZoneID() + 1)
                     saveRAM->zoneID = Zone_GetZoneID() + 1;
 
-                if (saveRAM->characterID == ID_SONIC && SaveGame_AllChaosEmeralds()) {
-                    if (saveRAM->zoneID > ZONE_ERZ) {
+                if (saveRAM->characterID != ID_SONIC) {
+                    if (saveRAM->zoneID > ZONE_TMZ) {
                         saveRAM->saveState = SAVEGAME_COMPLETE;
                         saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
                     }
                 }
                 else {
-                    if (saveRAM->zoneID > ZONE_TMZ) {
-                        saveRAM->saveState = SAVEGAME_COMPLETE;
-                        saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                    if (SaveGame_AllChaosEmeralds()) {
+                        if (saveRAM->zoneID > ZONE_ERZ) {
+                            saveRAM->saveState = SAVEGAME_COMPLETE;
+                            saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                        }
+                    }
+                    else {
+                        if (saveRAM->zoneID > ZONE_TMZ) {
+                            saveRAM->saveState = SAVEGAME_COMPLETE;
+                            saveRAM->zoneID    = ZONE_COUNT_SAVEFILE;
+                        }
                     }
                 }
             }

@@ -1,0 +1,27 @@
+////////////////////
+Sonic Mania Addendum
+      Credits
+////////////////////
+
+Main Development Team:
+KiaraGale - lead programmer, lead artist, project manager
+
+LittlePlanetCD/Cosmic Eternity - assistant programmer,  playtester, debugger
+
+Mefiresu/Mephiles - assistant programmer, playtester, debugger
+
+JunkeyBot - lead palettist, assistant artist
+
+Asset Contributers:
+smb123w64gb - Special Stage Time Stone models
+
+Maro - Tails animation file re-work
+
+DNLeal - Unified Endings Plus
+
+Special Thanks:
+Chuli/stxtic/RMGRich - lead Mania decomp developer
+
+Rubberduckycooly - lead Mania decomp developer
+
+Retro Engine Modding Server - hosted Addendum's development thread, as well as positive feedback for the project

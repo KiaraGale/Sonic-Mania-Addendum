@@ -136,7 +136,7 @@ void UFO_HUD_CheckLevelUp(void)
 void UFO_HUD_LevelUpMach(void)
 {
     EntityUFO_HUD *hud    = RSDK_GET_ENTITY(SLOT_UFO_HUD, UFO_HUD);
-    UFO_Setup->machPoints = 0;
+    // UFO_Setup->machPoints = 0;
 
     if (UFO_Setup->machLevel >= 2) {
         ++UFO_Setup->scoreBonus;

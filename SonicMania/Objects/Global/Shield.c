@@ -70,7 +70,7 @@ void Shield_Draw(void)
         }
     }
 
-    if (self->type == SHIELD_BUBBLE) {
+    if (self->type == SHIELD_BUBBLE && player->superState != SUPERSTATE_SUPER) {
         self->inkEffect = INK_ADD;
         RSDK.DrawSprite(&self->fxAnimator, NULL, false);
         self->inkEffect = INK_BLEND;
@@ -103,8 +103,7 @@ void Shield_Create(void *data)
             break;
 
         case SHIELD_BUBBLE:
-            if (self->player->superState != SUPERSTATE_SUPER)
-                RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEADD, &self->fxAnimator, true, 0);
+            RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLEADD, &self->fxAnimator, true, 0);
             RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_BUBBLE, &self->shieldAnimator, true, 0);
             self->alpha = 0x100;
             break;
@@ -249,10 +248,6 @@ void Shield_State_Insta(void)
 {
     RSDK_THIS(Shield);
 
-    if (self->player->superState == SUPERSTATE_SUPER)
-        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_SUPERINSTA, &self->shieldAnimator, false, 0);
-    else
-        RSDK.SetSpriteAnimation(Shield->aniFrames, SHIELDANI_INSTA, &self->shieldAnimator, false, 0);
     RSDK.ProcessAnimation(&self->shieldAnimator);
 
     if (self->player)
@@ -265,7 +260,9 @@ void Shield_State_Insta(void)
 bool32 Shield_State_Reflect(EntityShield *shield, void *p)
 {
     RSDK_THIS(Shield);
+    EntityPlayer *player = self->player;
     bool32 deflected = false;
+
     if (shield->state == Shield_State_Insta) {
         Entity *projectile = (Entity *)p;
 
@@ -277,6 +274,13 @@ bool32 Shield_State_Reflect(EntityShield *shield, void *p)
         if (!Player->hasReflectAchievement) {
             API_UnlockAchievement(&achievementList[ACH_INSTAREFLECT]);
             Player->hasReflectAchievement = true;
+        }
+
+        if (player->superState == SUPERSTATE_SUPER) {
+            if (player->miracleState)
+                Player_GiveRings(player, 3, true);
+            else
+                Player_GiveRings(player, 2, true);
         }
 
         return true;

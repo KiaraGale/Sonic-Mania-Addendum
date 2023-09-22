@@ -116,6 +116,9 @@ struct EntityHUD {
     Animator bossBarAnimator;
     String bossNameString;
     int32 timer;
+    bool32 invincibilityActive;
+    bool32 speedShoesActive;
+    bool32 shieldActive;
 #endif
 };
 
@@ -155,9 +158,5 @@ int32 HUD_CharacterIndexFromID(int32 characterID);
 
 void HUD_HandleInputViewer(void);
 void HUD_HandleItemsHUD(void);
-
-void HUD_InitializeBossBar(void *b, int32 icon, const char *bossName);
-void HUD_UpdateBossBar(void *b);
-void HUD_HandleBossDefeat(void);
 
 #endif //! OBJ_HUD_H

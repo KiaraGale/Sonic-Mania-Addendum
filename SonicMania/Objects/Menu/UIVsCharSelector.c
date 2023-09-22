@@ -256,18 +256,6 @@ void UIVsCharSelector_ProcessButtonCB(void)
         }
 
         int32 frame = self->frameID;
-        while ((1 << frame) & activePlayers) {
-            frame += inc;
-
-            if (frame < 0)
-                frame += max;
-
-            if (frame >= max)
-                frame -= max;
-
-            self->frameID = frame;
-        }
-
         if (self->frameID != frame) {
             self->playerBounceOffset   = 0;
             self->playerBounceVelocity = 0x8000;

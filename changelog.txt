@@ -1,0 +1,76 @@
+////////////////////
+Sonic Mania Addendum
+     Changelog
+////////////////////
+
+Expansive Features: (features that add completely new content)
+Extra Slot Amy - Adds Amy Rose as a new playable character, with a complete moveset and sprite set.
+Time Stones - Adds collectable Time Stones, which are separate from Chaos Emeralds, allowing for the collection of 14 gemstones - collecting all Time Stones adds passive benefits, such as lengthened power-up time (invincibility/speed shoes) and weakening (most) bosses.
+Miracle Forms - Adds Miracle forms, which requires collecting every Chaos Emerald and Time Stone to power up a Super form - Miracle forms are faster, jump higher, slow down ring drain (1 ring/60 frames --> 1 ring/80 frames), and are visually distinct from Super forms.
+
+Major Features: (features that majorly expand upon current content)
+Co-op Plus - Overhauls the co-op system in Mania Mode, such as giving both P1 and P2 power-ups from item boxes, allowing P2 to break item boxes when controlled by a player, and making P2 transform into a Super/Miracle form alongside P1. Changes the "& Knuckles" option in the Secrets Menu to "Sidekick", and allows the player to select any character as P2, including none.
+Insta-Shield Overhaul - Completely re-programs Sonic's insta-shield to allow projectile reflection and temporary immunity, as well as making its hitbox larger. Also allows Super Sonic to use a stronger insta-shield.
+Chibi Super Sprites - Adds completely new sprites for Chibi Super Sonic, which functions identically to how Super Sonic works at normal size. Also adds Chibi sprites for all Miracle forms.
+Unified Endings - Adds edited ending cutscene video files to show all six characters, rather than just three at a time.
+Shields Plus - Overhauls how elemental shields interact with certain player states, such as allowing shield ability use with the invincibility power-up, allowing Super Sonic to use shield abilities, and allowing shields to interact with stage objects while Super, such as burning GHZ log bridges, breaking PGZ1 crates, and melting PGZ2 ice.
+
+Minor Features: (features that slightly expand upon or tweak current content)
+Super/Miracle Life Icons - changes the life icon when Super Sonic, and in all Miracle forms.
+Max Control - Adds a new setting to the "Moveset" (formerly "Sonic Ability") option, called "Addendum". This option gives Sonic the Dropdash, Super Peel-out, and Insta-shield moves.
+CD Spindash - Adds a new entry to the Secrets Menu, which allows the player to toggle between the Mania spindash and a CD spindash adaptation.
+Super Run (Competition) - Adds a Super Run game mode to Competition, which has players start the round in either a Super form or Miracle form.
+Emerald Circle - Overhauls the Transform animation, which now shows the Chaos Emeralds (and Time Stones, if collected) circle into the player while transforming, similar to the Egg Reverie intro cutscene.
+Input Viewer - Adds a custom HUD element that shows a visual representation of your keyboard/controller inputs. Only active with Debug Mode enabled.
+Metal Sonic Race Track Restoration - Restores the Metal Sonic racetrack to the length of the pre-Plus version.
+
+QoL Features: (features that give quality-of-life tweaks/overhauls to current content)
+Autosave Pop-Up Removal - Removes the autosave warning message when initially entering the Main Menu.
+Uncapped Lives and Extended Ring Count - Allows the player to obtain over 99 lives and up to 9999 rings.
+Overhauled Super Physics - Overhauls the Super form physics to make speed shoes beneficial, increase Super Knuckles' jump height a bit, and tweak questionable underwater physics.
+1-Up Jingle Improvement - Makes the 1-Up music track use a shortened sound effect instead, removing the annoyance of 1-ups cutting off level music and invincibility/speed shoes music momentarily.
+Medallion Unrestriction - Removes the medallion requirements for all unlocks, allowing the player to customize all Secrets menu entries without having to have any medallions unlocked.
+Act Select - Expands how save data works to allow for save files to save the current act a player is in, rather than just the current zone. Completed save files can choose between Acts by pressing the bound Z key (keyboard) or Select (controller).
+Egg Reverie Data Select - Allows the player to save Egg Reverie as the save file's current zone, and select Egg Reverie Zone on a complete save file, complete with a custom-made zone icon.
+Power-up Display - Adds a custom HUD element below the Rings counter to keep track of your currently active power-ups. The Super form, Miracle form, invincibility, and speed shoes icon will flash when the respective power-up is about to run out.
+Flight Re-curl - Allows Tails to press Down + Jump while flying to curl back into a jump.
+Shield Saving - Allows the player to keep their shield between zones, rather than just between acts. Works with both P1 and P2.
+Special Stage Realignment - Due to the addition of Time Stones, Encore Mode's Special Stages will be used for the Time Stones instead, meaning that the Special Stage order is the same in both Mania Mode and Encore Mode.
+Player Palette Overhauls - Completely overhauls most of the player palettes to look more natural/in-line with the game's general color palette and underwater sections. These include tweaking Mighty's shell color to be brighter and more saturated, tweaking Super Sonic, Super Knuckles, and Super Mighty's palettes to blend better, overhauling Ray's color system to have his 7 fur colors glow while Super, and a complete re-work of all underwater palettes to fix some visual oddities present in vanilla Mania. Also adds complete underwater variants of Miracle form colors, as well as allowing two of the same character to use Super/Miracle palettes.
+Super Sprite Tweaks - Adds extensive edits to all player sprites to fix issues with Super forms present in vanilla Mania, such as Tails' shoes glowing, Knuckles' skin glowing, Mighty's legs glowing, and Ray's 7th fur color not shifting at all.
+Knuckles Glide Physics Overhaul - Overhauls Knuckles' gliding physics to be momentum-based, rather than only being able to glide at a fixed speed.
+Special Stage Results Text Overhaul - Edits practically every single offset for each characters' Special Stage results screen text to be much more centered and aligned than what is present in vanilla Mania.
+Stage Design Tweaks - Tweaks level design aspects of some stages to fix collision issues, visual oddities, unfair enemy placement, and unfair death traps.
+Heavy Gunner Auto-run - Holding neither left nor right during the Heavy Gunner boss fight will have the player automatically run at the same speed as the camera autoscrolling. Only applies while running, and not while jumping or rolling.
+P2 in Blue Spheres - Allows P2 to follow behind P1 in the Blue Spheres stages, as a callback to S3&K.
+MSZ1 Super Flight Assistance - Adds special code to remove collision checks for the Tornado and Armadilloids, as well as death prevention from the screen scrolling if using the ERZ Super Flight ability in MSZ1.
+Level Select Player Customization Overhaul - Modifies Level Select to allow for all character combinations, rather than only the Sonic and Tails character pairing.
+Clone Competition - Allows duplicate characters in Competition Mode, rather than requiring all players to be different characters.
+Knux Glide Improvements - Allows Knuckles to re-curl into a jump state when dropping from a glide by pressing Down + Jump, as well as allowing him to immediately spindash after landing from a glide drop.
+Air Curl - Allows all characters to curl into a spinball by pressing Down + Jump when in the air and not in a jump state.
+Badnik Ability Refresh - Allows the player to regain their jump ability by breaking a badnik. Can be chained indefinitely.
+Global Super Sparkles - Gives all characters the Super sparks that Super Sonic has in vanilla, as well as changing them to be the player's color to always look correct with any palette.
+
+Misc. Features: (slight changes that don't fit into any of the categories above)
+Mania Mode Save Select Mirroring - Restructures the Mania Mode data select menu to reflect that of S3&K/Encore Mode's data select menu.
+Early "Act Clear" Theme - Replaces Mania's "Act Clear" theme with the recently released early Act Clear jingle.
+"Sonic & Tails" Save Select Removal - removes the "Sonic & Tails" character option, as it becomes redundant with the new Sidekick option in the Secrets menu being unlocked from the start.
+Reshaded Life Icons - Adds completely reshaded variants of the vanilla life icons to look less jank.
+HCZ Hand Launcher Animation Change - Reprograms the HandLauncher object in Hydrocity Zone to use the player's Dash animation, rather than their Run animation.
+Spindash Sprite Overhaul - Adds a completely re-sprited and ditherless Spindash animation for Sonic, Knuckles, Mighty, Ray, and Amy.
+
+Bug Fixes: (changes to the game's code, assets, or levels to fix vanilla bugs/oversights)
+Special Stage "Instant Mach" Removal - removes the ability for the player to instantly increase their Mach level by pressing the bound Y key and cheat in the Special Stages. (oversight)
+Peelout Transfer Removal - Removes the ability for the player to use the Super Peel-Out with other characters by having the peel-out medallion mod active and using a character swap monitor in Mania Mode. (oversight)
+LRZ3 Encore Master Emerald Fix - Re-works the Master Emerald's palette system to allow it to be unaffected by Encore Mode, which would make it purple in vanilla Mania. (oversight)
+Miscolored GHZ2 Outro Death Egg Robot Chasis Fix - Implements a code fix for the Death Egg Robot's underside being mistakenly colored orange instead of black in the GHZ2 Outro cutscene. (bug)
+Miscolored Mighty MBM Sprite Fix - Adds completely reshaded versions of each MBM Mighty sprite, as the vanilla version of the sprite sheet doesn't use any of Mighty's colors. (oversight)
+Knux FlingRamp Glide Animation Fix - Gliding into a FlingRamp now sets the player state to Player_State_Air, fixing a bug that would have Knuckles glide with the Spring CS animation (bug)
+Pause Menu Selection Wrap Fix - Defines rowCount after initializing buttonCount, fixing an issue to where the Pause Menu would become unable to wrap around if there were less than three buttons. (bug)
+Super Form Black Palette Fix - Modifies each character's blend Super color function to fix an issue to where the palette entry adjacent to the player color ramp would become black. (bug)
+Spindash Moonwalk Fix - Adds a spindash state check to Player_CheckCollisionBox to fix a bug that allowed the player to move backwards while spindashing next to the left side of a wall by pressing left. (bug)
+OOZ Hatch Revival Fix - Adds a Player_CheckValidState check to the Hatch_State_SubEntryHatch function, fixing an issue to where falling into the hatch while dead would revive the player. (bug)
+Ice Spring Trail Effect Animator Fix - Fixes an issue to where if P1 is in Debug Mode and P2 hits an Ice Spring, P2's animation data would be copied into P1's trail effect animator. (bug)
+PGZ2 Intro Moonwalk Fix - Ensures that the player is facing right when jogging to PGZ2, fixing an issue to where if the player was facing to the left, they would walk to the right while facing left. (bug)
+MBM Sprite Mirroring Fix - Prevents the game from mirroring the MBM intro sprites initially, fixing a visual bug to where the character would look up and to the right, and then abruptly look to the left. (bug)
+Heavy King LRZ3 Hitbox Fix - Adjusts the hitbox values for Heavy King to fix an issue where Heavy King's hurtbox was upside-down and only 4 pixels tall.
