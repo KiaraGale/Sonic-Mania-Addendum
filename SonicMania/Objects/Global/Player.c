@@ -6989,6 +6989,8 @@ void Player_State_KnuxGlideDrop(void)
 void Player_State_KnuxGlideSlide(void)
 {
     RSDK_THIS(Player);
+    RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+    RSDKAnalogState *analog         = &AnalogStickInfoL[self->controllerID];
 
     if (!self->onGround) {
         self->timer = 0;
@@ -7029,12 +7031,20 @@ void Player_State_KnuxGlideSlide(void)
 
             self->animator.speed = 1;
 
-            if (self->timer >= 16) {
-                self->state    = Player_State_Ground;
+            if (controller->keyDown.down || analog->keyDown.down) {
+                self->state    = Player_State_Crouch;
                 self->skidding = 0;
+                self->timer    = 0;
             }
             else {
-                self->timer++;
+                if (self->timer >= 16) {
+                    self->state    = Player_State_Ground;
+                    self->skidding = 0;
+                    self->timer    = 0;
+                }
+                else {
+                    self->timer++;
+                }
             }
         }
     }

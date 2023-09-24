@@ -156,7 +156,7 @@ void HUD_EnableRingFlash(void);
 
 int32 HUD_CharacterIndexFromID(int32 characterID);
 
-void HUD_HandleInputViewer(void);
-void HUD_HandleItemsHUD(void);
+void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType);
+void HUD_DrawItemsHUD(Vector2 *drawPos, EntityPlayer *player, int32 drawType);
 
 #endif //! OBJ_HUD_H

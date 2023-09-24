@@ -20,9 +20,6 @@ void HUD_Update(void)
     if (self->replayClapAnimator.animationID == 11)
         RSDK.ProcessAnimation(&self->replayClapAnimator);
 #endif
-    HUD_HandleInputViewer();
-    if (!RSDK.CheckSceneFolder("ERZ"))
-        HUD_HandleItemsHUD();
 }
 
 void HUD_LateUpdate(void)
@@ -576,34 +573,22 @@ void HUD_Draw(void)
         // D-pad
         drawPos.x = inputPos.x;
         drawPos.y = inputPos.y - TO_FIXED(6);
-        RSDK.DrawSprite(&self->inputDpadAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputUpAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputDownAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputLeftAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputRightAnimator, &drawPos, true);
+        HUD_DrawInputViewer(&drawPos, player, 0);
 
         // ABC
         drawPos.x = inputPos.x + TO_FIXED(28);
         drawPos.y = inputPos.y - TO_FIXED(6);
-        RSDK.DrawSprite(&self->inputABCAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputAAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputBAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputCAnimator, &drawPos, true);
+        HUD_DrawInputViewer(&drawPos, player, 1);
 
         // XYZ
         drawPos.x = inputPos.x + TO_FIXED(28);
         drawPos.y = inputPos.y - TO_FIXED(18);
-        RSDK.DrawSprite(&self->inputXYZAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputXAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputYAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputZAnimator, &drawPos, true);
+        HUD_DrawInputViewer(&drawPos, player, 2);
 
         // Bumpers
         drawPos.x = inputPos.x + TO_FIXED(28);
         drawPos.y = inputPos.y - TO_FIXED(28);
-        RSDK.DrawSprite(&self->inputBumperAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputLBumperAnimator, &drawPos, true);
-        RSDK.DrawSprite(&self->inputRBumperAnimator, &drawPos, true);
+        HUD_DrawInputViewer(&drawPos, player, 3);
     }
 
     itemPos.x = self->itemPos.x;
@@ -611,14 +596,14 @@ void HUD_Draw(void)
 
     drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
-    RSDK.DrawSprite(&self->itemBox1Animator, &drawPos, true);
+    HUD_DrawItemsHUD(&drawPos, player, 0);
 
     if (self->invincibilityActive)
         drawPos.x = itemPos.x + TO_FIXED(18);
     else
         drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
-    RSDK.DrawSprite(&self->itemBox2Animator, &drawPos, true);
+    HUD_DrawItemsHUD(&drawPos, player, 1);
 
     if (self->invincibilityActive && !self->speedShoesActive)
         drawPos.x = itemPos.x + TO_FIXED(18);
@@ -629,7 +614,7 @@ void HUD_Draw(void)
     else
         drawPos.x = itemPos.x;
     drawPos.y = itemPos.y;
-    RSDK.DrawSprite(&self->itemBox3Animator, &drawPos, true);
+    HUD_DrawItemsHUD(&drawPos, player, 2);
 }
 
 void HUD_Create(void *data)
@@ -894,9 +879,9 @@ void HUD_State_MoveIn(void)
         scorePos  = &self->scorePos;
         timePos   = &self->timePos;
         ringsPos  = &self->ringsPos;
-        lifePos   = &self->lifePos;
-        inputPos  = &self->inputPos;
         itemPos   = &self->itemPos;
+        inputPos  = &self->inputPos;
+        lifePos   = &self->lifePos;
         targetPos = &self->targetPos;
     }
 
@@ -909,14 +894,14 @@ void HUD_State_MoveIn(void)
     if (ringsPos->x < *targetPos)
         ringsPos->x += TO_FIXED(8);
 
-    if (lifePos->x < *targetPos)
-        lifePos->x += TO_FIXED(8);
+    if (itemPos->x < *targetPos)
+        itemPos->x += TO_FIXED(8);
 
     if (inputPos->x < *targetPos)
         inputPos->x += TO_FIXED(8);
 
-    if (itemPos->x < *targetPos)
-        itemPos->x += TO_FIXED(8);
+    if (lifePos->x < *targetPos)
+        lifePos->x += TO_FIXED(8);
     else
         *state = StateMachine_None;
 #else
@@ -1054,221 +1039,255 @@ int32 HUD_CharacterIndexFromID(int32 characterID)
     return id;
 }
 
-void HUD_HandleInputViewer(void)
+void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
 {
     RSDK_THIS(HUD);
-    EntityPlayer *leader            = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    RSDKControllerState *controller = &ControllerInfo[leader->controllerID];
-    RSDKTriggerState *Ltrigger       = &TriggerInfoL[leader->controllerID];
-    RSDKTriggerState *Rtrigger       = &TriggerInfoR[leader->controllerID];
+    RSDKControllerState *controller = &ControllerInfo[player->controllerID];
+    RSDKTriggerState *Ltrigger      = &TriggerInfoL[player->controllerID];
+    RSDKTriggerState *Rtrigger      = &TriggerInfoR[player->controllerID];
 
-    if (controller->keyUp.press || controller->keyUp.down) {
-        self->inputUpAnimator.frameID = 1;
-    }
-    else {
-        self->inputUpAnimator.frameID = 0;
-    }
+    if (drawType == 0) {
+        RSDK.DrawSprite(&self->inputDpadAnimator, drawPos, true);
+        if (controller->keyUp.press || controller->keyUp.down) {
+            self->inputUpAnimator.frameID = 1;
+        }
+        else {
+            self->inputUpAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputUpAnimator, drawPos, true);
 
-    if (controller->keyDown.press || controller->keyDown.down) {
-        self->inputDownAnimator.frameID = 2;
-    }
-    else {
-        self->inputDownAnimator.frameID = 0;
-    }
+        if (controller->keyDown.press || controller->keyDown.down) {
+            self->inputDownAnimator.frameID = 2;
+        }
+        else {
+            self->inputDownAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputDownAnimator, drawPos, true);
 
-    if (controller->keyLeft.press || controller->keyLeft.down) {
-        self->inputLeftAnimator.frameID = 3;
-    }
-    else {
-        self->inputLeftAnimator.frameID = 0;
-    }
+        if (controller->keyLeft.press || controller->keyLeft.down) {
+            self->inputLeftAnimator.frameID = 3;
+        }
+        else {
+            self->inputLeftAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputLeftAnimator, drawPos, true);
 
-    if (controller->keyRight.press || controller->keyRight.down) {
-        self->inputRightAnimator.frameID = 4;
-    }
-    else {
-        self->inputRightAnimator.frameID = 0;
-    }
-
-    if (controller->keyA.press || controller->keyA.down) {
-        self->inputAAnimator.frameID = 1;
-    }
-    else {
-        self->inputAAnimator.frameID = 0;
-    }
-
-    if (controller->keyB.press || controller->keyB.down) {
-        self->inputBAnimator.frameID = 2;
-    }
-    else {
-        self->inputBAnimator.frameID = 0;
+        if (controller->keyRight.press || controller->keyRight.down) {
+            self->inputRightAnimator.frameID = 4;
+        }
+        else {
+            self->inputRightAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputRightAnimator, drawPos, true);
     }
 
-    if (controller->keyC.press || controller->keyC.down) {
-        self->inputCAnimator.frameID = 3;
-    }
-    else {
-        self->inputCAnimator.frameID = 0;
+    if (drawType == 1) {
+        RSDK.DrawSprite(&self->inputABCAnimator, drawPos, true);
+        if (controller->keyA.press || controller->keyA.down) {
+            self->inputAAnimator.frameID = 1;
+        }
+        else {
+            self->inputAAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputAAnimator, drawPos, true);
+
+        if (controller->keyB.press || controller->keyB.down) {
+            self->inputBAnimator.frameID = 2;
+        }
+        else {
+            self->inputBAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputBAnimator, drawPos, true);
+
+        if (controller->keyC.press || controller->keyC.down) {
+            self->inputCAnimator.frameID = 3;
+        }
+        else {
+            self->inputCAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputCAnimator, drawPos, true);
     }
 
-    if (controller->keyX.press || controller->keyX.down) {
-        self->inputXAnimator.frameID = 1;
-    }
-    else {
-        self->inputXAnimator.frameID = 0;
+    if (drawType == 2) {
+        RSDK.DrawSprite(&self->inputXYZAnimator, drawPos, true);
+        if (controller->keyX.press || controller->keyX.down) {
+            self->inputXAnimator.frameID = 1;
+        }
+        else {
+            self->inputXAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputXAnimator, drawPos, true);
+
+        if (controller->keyY.press || controller->keyY.down) {
+            self->inputYAnimator.frameID = 2;
+        }
+        else {
+            self->inputYAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputYAnimator, drawPos, true);
+
+        if (controller->keyZ.press || controller->keyZ.down) {
+            self->inputZAnimator.frameID = 3;
+        }
+        else {
+            self->inputZAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputZAnimator, drawPos, true);
     }
 
-    if (controller->keyY.press || controller->keyY.down) {
-        self->inputYAnimator.frameID = 2;
-    }
-    else {
-        self->inputYAnimator.frameID = 0;
-    }
+    if (drawType == 3) {
+        RSDK.DrawSprite(&self->inputBumperAnimator, drawPos, true);
+        if (Ltrigger->keyBumper.press || Ltrigger->keyBumper.down) {
+            self->inputLBumperAnimator.frameID = 1;
+        }
+        else {
+            self->inputLBumperAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputLBumperAnimator, drawPos, true);
 
-    if (controller->keyZ.press || controller->keyZ.down) {
-        self->inputZAnimator.frameID = 3;
-    }
-    else {
-        self->inputZAnimator.frameID = 0;
-    }
-
-    if (Ltrigger->keyBumper.press || Ltrigger->keyBumper.down) {
-        self->inputLBumperAnimator.frameID = 1;
-    }
-    else {
-        self->inputLBumperAnimator.frameID = 0;
-    }
-
-    if (Rtrigger->keyBumper.press || Rtrigger->keyBumper.down) {
-        self->inputRBumperAnimator.frameID = 2;
-    }
-    else {
-        self->inputRBumperAnimator.frameID = 0;
+        if (Rtrigger->keyBumper.press || Rtrigger->keyBumper.down) {
+            self->inputRBumperAnimator.frameID = 2;
+        }
+        else {
+            self->inputRBumperAnimator.frameID = 0;
+        }
+        RSDK.DrawSprite(&self->inputRBumperAnimator, drawPos, true);
     }
 }
 
-void HUD_HandleItemsHUD(void)
+void HUD_DrawItemsHUD(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
 {
     RSDK_THIS(HUD);
-    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
-    if (leader->state != Player_State_Transform && leader->superState != SUPERSTATE_SUPER) {
-        if (leader->invincibleTimer > 0) {
-            self->invincibilityActive = true;
-            if (leader->invincibleTimer > 180) {
-                self->itemBox1Animator.frameID = 5;
+    if (drawType == 0) {
+        if (player->state != Player_State_Transform && player->superState != SUPERSTATE_SUPER) {
+            if (player->invincibleTimer > 0) {
+                self->invincibilityActive = true;
+                if (player->invincibleTimer > 180) {
+                    self->itemBox1Animator.frameID = 5;
+                }
+                else {
+                    if (player->invincibleTimer & 4)
+                        self->itemBox1Animator.frameID = 0;
+                    if (player->invincibleTimer & 8)
+                        self->itemBox1Animator.frameID = 5;
+                }
             }
             else {
-                if (leader->invincibleTimer & 4)
-                    self->itemBox1Animator.frameID = 0;
-                if (leader->invincibleTimer & 8)
-                    self->itemBox1Animator.frameID = 5;
+                self->itemBox1Animator.frameID = 0;
+                self->invincibilityActive      = false;
             }
         }
         else {
-            self->itemBox1Animator.frameID = 0;
-            self->invincibilityActive      = false;
-        }
-    }
-    else {
-        if (leader->rings > 0) {
-            self->invincibilityActive = true;
-            if (leader->rings > 3) {
-                if (leader->miracleState)
-                    self->itemBox1Animator.frameID = 13;
-                else
-                    self->itemBox1Animator.frameID = 12;
-            }
-            else {
-                if (leader->superRingLossTimer & 8)
-                    self->itemBox1Animator.frameID = 0;
-                else {
-                    if (leader->miracleState)
+            if (player->rings > 0) {
+                self->invincibilityActive = true;
+                if (player->rings > 3) {
+                    if (player->miracleState)
                         self->itemBox1Animator.frameID = 13;
                     else
                         self->itemBox1Animator.frameID = 12;
                 }
+                else {
+                    if (player->superRingLossTimer & 8)
+                        self->itemBox1Animator.frameID = 0;
+                    else {
+                        if (player->miracleState)
+                            self->itemBox1Animator.frameID = 13;
+                        else
+                            self->itemBox1Animator.frameID = 12;
+                    }
+                }
+            }
+            else {
+                self->itemBox1Animator.frameID = 0;
+                self->invincibilityActive      = false;
+            }
+        }
+
+        RSDK.DrawSprite(&self->itemBox1Animator, drawPos, true);
+    }
+
+    if (drawType == 1) {
+        if (player->speedShoesTimer > 0) {
+            self->speedShoesActive = true;
+            if (player->speedShoesTimer > 180) {
+                switch (player->characterID) {
+                    default:
+                    case ID_SONIC: self->itemBox2Animator.frameID = 6; break;
+                    case ID_TAILS: self->itemBox2Animator.frameID = 7; break;
+                    case ID_KNUCKLES: self->itemBox2Animator.frameID = 8; break;
+                    case ID_MIGHTY: self->itemBox2Animator.frameID = 9; break;
+                    case ID_RAY: self->itemBox2Animator.frameID = 10; break;
+                    case ID_AMY: self->itemBox2Animator.frameID = 11; break;
+                }
+            }
+            else {
+                switch (player->characterID) {
+                    default:
+                    case ID_SONIC:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 6;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                    case ID_TAILS:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 7;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                    case ID_KNUCKLES:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 8;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                    case ID_MIGHTY:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 9;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                    case ID_RAY:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 10;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                    case ID_AMY:
+                        if (player->speedShoesTimer & 4)
+                            self->itemBox2Animator.frameID = 11;
+                        if (player->speedShoesTimer & 8)
+                            self->itemBox2Animator.frameID = 0;
+                        break;
+                }
             }
         }
         else {
-            self->itemBox1Animator.frameID = 0;
-            self->invincibilityActive      = false;
+            self->itemBox2Animator.frameID = 0;
+            self->speedShoesActive         = false;
         }
+
+        RSDK.DrawSprite(&self->itemBox2Animator, drawPos, true);
     }
 
-    if (leader->speedShoesTimer > 0) {
-        self->speedShoesActive = true;
-        if (leader->speedShoesTimer > 180) {
-            switch (leader->characterID) {
+    if (drawType == 2) {
+        if (player->shield > SHIELD_NONE) {
+            self->shieldActive = true;
+            switch (player->shield) {
                 default:
-                case ID_SONIC: self->itemBox2Animator.frameID = 6; break;
-                case ID_TAILS: self->itemBox2Animator.frameID = 7; break;
-                case ID_KNUCKLES: self->itemBox2Animator.frameID = 8; break;
-                case ID_MIGHTY: self->itemBox2Animator.frameID = 9; break;
-                case ID_RAY: self->itemBox2Animator.frameID = 10; break;
-                case ID_AMY: self->itemBox2Animator.frameID = 11; break;
+                case SHIELD_BLUE: self->itemBox3Animator.frameID = 1; break;
+                case SHIELD_BUBBLE: self->itemBox3Animator.frameID = 2; break;
+                case SHIELD_FIRE: self->itemBox3Animator.frameID = 3; break;
+                case SHIELD_LIGHTNING: self->itemBox3Animator.frameID = 4; break;
             }
         }
         else {
-            switch (leader->characterID) {
-                default:
-                case ID_SONIC:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 6;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-                case ID_TAILS:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 7;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-                case ID_KNUCKLES:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 8;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-                case ID_MIGHTY:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 9;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-                case ID_RAY:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 10;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-                case ID_AMY:
-                    if (leader->speedShoesTimer & 4)
-                        self->itemBox2Animator.frameID = 11;
-                    if (leader->speedShoesTimer & 8)
-                        self->itemBox2Animator.frameID = 0;
-                    break;
-            }
+            self->itemBox3Animator.frameID = 0;
+            self->shieldActive             = false;
         }
-    }
-    else {
-        self->itemBox2Animator.frameID = 0;
-        self->speedShoesActive         = false;
-    }
 
-    if (leader->shield > SHIELD_NONE) {
-        self->shieldActive = true;
-        switch (leader->shield) {
-            default:
-            case SHIELD_BLUE: self->itemBox3Animator.frameID = 1; break;
-            case SHIELD_BUBBLE: self->itemBox3Animator.frameID = 2; break;
-            case SHIELD_FIRE: self->itemBox3Animator.frameID = 3; break;
-            case SHIELD_LIGHTNING: self->itemBox3Animator.frameID = 4; break;
-        }
-    }
-    else {
-        self->itemBox3Animator.frameID = 0;
-        self->shieldActive             = false;
+        RSDK.DrawSprite(&self->itemBox3Animator, drawPos, true);
     }
 }
 

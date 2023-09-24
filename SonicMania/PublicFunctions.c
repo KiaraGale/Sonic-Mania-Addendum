@@ -1780,8 +1780,8 @@ void InitPublicFunctions()
     ADD_PUBLIC_FUNC(HUD_MoveOut);
     ADD_PUBLIC_FUNC(HUD_EnableRingFlash);
     ADD_PUBLIC_FUNC(HUD_CharacterIndexFromID);
-    ADD_PUBLIC_FUNC(HUD_HandleInputViewer);
-    ADD_PUBLIC_FUNC(HUD_HandleItemsHUD);
+    ADD_PUBLIC_FUNC(HUD_DrawInputViewer);
+    ADD_PUBLIC_FUNC(HUD_DrawItemsHUD);
 
     // Global/InvisibleBlock
     ADD_PUBLIC_FUNC(InvisibleBlock_DrawSprites);

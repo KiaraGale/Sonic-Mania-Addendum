@@ -432,11 +432,20 @@ void ItemBox_CheckHit(void)
                 }
             }
 #endif
+            int32 anim = player->animator.animationID;
+            bool32 attacking =
+                anim == ANI_JUMP && (player->velocity.y >= 0 || player->onGround || self->direction || player->state == Ice_PlayerState_Frozen);
+            switch (player->characterID) {
+                case ID_SONIC: attacking |= anim == ANI_DROPDASH; break;
+                case ID_KNUCKLES: attacking |= anim == ANI_GLIDE || anim == ANI_GLIDE_SLIDE; break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: attacking |= anim == ANI_HAMMERDROP || player->jumpAbilityState > 1; break;
+                case ID_AMY: attacking |= anim == ANI_HAMMER_HIT || anim == ANI_SPIN_JUMP || anim == ANI_HELI_HAMMER; break;
+#endif
+            }
+
             EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
             EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
-            int32 attacking = player->animator.animationID;
-
             int32 leaderanim = leader->animator.animationID;
             bool32 leaderattacking =
                 leaderanim == ANI_JUMP && (leader->velocity.y >= 0 || leader->onGround || self->direction || leader->state == Ice_PlayerState_Frozen);
@@ -606,104 +615,162 @@ void ItemBox_GivePowerup(void)
 {
     RSDK_THIS(ItemBox);
 
-    EntityPlayer *player       = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *leader       = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *sidekick     = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *compPlayer   = (EntityPlayer *)self->storedEntity;
     int32 slot                 = globals->saveSlotID;
     SaveGame->addendumData     = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
     AddendumData *addendumData = Addendum_GetSaveRAM();
 
     switch (self->type) {
-        case ITEMBOX_RING: Player_GiveRings(player, 10, true); break;
+        case ITEMBOX_RING:
+            if (globals->gameMode == MODE_COMPETITION)
+                Player_GiveRings(compPlayer, 10, true);
+            else
+                Player_GiveRings(leader, 10, true);
+            break;
 
         case ITEMBOX_BLUESHIELD:
-            player->shield = SHIELD_BLUE;
-            Player_ApplyShield(player);
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
-                sidekick->shield = SHIELD_BLUE;
-                Player_ApplyShield(sidekick);
+            if (globals->gameMode == MODE_COMPETITION) {
+                compPlayer->shield = SHIELD_BLUE;
+                Player_ApplyShield(compPlayer);
+            }
+            else {
+                leader->shield = SHIELD_BLUE;
+                Player_ApplyShield(leader);
+                if (sidekick->classID == Player->classID) {
+                    sidekick->shield = SHIELD_BLUE;
+                    Player_ApplyShield(sidekick);
+                }
             }
             RSDK.PlaySfx(Shield->sfxBlueShield, false, 255);
             break;
 
         case ITEMBOX_BUBBLESHIELD:
-            player->shield = SHIELD_BUBBLE;
-            Player_ApplyShield(player);
-            player->drownTimer = 0;
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
-                sidekick->shield = SHIELD_BUBBLE;
-                Player_ApplyShield(sidekick);
-                sidekick->drownTimer = 0;
+            if (globals->gameMode == MODE_COMPETITION) {
+                compPlayer->shield = SHIELD_BUBBLE;
+                Player_ApplyShield(compPlayer);
+                compPlayer->drownTimer = 0;
+            }
+            else {
+                leader->shield = SHIELD_BUBBLE;
+                Player_ApplyShield(leader);
+                leader->drownTimer = 0;
+                if (sidekick->classID == Player->classID) {
+                    sidekick->shield = SHIELD_BUBBLE;
+                    Player_ApplyShield(sidekick);
+                    sidekick->drownTimer = 0;
+                }
             }
             RSDK.PlaySfx(Shield->sfxBubbleShield, false, 255);
             Music_JingleFadeOut(TRACK_DROWNING, false);
             break;
 
         case ITEMBOX_FIRESHIELD:
-            player->shield = SHIELD_FIRE;
-            Player_ApplyShield(player);
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
-                sidekick->shield = SHIELD_FIRE;
-                Player_ApplyShield(sidekick);
+            if (globals->gameMode == MODE_COMPETITION) {
+                compPlayer->shield = SHIELD_FIRE;
+                Player_ApplyShield(compPlayer);
+            }
+            else {
+                leader->shield = SHIELD_FIRE;
+                Player_ApplyShield(leader);
+                if (sidekick->classID == Player->classID) {
+                    sidekick->shield = SHIELD_FIRE;
+                    Player_ApplyShield(sidekick);
+                }
             }
             RSDK.PlaySfx(Shield->sfxFireShield, false, 255);
             break;
 
         case ITEMBOX_LIGHTNINGSHIELD:
-            player->shield = SHIELD_LIGHTNING;
-            Player_ApplyShield(player);
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
-                sidekick->shield = SHIELD_LIGHTNING;
-                Player_ApplyShield(sidekick);
+            if (globals->gameMode == MODE_COMPETITION) {
+                compPlayer->shield = SHIELD_LIGHTNING;
+                Player_ApplyShield(compPlayer);
+            }
+            else {
+                leader->shield = SHIELD_LIGHTNING;
+                Player_ApplyShield(leader);
+                if (sidekick->classID == Player->classID) {
+                    sidekick->shield = SHIELD_LIGHTNING;
+                    Player_ApplyShield(sidekick);
+                }
             }
             RSDK.PlaySfx(Shield->sfxLightningShield, false, 255);
             break;
 
         case ITEMBOX_INVINCIBLE:
-            if (player->superState == SUPERSTATE_NONE) {
-                EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(player), InvincibleStars);
-                RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, player);
-                if (addendumData->collectedTimeStones == 0b01111111)
-                    player->invincibleTimer = 1680;
-                else
-                    player->invincibleTimer = 1260;
-                Music_PlayJingle(TRACK_INVINCIBLE);
-            }
-            else
-                Player_GiveRings(player, 20, true);
-
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
-                if (sidekick->superState == SUPERSTATE_NONE) {
-                    EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(sidekick), InvincibleStars);
-                    RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, sidekick);
+            if (globals->gameMode == MODE_COMPETITION) {
+                if (compPlayer->superState == SUPERSTATE_NONE) {
+                    EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(compPlayer), InvincibleStars);
+                    RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, compPlayer);
                     if (addendumData->collectedTimeStones == 0b01111111)
-                        sidekick->invincibleTimer = 1680;
+                        compPlayer->invincibleTimer = 1680;
                     else
-                        sidekick->invincibleTimer = 1260;
+                        compPlayer->invincibleTimer = 1260;
+                }
+                else
+                    Player_GiveRings(compPlayer, 20, true);
+            }
+            else {
+                if (leader->superState == SUPERSTATE_NONE) {
+                    EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(leader), InvincibleStars);
+                    RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, leader);
+                    if (addendumData->collectedTimeStones == 0b01111111)
+                        leader->invincibleTimer = 1680;
+                    else
+                        leader->invincibleTimer = 1260;
+                    Music_PlayJingle(TRACK_INVINCIBLE);
+                }
+                else
+                    Player_GiveRings(leader, 20, true);
+
+                if (sidekick->classID == Player->classID) {
+                    if (sidekick->superState == SUPERSTATE_NONE) {
+                        EntityInvincibleStars *invincibleStars = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(sidekick), InvincibleStars);
+                        RSDK.ResetEntity(invincibleStars, InvincibleStars->classID, sidekick);
+                        if (addendumData->collectedTimeStones == 0b01111111)
+                            sidekick->invincibleTimer = 1680;
+                        else
+                            sidekick->invincibleTimer = 1260;
+                    }
                 }
             }
             break;
 
         case ITEMBOX_SNEAKERS:
-            if (addendumData->collectedTimeStones == 0b01111111)
-                player->speedShoesTimer = 1740;
-            else
-                player->speedShoesTimer = 1320;
-            Player_UpdatePhysicsState(player);
-            if (player->superState == SUPERSTATE_NONE) {
-                Music_PlayJingle(TRACK_SNEAKERS);
-                EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(player), ImageTrail);
-                RSDK.ResetEntity(powerup, ImageTrail->classID, player);
-            }
-
-            if (sidekick->classID == Player->classID && globals->gameMode != MODE_COMPETITION) {
+            if (globals->gameMode == MODE_COMPETITION) {
                 if (addendumData->collectedTimeStones == 0b01111111)
-                    sidekick->speedShoesTimer = 1740;
+                    compPlayer->speedShoesTimer = 1740;
                 else
-                    sidekick->speedShoesTimer = 1320;
-                Player_UpdatePhysicsState(sidekick);
-                if (player->superState == SUPERSTATE_NONE) {
-                    EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(sidekick), ImageTrail);
-                    RSDK.ResetEntity(powerup, ImageTrail->classID, sidekick);
+                    compPlayer->speedShoesTimer = 1320;
+                Player_UpdatePhysicsState(compPlayer);
+                if (compPlayer->superState == SUPERSTATE_NONE) {
+                    EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(compPlayer), ImageTrail);
+                    RSDK.ResetEntity(powerup, ImageTrail->classID, compPlayer);
+                }
+            }
+            else {
+                if (addendumData->collectedTimeStones == 0b01111111)
+                    leader->speedShoesTimer = 1740;
+                else
+                    leader->speedShoesTimer = 1320;
+                Player_UpdatePhysicsState(leader);
+                if (leader->superState == SUPERSTATE_NONE) {
+                    Music_PlayJingle(TRACK_SNEAKERS);
+                    EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(leader), ImageTrail);
+                    RSDK.ResetEntity(powerup, ImageTrail->classID, leader);
+                }
+
+                if (sidekick->classID == Player->classID) {
+                    if (addendumData->collectedTimeStones == 0b01111111)
+                        sidekick->speedShoesTimer = 1740;
+                    else
+                        sidekick->speedShoesTimer = 1320;
+                    Player_UpdatePhysicsState(sidekick);
+                    if (leader->superState == SUPERSTATE_NONE) {
+                        EntityImageTrail *powerup = RSDK_GET_ENTITY(2 * Player->playerCount + RSDK.GetEntitySlot(sidekick), ImageTrail);
+                        RSDK.ResetEntity(powerup, ImageTrail->classID, sidekick);
+                    }
                 }
             }
             break;
@@ -716,38 +783,48 @@ void ItemBox_GivePowerup(void)
         case ITEMBOX_1UP_RAY:
         case ITEMBOX_1UP_AMY:
 #endif
-            Player_GiveLife(player);
+            if (globals->gameMode == MODE_COMPETITION)
+                Player_GiveLife(compPlayer);
+            else
+                Player_GiveLife(leader);
             break;
 
         case ITEMBOX_EGGMAN:
-            if (self->sidekickBreak) {
-                int32 entityID       = RSDK.GetEntitySlot(sidekick);
-                EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + entityID, Shield);
-                Player_Hurt(sidekick, self);
-                sidekick->shield = SHIELD_NONE;
-                destroyEntity(shield);
+            if (globals->gameMode == MODE_COMPETITION)
+                Player_Hurt(compPlayer, self);
+            else {
+                if (self->sidekickBreak) {
+                    int32 entityID       = RSDK.GetEntitySlot(sidekick);
+                    EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + entityID, Shield);
+                    Player_Hurt(sidekick, self);
+                    sidekick->shield = SHIELD_NONE;
+                    destroyEntity(shield);
+                }
+                else
+                    Player_Hurt(leader, self);
             }
-            else
-                Player_Hurt(player, self);
             break;
 
         case ITEMBOX_HYPERRING:
+            if (globals->gameMode == MODE_COMPETITION)
+                compPlayer->hyperRing = true;
+            else 
+                leader->hyperRing = true;
             RSDK.PlaySfx(ItemBox->sfxHyperRing, false, 255);
-            player->hyperRing = true;
             break;
 
         case ITEMBOX_SWAP:
 #if MANIA_USE_PLUS
             if (globals->gameMode == MODE_ENCORE) {
-                if (!globals->stock || player->animator.animationID == ANI_TRANSFORM) {
+                if (!globals->stock || leader->animator.animationID == ANI_TRANSFORM) {
                     RSDK.PlaySfx(Player->sfxSwapFail, false, 255);
                 }
                 else {
-                    int32 charID = player->characterID;
+                    int32 charID = leader->characterID;
                     if (self->sidekickBreak)
                         Player_ChangeCharacter(sidekick, GET_STOCK_ID(1));
                     else
-                        Player_ChangeCharacter(player, GET_STOCK_ID(1));
+                        Player_ChangeCharacter(leader, GET_STOCK_ID(1));
                     globals->stock >>= 8;
 
                     if (GET_STOCK_ID(1)) {
@@ -766,7 +843,7 @@ void ItemBox_GivePowerup(void)
                         RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
                     }
                     else {
-                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), leader->position.x, leader->position.y);
                         explosion->drawGroup       = Zone->objectDrawGroup[1];
                         RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
                     }
@@ -789,7 +866,7 @@ void ItemBox_GivePowerup(void)
             uint8 playerIDs[6]    = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
             uint8 newPlayerIDs[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-            if (player->animator.animationID == ANI_TRANSFORM) {
+            if (leader->animator.animationID == ANI_TRANSFORM) {
                 RSDK.PlaySfx(Player->sfxSwapFail, false, 255);
             }
             else {
@@ -882,8 +959,8 @@ void ItemBox_GivePowerup(void)
 #endif
 
         case ITEMBOX_SUPER:
-            Player_GiveRings(player, 50, false);
-            Player_TryTransform(player, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_GiveRings(leader, 50, false);
+            Player_TryTransform(leader, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
             Player_TryTransform(sidekick, 0x7F, Addendum_GetSaveRAM()->collectedTimeStones);
             break;
 
@@ -936,7 +1013,7 @@ void ItemBox_GivePowerup(void)
                                 }
                                 else {
                                     player2->state            = Player_State_ReturnToPlayer;
-                                    player2->abilityValues[0] = ((ScreenInfo->position.y + ScreenInfo->size.y + 16) << 16) - player->position.y;
+                                    player2->abilityValues[0] = ((ScreenInfo->position.y + ScreenInfo->size.y + 16) << 16) - leader->position.y;
                                     player2->drawFX |= FX_SCALE;
                                     player2->scale.x    = 0x400;
                                     player2->scale.y    = 0x400;
@@ -984,16 +1061,16 @@ void ItemBox_GivePowerup(void)
                     }
                     else {
                         switch (self->contentsAnimator.frameID) {
-                            case 0: Player_ChangeCharacter(player, ID_SONIC); break;
-                            case 1: Player_ChangeCharacter(player, ID_TAILS); break;
-                            case 2: Player_ChangeCharacter(player, ID_KNUCKLES); break;
-                            case 3: Player_ChangeCharacter(player, ID_MIGHTY); break;
-                            case 4: Player_ChangeCharacter(player, ID_RAY); break;
-                            case 5: Player_ChangeCharacter(player, ID_AMY); break;
+                            case 0: Player_ChangeCharacter(leader, ID_SONIC); break;
+                            case 1: Player_ChangeCharacter(leader, ID_TAILS); break;
+                            case 2: Player_ChangeCharacter(leader, ID_KNUCKLES); break;
+                            case 3: Player_ChangeCharacter(leader, ID_MIGHTY); break;
+                            case 4: Player_ChangeCharacter(leader, ID_RAY); break;
+                            case 5: Player_ChangeCharacter(leader, ID_AMY); break;
                             default: break;
                         }
 
-                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player->position.x, player->position.y);
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), leader->position.x, leader->position.y);
                         explosion->drawGroup       = Zone->objectDrawGroup[1];
                         RSDK.PlaySfx(ItemBox->sfxPowerDown, false, 255);
                     }
@@ -1011,7 +1088,7 @@ void ItemBox_GivePowerup(void)
                     default: self->type = ITEMBOX_RING; break;
                 }
 
-                player = (EntityPlayer *)self->parent;
+                leader = (EntityPlayer *)self->parent;
                 if ((uint32)self->type <= ITEMBOX_STOCK)
                     ItemBox_GivePowerup();
             }
