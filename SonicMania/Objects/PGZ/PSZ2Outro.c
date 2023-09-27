@@ -90,8 +90,9 @@ bool32 PSZ2Outro_Cutscene_HandleCameraMovement(EntityCutsceneSeq *host)
     EntityCamera *camera    = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
 
     if (host->timer == 180) {
-        globals->restartShield   = leader->shield;
-        globals->restartShieldP2 = sidekick->shield;
+        globals->restartShield = leader->shield;
+        if (sidekick->classID == Player->classID)
+            globals->restartShieldP2 = sidekick->shield;
 
         foreach_active(Shield, shield) {
             destroyEntity(shield);

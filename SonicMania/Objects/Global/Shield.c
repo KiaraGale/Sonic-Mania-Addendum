@@ -76,7 +76,21 @@ void Shield_Draw(void)
         self->inkEffect = INK_BLEND;
     }
 
-    RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
+    if (self->type == SHIELD_BLUE && player->characterID == ID_KNUCKLES) {
+        for (int32 c = 0; c < 6; ++c) {
+            Shield->colorStorage[c] = RSDK.GetPaletteEntry(0, 2 + c);
+            RSDK.SetPaletteEntry(0, 2 + c, Shield->shieldPalette_Knux[c]);
+        }
+
+        RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
+
+        for (int32 c = 0; c < 6; ++c) {
+            RSDK.SetPaletteEntry(0, 2 + c, Shield->colorStorage[c]);
+        }
+    }
+    else {
+        RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
+    }
 }
 
 void Shield_Create(void *data)

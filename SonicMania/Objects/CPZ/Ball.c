@@ -55,7 +55,7 @@ void Ball_Create(void *data)
 
 void Ball_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("CPZ"))
+    if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         Ball->aniFrames = RSDK.LoadSpriteAnimation("CPZ/Ball.bin", SCOPE_STAGE);
 
     Ball->hitboxBall.left   = -10;

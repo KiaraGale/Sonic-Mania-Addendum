@@ -111,7 +111,7 @@ void Water_Create(void *data)
 
         switch (self->type) {
             case WATER_WATERLEVEL:
-                if (globals->gameMode == MODE_COMPETITION && RSDK.CheckSceneFolder("CPZ")) {
+                if (globals->gameMode == MODE_COMPETITION && (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))) {
                     destroyEntity(self);
                 }
                 else {

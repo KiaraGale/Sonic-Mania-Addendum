@@ -806,10 +806,22 @@ void ItemBox_GivePowerup(void)
             break;
 
         case ITEMBOX_HYPERRING:
-            if (globals->gameMode == MODE_COMPETITION)
-                compPlayer->hyperRing = true;
-            else 
-                leader->hyperRing = true;
+            if (globals->gameMode == MODE_COMPETITION) {
+                if (compPlayer->hyperRing == true) {
+                    int32 addRings = compPlayer->rings / 8;
+                    Player_GiveRings(compPlayer, addRings, true);
+                }
+                else
+                    compPlayer->hyperRing = true;
+            }
+            else {
+                if (leader->hyperRing == true) {
+                    int32 addRings = leader->rings / 8;
+                    Player_GiveRings(leader, addRings, true);
+                }
+                else
+                    leader->hyperRing = true;
+            }
             RSDK.PlaySfx(ItemBox->sfxHyperRing, false, 255);
             break;
 

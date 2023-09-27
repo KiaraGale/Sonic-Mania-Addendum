@@ -49,7 +49,7 @@ void OneWayDoor_Create(void *data)
         self->stateDraw = OneWayDoor_Draw_MMZ;
         self->groundVel = 0x60000;
     }
-    else if (RSDK.CheckSceneFolder("CPZ")) {
+    else if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) {
         self->stateDraw = OneWayDoor_Draw_CPZ;
         self->groundVel = 0x80000;
     }
@@ -59,7 +59,7 @@ void OneWayDoor_StageLoad(void)
 {
     if (RSDK.CheckSceneFolder("MMZ"))
         OneWayDoor->aniFrames = RSDK.LoadSpriteAnimation("MMZ/OneWayDoor.bin", SCOPE_STAGE);
-    else if (RSDK.CheckSceneFolder("CPZ"))
+    else if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         OneWayDoor->aniFrames = RSDK.LoadSpriteAnimation("CPZ/OneWayDoor.bin", SCOPE_STAGE);
 
     OneWayDoor->hitboxTop.left   = -8;
@@ -187,7 +187,7 @@ void OneWayDoor_EditorDraw(void)
         RSDK.SetSpriteAnimation(OneWayDoor->aniFrames, self->direction ? 4 : 2, &self->animator, true, 0);
         OneWayDoor_Draw_MMZ();
     }
-    else if (RSDK.CheckSceneFolder("CPZ")) {
+    else if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) {
         RSDK.SetSpriteAnimation(OneWayDoor->aniFrames, 0, &self->animator, true, 0);
         OneWayDoor_Draw_CPZ();
     }
@@ -197,7 +197,7 @@ void OneWayDoor_EditorLoad(void)
 {
     if (RSDK.CheckSceneFolder("MMZ"))
         OneWayDoor->aniFrames = RSDK.LoadSpriteAnimation("MMZ/OneWayDoor.bin", SCOPE_STAGE);
-    else if (RSDK.CheckSceneFolder("CPZ"))
+    else if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         OneWayDoor->aniFrames = RSDK.LoadSpriteAnimation("CPZ/OneWayDoor.bin", SCOPE_STAGE);
 
     RSDK_ACTIVE_VAR(OneWayDoor, direction);

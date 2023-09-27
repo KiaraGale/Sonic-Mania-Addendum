@@ -1043,12 +1043,13 @@ void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
 {
     RSDK_THIS(HUD);
     RSDKControllerState *controller = &ControllerInfo[player->controllerID];
+    RSDKAnalogState *analog         = &AnalogStickInfoL[player->controllerID];
     RSDKTriggerState *Ltrigger      = &TriggerInfoL[player->controllerID];
     RSDKTriggerState *Rtrigger      = &TriggerInfoR[player->controllerID];
 
     if (drawType == 0) {
         RSDK.DrawSprite(&self->inputDpadAnimator, drawPos, true);
-        if (controller->keyUp.press || controller->keyUp.down) {
+        if ((controller->keyUp.press || controller->keyUp.down) || (analog->keyUp.press || analog->keyUp.down)) {
             self->inputUpAnimator.frameID = 1;
         }
         else {
@@ -1056,7 +1057,7 @@ void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
         }
         RSDK.DrawSprite(&self->inputUpAnimator, drawPos, true);
 
-        if (controller->keyDown.press || controller->keyDown.down) {
+        if ((controller->keyDown.press || controller->keyDown.down) || (analog->keyDown.press || analog->keyDown.down)) {
             self->inputDownAnimator.frameID = 2;
         }
         else {
@@ -1064,7 +1065,7 @@ void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
         }
         RSDK.DrawSprite(&self->inputDownAnimator, drawPos, true);
 
-        if (controller->keyLeft.press || controller->keyLeft.down) {
+        if ((controller->keyLeft.press || controller->keyLeft.down) || (analog->keyLeft.press || analog->keyLeft.down)) {
             self->inputLeftAnimator.frameID = 3;
         }
         else {
@@ -1072,7 +1073,7 @@ void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType)
         }
         RSDK.DrawSprite(&self->inputLeftAnimator, drawPos, true);
 
-        if (controller->keyRight.press || controller->keyRight.down) {
+        if ((controller->keyRight.press || controller->keyRight.down) || (analog->keyRight.press || analog->keyRight.down)) {
             self->inputRightAnimator.frameID = 4;
         }
         else {

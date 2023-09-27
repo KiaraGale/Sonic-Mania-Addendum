@@ -322,7 +322,7 @@ int32 Zone_GetZoneID(void)
 {
     if (RSDK.CheckSceneFolder("GHZ") || RSDK.CheckSceneFolder("GHZE"))
         return ZONE_GHZ;
-    if (RSDK.CheckSceneFolder("CPZ"))
+    if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         return ZONE_CPZ;
     if (RSDK.CheckSceneFolder("SPZ1") || RSDK.CheckSceneFolder("SPZ2"))
         return ZONE_SPZ;
@@ -690,7 +690,7 @@ void Zone_ApplyWorldBounds(void)
 bool32 Zone_IsZoneLastAct(void)
 {
     if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1)
-        || (RSDK.CheckSceneFolder("CPZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("PSZ2")) {
         return true;
     }
@@ -712,7 +712,7 @@ bool32 Zone_IsZoneLastAct(void)
 bool32 Zone_CheckLastActualAct(void)
 {
     if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1)
-        || (RSDK.CheckSceneFolder("CPZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1)) {
         return true;
     }

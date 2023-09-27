@@ -1196,7 +1196,10 @@ void Player_SaveValues(void)
     globals->restartScore    = Player->savedScore = player1->score;
     globals->restartScore1UP = Player->savedScore1UP = player1->score1UP;
     globals->restartShield                           = player1->shield;
-    globals->restartShieldP2                         = player2->shield;
+    if (player2->classID == Player->classID)
+        globals->restartShieldP2                     = player2->shield;
+    else
+        globals->restartShieldP2                     = 0;
 }
 void Player_GiveScore(EntityPlayer *player, int32 score)
 {

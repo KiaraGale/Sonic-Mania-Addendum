@@ -404,7 +404,7 @@ void Platform_StageLoad(void)
     else if (RSDK.CheckSceneFolder("GHZCutscene")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("GHZCutscene/Platform.bin", SCOPE_STAGE);
     }
-    else if (RSDK.CheckSceneFolder("CPZ")) {
+    else if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("CPZ/Platform.bin", SCOPE_STAGE);
     }
     else if (RSDK.CheckSceneFolder("SPZ1")) {

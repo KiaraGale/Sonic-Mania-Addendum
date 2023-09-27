@@ -99,6 +99,8 @@ void EncoreGoodEnd_SetupPlayer(int32 playerID)
             EncoreGoodEnd->decorations[E_END_RAY]->visible = false;
             RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_STOOL_STILL, &EncoreGoodEnd->decorations[E_END_STOOLR]->animator, false, 0);
             break;
+
+        case ID_AMY: EncoreGoodEnd->decorations[E_END_AMY]->visible = false; break;
     }
 }
 
@@ -132,6 +134,7 @@ void EncoreGoodEnd_StatePlayer_MoveToPos(void)
             case ID_KNUCKLES:
             case ID_MIGHTY:
             case ID_RAY:
+            case ID_AMY:
                 self->jumpPress = true;
                 Player_State_Ground();
                 self->jumpPress       = false;
@@ -200,6 +203,11 @@ void EncoreGoodEnd_StatePlayer_EndingIdle(void)
                     RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_STOOL, &EncoreGoodEnd->decorations[E_END_STOOLR]->animator, true, 0);
                     self->state = Player_State_Static;
                     break;
+
+                case ID_AMY:
+                    RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_AMYIDLE, &EncoreGoodEnd->decorations[playerID + E_END_SONIC]->animator,
+                                            true, 0);
+                    self->state = Player_State_Static;
             }
         }
     }
@@ -404,6 +412,7 @@ bool32 EncoreGoodEnd_Cutscene_ClinkGlasses(EntityCutsceneSeq *host)
         RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_KNUXCLINKG, &EncoreGoodEnd->decorations[E_END_GLASSK]->animator, true, 0);
         RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_MIGHTYCLINK, &EncoreGoodEnd->decorations[E_END_MIGHTY]->animator, true, 0);
         RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_MIGHTYCLINKG, &EncoreGoodEnd->decorations[E_END_GLASSM]->animator, true, 0);
+        RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_AMYSMILE, &EncoreGoodEnd->decorations[E_END_AMY]->animator, true, 0);
     }
     else if (host->timer == 120) {
         RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_KNUXBREATHE, &EncoreGoodEnd->decorations[E_END_KNUX]->animator, true, 0);
@@ -438,6 +447,7 @@ bool32 EncoreGoodEnd_Cutscene_KingAppear(EntityCutsceneSeq *host)
 
             EncoreGoodEnd->decorations[E_END_RAY]->direction = FLIP_NONE;
             RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_RAYSHOCKED, &EncoreGoodEnd->decorations[E_END_RAY]->animator, true, 0);
+            RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_AMYSHOCKED, &EncoreGoodEnd->decorations[E_END_AMY]->animator, true, 0);
             RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_STOOL_STILL, &EncoreGoodEnd->decorations[E_END_STOOLT]->animator, false, 0);
             RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_STOOL_STILL, &EncoreGoodEnd->decorations[E_END_STOOLR]->animator, false, 0);
             RSDK.SetSpriteAnimation(Decoration->aniFrames, E_END_DECOR_KNUXICECREAMSHOCK, &EncoreGoodEnd->decorations[E_END_GLASSK]->animator, true,
@@ -479,7 +489,7 @@ bool32 EncoreGoodEnd_Cutscene_ThanksForPlaying(EntityCutsceneSeq *host)
     if (host->timer < 22) {
         foreach_active(Decoration, decor)
         {
-            if (decor->type >= 25) {
+            if (decor->type >= 28) {
                 decor->drawGroup = Zone->objectDrawGroup[1] + 1;
 
                 if (decor->position.y >= self->position.y)
@@ -545,6 +555,9 @@ void EncoreGoodEnd_EditorLoad(void)
     RSDK_ENUM_VAR("Mighty Cream Shock", E_END_DECOR_MIGHTYICECREAMSHOCK);
     RSDK_ENUM_VAR("Letterbox 1", E_END_DECOR_LETTERBOX1);
     RSDK_ENUM_VAR("Letterbox 2", E_END_DECOR_LETTERBOX2);
+    RSDK_ENUM_VAR("Amy Idle", E_END_DECOR_AMYIDLE);
+    RSDK_ENUM_VAR("Amy Smile", E_END_DECOR_AMYSMILE);
+    RSDK_ENUM_VAR("Amy Shocked", E_END_DECOR_AMYSHOCKED);
 }
 #endif
 

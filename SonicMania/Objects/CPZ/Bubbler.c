@@ -62,7 +62,7 @@ void Bubbler_Create(void *data)
 
 void Bubbler_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("CPZ"))
+    if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         Bubbler->aniFrames = RSDK.LoadSpriteAnimation("CPZ/Bubbler.bin", SCOPE_STAGE);
 
     Bubbler->hitboxBadnik.left   = -16;

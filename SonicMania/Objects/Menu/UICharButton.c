@@ -141,10 +141,7 @@ void UICharButton_DrawPlayers(void)
 
     if (self->state != UICharButton_State_Selected || !(self->timer & 2)) {
         int32 frame = self->characterID;
-#if MANIA_USE_PLUS
-        if (self->characterID >= UICHARBUTTON_MIGHTY) // avoid drawing the S+T sprite, that's not a solo character choice!
-            frame = self->characterID + 1;
-#endif
+
         RSDK.SetSpriteAnimation(UICharButton->aniFrames, 1, &self->playerAnimator, true, frame);
         RSDK.SetSpriteAnimation(UICharButton->aniFrames, 2, &self->shadowAnimator, true, frame);
         drawPos.x = self->position.x;

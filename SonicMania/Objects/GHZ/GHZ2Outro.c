@@ -142,7 +142,8 @@ bool32 GHZ2Outro_Cutscene_HoleSceneFadeIn(EntityCutsceneSeq *host)
     EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     globals->restartShield   = leader->shield;
-    globals->restartShieldP2 = sidekick->shield;
+    if (sidekick->classID == Player->classID)
+        globals->restartShieldP2 = sidekick->shield;
 
     foreach_active(Shield, shield)
         destroyEntity(shield);
@@ -207,10 +208,7 @@ bool32 GHZ2Outro_Cutscene_SpyOnEggman(EntityCutsceneSeq *host)
                 player->groundVel = 0;
                 if (player->onGround && player->groundedStore) {
                     player->state = Player_State_Static;
-                    if (player->characterID == ID_TAILS)
-                        RSDK.SetSpriteAnimation(player->aniFrames, ANI_BALANCE_2, &player->animator, false, 0);
-                    else
-                        RSDK.SetSpriteAnimation(player->aniFrames, ANI_IDLE, &player->animator, false, 0);
+                    RSDK.SetSpriteAnimation(player->aniFrames, ANI_BALANCE_2, &player->animator, false, 0);
                 }
             }
         }

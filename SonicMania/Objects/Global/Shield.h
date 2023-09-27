@@ -31,6 +31,8 @@ struct ObjectShield {
     uint16 sfxBubbleBounce;
     uint16 sfxFireDash;
     uint16 sfxLightningJump;
+    TABLE(color shieldPalette_Knux[6], { 0x404040, 0x606060, 0x808080, 0xA0A0A0, 0xB0B0B0, 0xD0D0D0 });
+    int32 colorStorage[6];
 };
 
 // Entity Class

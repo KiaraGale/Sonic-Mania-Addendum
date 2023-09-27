@@ -78,7 +78,7 @@ void CaterkillerJr_Create(void *data)
 
 void CaterkillerJr_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("CPZ"))
+    if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         CaterkillerJr->aniFrames = RSDK.LoadSpriteAnimation("CPZ/CaterkillerJr.bin", SCOPE_STAGE);
 #if MANIA_USE_PLUS
     else if (RSDK.CheckSceneFolder("AIZ"))
@@ -272,7 +272,7 @@ void CaterkillerJr_EditorDraw(void)
 
 void CaterkillerJr_EditorLoad(void)
 {
-    if (RSDK.CheckSceneFolder("CPZ"))
+    if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         CaterkillerJr->aniFrames = RSDK.LoadSpriteAnimation("CPZ/CaterkillerJr.bin", SCOPE_STAGE);
 #if MANIA_USE_PLUS
     else if (RSDK.CheckSceneFolder("AIZ"))
