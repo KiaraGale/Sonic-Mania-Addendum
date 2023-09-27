@@ -7153,7 +7153,25 @@ void Player_State_KnuxWallClimb(void)
             if (RSDK.ObjectTileCollision(self, self->collisionLayers, CMODE_ROOF, self->collisionPlane, roofX, roofY, true))
                 self->velocity.y = 0;
 
-            if (collidedHigh && collidedLow) {
+            if (!collidedHigh) {
+                self->position.y &= 0xFFF00000;
+                if (self->isChibi)
+                    self->position.y -= 0x10000;
+                else
+                    self->position.y += 0xA0000;
+                self->velocity.y     = 0;
+                self->position.x     = storeX;
+                self->state          = Player_State_KnuxLedgePullUp;
+                self->timer          = 1;
+                self->tileCollisions = TILECOLLISION_NONE;
+                self->velocity.y     = 0;
+            }
+            else if (!collidedLow) {
+                RSDK.SetSpriteAnimation(self->aniFrames, ANI_GLIDE_DROP, &self->animator, false, 2);
+                self->velocity.y = 0;
+                self->state      = Player_State_KnuxGlideDrop;
+            }
+            else {
                 if (!self->velocity.y)
                     RSDK.SetSpriteAnimation(self->aniFrames, ANI_CLIMB_IDLE, &self->animator, false, 0);
                 else if (self->velocity.y > 0)
@@ -7167,25 +7185,6 @@ void Player_State_KnuxWallClimb(void)
                 }
 
                 self->velocity.y = 0;
-            }
-            else if (collidedHigh) {
-                RSDK.SetSpriteAnimation(self->aniFrames, ANI_GLIDE_DROP, &self->animator, false, 2);
-                self->velocity.y = 0;
-                self->state      = Player_State_KnuxGlideDrop;
-            }
-            else if (collidedLow) {
-                self->position.y &= 0xFFF00000;
-                if (self->isChibi)
-                    self->position.y -= 0x10000;
-                else
-                    self->position.y += 0xA0000;
-
-                self->velocity.y     = 0;
-                self->position.x     = storeX;
-                self->state          = Player_State_KnuxLedgePullUp;
-                self->timer          = 1;
-                self->tileCollisions = TILECOLLISION_NONE;
-                self->velocity.y     = 0;
             }
         }
     }
