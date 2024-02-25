@@ -161,6 +161,7 @@ void InitGameLogic(void)
 #endif
     Mod.RegisterAchievement("ACH_TIMESTONES", "Savior of the Planet", "Collected all Time Stones");
     Mod.RegisterAchievement("ACH_INSTAREFLECT", "Return to Sender", "Reflected an enemy projectile with Insta-shield");
+    globals->superMusicEnabled = true;
 
     RSDK_REGISTER_OBJECT(Acetone);
     RSDK_REGISTER_OBJECT(ActClear);
