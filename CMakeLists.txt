@@ -29,7 +29,7 @@ else()
     set(GAME_VERSION 3 CACHE STRING "The game version to use. Defaults to 3 == Last pre-plus release")
 endif()
 
-set(GAME_NAME "Addendum" CACHE STRING "The game directory to look into")
+set(GAME_NAME "SonicMania" CACHE STRING "The game directory to look into")
 set(GAME_OUTPUT_NAME "Addendum" CACHE STRING "The name of the built library")
 
 option(GAME_INCLUDE_EDITOR "Whether or not to include editor functions. Defaults to true" ON)
