@@ -14,6 +14,8 @@ typedef enum {
 struct ObjectMatryoshkaBom {
     RSDK_OBJECT
     Hitbox hitboxHurt;
+    Hitbox hitboxHurt2;
+    Hitbox hitboxHurt3;
     Hitbox hitboxExplode;
     Hitbox hitboxShrapnel;
     uint16 aniFrames;

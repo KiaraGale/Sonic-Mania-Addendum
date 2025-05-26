@@ -90,6 +90,8 @@ void Grabber_StageLoad(void)
 
     Grabber->sfxGrab    = RSDK.GetSfx("Global/Grab.wav");
     Grabber->sfxDestroy = RSDK.GetSfx("Global/Destroy.wav");
+
+    Zone_SetupHyperAttackList(Grabber->classID, true, true, true, true, true, true);
 }
 
 void Grabber_DebugDraw(void)

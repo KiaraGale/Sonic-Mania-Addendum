@@ -97,6 +97,8 @@ void Dragonfly_StageLoad(void)
     Dragonfly->hitboxSpine.bottom = 2;
 
     DEBUGMODE_ADD_OBJ(Dragonfly);
+
+    Zone_SetupHyperAttackList(Dragonfly->classID, true, true, true, true, true, true);
 }
 
 void Dragonfly_DebugDraw(void)

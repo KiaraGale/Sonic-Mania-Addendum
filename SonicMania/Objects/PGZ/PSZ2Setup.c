@@ -112,6 +112,8 @@ void PSZ2Setup_StageLoad(void)
     Animals->animalTypes[0] = ANIMAL_POCKY;
     Animals->animalTypes[1] = ANIMAL_BECKY;
 #endif
+
+    PSZ2Setup->beenFrozen = false;
 }
 
 void PSZ2Setup_Trigger_ActivatePetalBehaviour(void) { PSZ2Setup->petalBehaviourActive = true; }

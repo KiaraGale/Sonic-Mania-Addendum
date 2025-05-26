@@ -15,6 +15,8 @@ struct ObjectTMZ2Setup {
     int32 unused2;
     uint16 aniTiles;
     uint16 dynTiles;
+    int16 secretExitsTaken;
+    bool32 hasSecretExitsAchievement;
 };
 
 // Entity Class

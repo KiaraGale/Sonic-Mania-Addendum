@@ -81,7 +81,7 @@ void MSZ2Cutscene_GetPistolPtr(void)
 
 bool32 MSZ2Cutscene_Cutscene_GoToPistol(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityParallaxSprite *parallaxSprite = MSZ2Cutscene->oozPeek;
@@ -115,6 +115,22 @@ bool32 MSZ2Cutscene_Cutscene_GoToPistol(EntityCutsceneSeq *host)
             player2->stateInput = Player_Input_P2_AI;
             player2->groundVel  = 0;
         }
+        if (player3->classID == Player->classID) {
+#if GAME_VERSION != VER_100
+            Player->disableP2KeyCheck = true;
+#endif
+            player3->state      = Player_State_Ground;
+            player3->stateInput = Player_Input_P2_AI;
+            player3->groundVel  = 0;
+        }
+        if (player4->classID == Player->classID) {
+#if GAME_VERSION != VER_100
+            Player->disableP2KeyCheck = true;
+#endif
+            player4->state      = Player_State_Ground;
+            player4->stateInput = Player_Input_P2_AI;
+            player4->groundVel  = 0;
+        }
     }
 
     EntityGiantPistol *pistol = MSZ2Cutscene->pistol;
@@ -124,6 +140,14 @@ bool32 MSZ2Cutscene_Cutscene_GoToPistol(EntityCutsceneSeq *host)
         if (player2 && player2->jumpPress) {
             player2->velocity.x = 0x44000;
             player2->velocity.y = -0x80000;
+        }
+        if (player3 && player3->jumpPress) {
+            player3->velocity.x = 0x44000;
+            player3->velocity.y = -0x80000;
+        }
+        if (player4 && player4->jumpPress) {
+            player4->velocity.x = 0x44000;
+            player4->velocity.y = -0x80000;
         }
     }
     else {
@@ -141,13 +165,23 @@ bool32 MSZ2Cutscene_Cutscene_GoToPistol(EntityCutsceneSeq *host)
 
 bool32 MSZ2Cutscene_Cutscene_EnterPistol(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     EntityGiantPistol *pistol = MSZ2Cutscene->pistol;
 
     if (player2->classID == Player->classID) {
         if (player2->state == Player_State_Air && player2->animator.animationID == ANI_JUMP)
             player2->position.x += (player1->position.x - player2->position.x) >> 4;
         player2->position.y += (player1->position.y - player2->position.y) >> 4;
+    }
+    if (player3->classID == Player->classID) {
+        if (player3->state == Player_State_Air && player3->animator.animationID == ANI_JUMP)
+            player3->position.x += (player2->position.x - player3->position.x) >> 4;
+        player3->position.y += (player2->position.y - player3->position.y) >> 4;
+    }
+    if (player4->classID == Player->classID) {
+        if (player4->state == Player_State_Air && player4->animator.animationID == ANI_JUMP)
+            player4->position.x += (player3->position.x - player4->position.x) >> 4;
+        player4->position.y += (player3->position.y - player4->position.y) >> 4;
     }
 
     if (!host->timer)
@@ -166,6 +200,28 @@ bool32 MSZ2Cutscene_Cutscene_EnterPistol(EntityCutsceneSeq *host)
             player2->velocity.y      = 0;
             pistol->activePlayers |= 1 << player2->playerID;
         }
+        if (player3->classID == Player->classID) {
+            player3->position.x      = player2->position.x;
+            player3->position.y      = player2->position.y;
+            player3->stateInput      = StateMachine_None;
+            player3->state           = Player_State_Static;
+            player3->nextAirState    = StateMachine_None;
+            player3->nextGroundState = StateMachine_None;
+            player3->velocity.x      = 0;
+            player3->velocity.y      = 0;
+            pistol->activePlayers |= 1 << player3->playerID;
+        }
+        if (player4->classID == Player->classID) {
+            player4->position.x      = player3->position.x;
+            player4->position.y      = player3->position.y;
+            player4->stateInput      = StateMachine_None;
+            player4->state           = Player_State_Static;
+            player4->nextAirState    = StateMachine_None;
+            player4->nextGroundState = StateMachine_None;
+            player4->velocity.x      = 0;
+            player4->velocity.y      = 0;
+            pistol->activePlayers |= 1 << player4->playerID;
+        }
     }
 
     if (pistol->rotation == 448) {
@@ -180,7 +236,7 @@ bool32 MSZ2Cutscene_Cutscene_EnterPistol(EntityCutsceneSeq *host)
 
 bool32 MSZ2Cutscene_Cutscene_PistolFired(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     Entity *curEntity = host->activeEntity;
     if (!host->timer) {
@@ -202,6 +258,20 @@ bool32 MSZ2Cutscene_Cutscene_PistolFired(EntityCutsceneSeq *host)
         player2->position.y = 0;
     }
 
+    if (player3->classID == Player->classID && player3->position.y < (curEntity->position.y - (ScreenInfo->center.y << 16) - 0x100000)) {
+        player3->state      = Player_State_Static;
+        player3->velocity.x = 0;
+        player3->velocity.y = 0;
+        player3->position.y = 0;
+    }
+
+    if (player4->classID == Player->classID && player4->position.y < (curEntity->position.y - (ScreenInfo->center.y << 16) - 0x100000)) {
+        player4->state      = Player_State_Static;
+        player4->velocity.x = 0;
+        player4->velocity.y = 0;
+        player4->position.y = 0;
+    }
+
     if (host->timer == 30) {
         host->storedValue = camera->position.x + 0x1000000;
         host->storedTimer = camera->position.y - 0x4000000;
@@ -216,7 +286,7 @@ bool32 MSZ2Cutscene_Cutscene_PistolFired(EntityCutsceneSeq *host)
 
 bool32 MSZ2Cutscene_Cutscene_AppearInBG(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         host->storedTimer = 0x4000;
@@ -239,7 +309,33 @@ bool32 MSZ2Cutscene_Cutscene_AppearInBG(EntityCutsceneSeq *host)
             player2->velocity.x = 0;
             player2->velocity.y = 0;
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_JUMP, &player2->animator, false, 0);
-            player1->animator.speed = 60;
+            player2->animator.speed = 60;
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->drawFX |= FX_SCALE;
+            player3->scale.x    = 0x40;
+            player3->scale.y    = 0x40;
+            player3->state      = Player_State_Static;
+            player3->position.x = player2->position.x - 0x63000;
+            player3->position.y = player2->position.y - 0x24000;
+            player3->velocity.x = 0;
+            player3->velocity.y = 0;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_JUMP, &player3->animator, false, 0);
+            player3->animator.speed = 60;
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->drawFX |= FX_SCALE;
+            player4->scale.x    = 0x40;
+            player4->scale.y    = 0x40;
+            player4->state      = Player_State_Static;
+            player4->position.x = player3->position.x - 0x63000;
+            player4->position.y = player3->position.y - 0x24000;
+            player4->velocity.x = 0;
+            player4->velocity.y = 0;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_JUMP, &player4->animator, false, 0);
+            player4->animator.speed = 60;
         }
     }
 
@@ -251,6 +347,18 @@ bool32 MSZ2Cutscene_Cutscene_AppearInBG(EntityCutsceneSeq *host)
             player2->state      = Player_State_Static;
             player2->velocity.x = 0xB000;
             player2->velocity.y = player1->velocity.y;
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Static;
+            player3->velocity.x = 0xB000;
+            player3->velocity.y = player2->velocity.y;
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->state      = Player_State_Static;
+            player4->velocity.x = 0xB000;
+            player4->velocity.y = player3->velocity.y;
         }
 
         host->storedTimer += 144;

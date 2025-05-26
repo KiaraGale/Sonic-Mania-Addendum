@@ -26,6 +26,7 @@ struct EntitySol {
     bool32 fireOrbs;
     Animator mainAnimator;
     Animator ballAnimator;
+    bool32 isSmallFireball; // custom check for insta-shield stuff
 };
 
 // Object Struct

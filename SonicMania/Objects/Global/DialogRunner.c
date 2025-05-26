@@ -48,6 +48,7 @@ void DialogRunner_StageLoad(void)
 
     SaveGame_LoadSaveData();
     Addendum_LoadSaveData();
+    Addendum_LoadOptionsData();
     TimeAttackData->loaded          = false;
     TimeAttackData->uuid            = 0;
     TimeAttackData->rowID           = -1;
@@ -264,6 +265,7 @@ bool32 DialogRunner_CheckUnreadNotifs(void)
     return true;
 }
 bool32 DialogRunner_NotifyAutosave(void) { return false; }
+
 void DialogRunner_GetUserAuthStatus(void)
 {
     if (API.GetUserAuthStatus() == STATUS_FORBIDDEN) {

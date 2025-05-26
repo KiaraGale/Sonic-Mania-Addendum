@@ -43,6 +43,7 @@ struct ObjectSPZ2Setup {
     uint16 aniTiles1;
     uint16 aniTiles2;
     EntitySPZ2Outro *outro;
+    bool32 skipBoss;
 };
 
 // Entity Class

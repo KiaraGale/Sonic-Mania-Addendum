@@ -23,7 +23,6 @@ typedef enum {
     TRACK_SOUNDTEST   = 11,
     TRACK_HBHMISCHIEF = 12,
 #endif
-    TRACK_1UP = 13,
 
     // Aliases/Reused slots
     TRACK_METALSONIC   = TRACK_EGGMAN1,
@@ -142,5 +141,6 @@ void Music_State_PlayOnFade(void);
 #if !MANIA_USE_PLUS
 void Music_State_1UPJingle(void);
 #endif
+void Music_HandleSuperMusic(void);
 
 #endif //! OBJ_MUSIC_H

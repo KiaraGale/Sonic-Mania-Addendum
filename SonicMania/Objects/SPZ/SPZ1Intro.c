@@ -54,7 +54,7 @@ void SPZ1Intro_StageLoad(void)
 bool32 SPZ1Intro_Cutscene_SetupAct(EntityCutsceneSeq *host)
 {
     RSDK_THIS(SPZ1Intro);
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     Entity *curEnt = host->activeEntity;
     if (!host->timer) {
@@ -78,6 +78,26 @@ bool32 SPZ1Intro_Cutscene_SetupAct(EntityCutsceneSeq *host)
             player2->state          = Player_State_Static;
             player2->stateInput     = StateMachine_None;
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_JUMP, &player2->animator, false, 0);
+        }
+        if (player3->classID == Player->classID) {
+            player3->position.x     = player2->position.x;
+            player3->position.y     = player2->position.y;
+            player3->tileCollisions = TILECOLLISION_NONE;
+            player3->onGround       = false;
+            player3->velocity.y     = -1;
+            player3->state          = Player_State_Static;
+            player3->stateInput     = StateMachine_None;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_JUMP, &player3->animator, false, 0);
+        }
+        if (player4->classID == Player->classID) {
+            player4->position.x     = player3->position.x;
+            player4->position.y     = player3->position.y;
+            player4->tileCollisions = TILECOLLISION_NONE;
+            player4->onGround       = false;
+            player4->velocity.y     = -1;
+            player4->state          = Player_State_Static;
+            player4->stateInput     = StateMachine_None;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_JUMP, &player4->animator, false, 0);
         }
 
         EntityDebris *lid  = CREATE_ENTITY(Debris, NULL, curEnt->position.x, curEnt->position.y + 0x390000);
@@ -114,7 +134,7 @@ bool32 SPZ1Intro_Cutscene_SetupAct(EntityCutsceneSeq *host)
 
 bool32 SPZ1Intro_Cutscene_ExitPipe(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -142,6 +162,43 @@ bool32 SPZ1Intro_Cutscene_ExitPipe(EntityCutsceneSeq *host)
         player1->tileCollisions = TILECOLLISION_DOWN;
 
     if (player2->classID == Player->classID) {
+        if (player3->classID == Player->classID) {
+            if (player4->classID == Player->classID) {
+                if (host->timer == 30) {
+                    player4->velocity.x      = 0;
+                    player4->velocity.y      = -0x80000;
+                    player4->state           = Player_State_Air;
+                    player4->nextAirState    = StateMachine_None;
+                    player4->nextGroundState = StateMachine_None;
+                }
+
+                if (player4->velocity.y > 0)
+                    player4->tileCollisions = TILECOLLISION_DOWN;
+
+                if (player1->onGround && player2->onGround && player3->onGround && player4->onGround)
+                    return true;
+            }
+            else {
+                if (player1->onGround && player2->onGround && player3->onGround)
+                    return true;
+            }
+
+            if (host->timer == 20) {
+                player3->velocity.x      = 0;
+                player3->velocity.y      = -0x80000;
+                player3->state           = Player_State_Air;
+                player3->nextAirState    = StateMachine_None;
+                player3->nextGroundState = StateMachine_None;
+            }
+
+            if (player3->velocity.y > 0)
+                player3->tileCollisions = TILECOLLISION_DOWN;
+        }
+        else {
+            if (player1->onGround && player2->onGround)
+                return true;
+        }
+
         if (host->timer == 10) {
             player2->velocity.x      = 0;
             player2->velocity.y      = -0x80000;
@@ -152,9 +209,6 @@ bool32 SPZ1Intro_Cutscene_ExitPipe(EntityCutsceneSeq *host)
 
         if (player2->velocity.y > 0)
             player2->tileCollisions = TILECOLLISION_DOWN;
-
-        if (player1->onGround && player2->onGround)
-            return true;
     }
     else if (player1->onGround) {
         return true;
@@ -165,7 +219,7 @@ bool32 SPZ1Intro_Cutscene_ExitPipe(EntityCutsceneSeq *host)
 
 bool32 SPZ1Intro_Cutscene_BeginAct1(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         camera->target      = (Entity *)player1;
@@ -176,6 +230,10 @@ bool32 SPZ1Intro_Cutscene_BeginAct1(EntityCutsceneSeq *host)
 
         if (player2->classID == Player->classID)
             player2->stateInput = Player_Input_P2_AI;
+        if (player3->classID == Player->classID)
+            player3->stateInput = Player_Input_P2_AI;
+        if (player4->classID == Player->classID)
+            player4->stateInput = Player_Input_P2_AI;
 
         SceneInfo->timeEnabled = true;
         return true;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(Addendum)
+project(SonicMania)
 
 option(WITH_RSDK "Whether or not to build with RSDKv5. Defaults to true" ON)
 
@@ -30,7 +30,7 @@ else()
 endif()
 
 set(GAME_NAME "SonicMania" CACHE STRING "The game directory to look into")
-set(GAME_OUTPUT_NAME "Addendum" CACHE STRING "The name of the built library")
+set(GAME_OUTPUT_NAME "Game" CACHE STRING "The name of the built library")
 
 option(GAME_INCLUDE_EDITOR "Whether or not to include editor functions. Defaults to true" ON)
 

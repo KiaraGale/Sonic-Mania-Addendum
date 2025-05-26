@@ -56,8 +56,10 @@ void MSZ1KIntro_StageLoad(void)
 
 bool32 MSZ1KIntro_Cutscene_SetupPlane(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -84,8 +86,10 @@ bool32 MSZ1KIntro_Cutscene_SetupPlane(EntityCutsceneSeq *host)
 
 bool32 MSZ1KIntro_Cutscene_MagicianMischief(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -115,8 +119,10 @@ bool32 MSZ1KIntro_Cutscene_MagicianMischief(EntityCutsceneSeq *host)
 
 bool32 MSZ1KIntro_Cutscene_StartAct(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     if (host->timer == 30) {

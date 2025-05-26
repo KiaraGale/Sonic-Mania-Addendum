@@ -67,6 +67,8 @@ void Dango_StageLoad(void)
     Dango->sfxBumper = RSDK.GetSfx("Stage/Bumper3.wav");
 
     DEBUGMODE_ADD_OBJ(Dango);
+
+    Zone_SetupHyperAttackList(Dango->classID, true, true, true, true, true, true);
 }
 
 void Dango_DebugSpawn(void)

@@ -89,6 +89,8 @@ bool32 GHZ2Outro_Cutscene_FinishActClear(EntityCutsceneSeq *host)
 
     Zone->deathBoundary[0] += 0x4000 << 16;
     Zone->deathBoundary[1] += 0x4000 << 16;
+    Zone->deathBoundary[2] += 0x4000 << 16;
+    Zone->deathBoundary[3] += 0x4000 << 16;
     Music_PlayTrack(TRACK_STAGE);
 
     foreach_active(EggPrison, prison) { prison->state = EggPrison_State_FlyOffScreen; }
@@ -138,15 +140,11 @@ bool32 GHZ2Outro_Cutscene_HoleSceneFadeIn(EntityCutsceneSeq *host)
     RSDK_THIS(GHZ2Outro);
     CutsceneHBH_StorePalette();
 
-    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
-    globals->restartShield   = leader->shield;
-    if (sidekick->classID == Player->classID)
-        globals->restartShieldP2 = sidekick->shield;
-
-    foreach_active(Shield, shield)
-        destroyEntity(shield);
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        globals->storedHyperRings[p] = player->hyperRing;
+        globals->storedShields[p]    = player->shield;
+    }
 
     if (host->timer >= 8) {
         CutsceneSeq_LockAllPlayerControl();
@@ -316,7 +314,6 @@ bool32 GHZ2Outro_Cutscene_BreakupGroup(EntityCutsceneSeq *host)
         }
 
         case 320: {
-            RSDK.SetSpriteAnimation(player->aniFrames, ANI_IDLE, &player->animator, false, 0);
             EntityCutsceneHBH *gunner = CutsceneHBH_GetEntity(HBH_GUNNER);
             if (gunner) {
                 RSDK.SetSpriteAnimation(gunner->aniFrames, 4, &gunner->mainAnimator, true, 0);
@@ -344,14 +341,16 @@ bool32 GHZ2Outro_Cutscene_BreakupGroup(EntityCutsceneSeq *host)
 bool32 GHZ2Outro_Cutscene_RubyHover(EntityCutsceneSeq *host)
 {
     RSDK_THIS(GHZ2Outro);
-    EntityPlayer *player2   = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     EntityPhantomRuby *ruby = self->phantomRuby;
 
     if (ruby) {
         if (ruby->state == PhantomRuby_State_Oscillate) {
-            if (player2->classID == Player->classID && player2->characterID == ID_TAILS) {
-                player2->state = Player_State_Static;
-                RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, false, 0);
+            for (int32 p = 0; p < 4; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                if (player->classID == Player->classID) {
+                    player->state = Player_State_Static;
+                    RSDK.SetSpriteAnimation(player->aniFrames, ANI_SKID, &player->animator, false, 0);
+                }
             }
             return true;
         }
@@ -379,8 +378,6 @@ bool32 GHZ2Outro_Cutscene_HandleRubyWarp(EntityCutsceneSeq *host)
     RSDK_THIS(GHZ2Outro);
 
     EntityPhantomRuby *ruby = self->phantomRuby;
-    EntityPlayer *player1   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *player2   = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     EntityFXRuby *fxRuby = NULL;
     if (host->timer) {
@@ -391,9 +388,12 @@ bool32 GHZ2Outro_Cutscene_HandleRubyWarp(EntityCutsceneSeq *host)
         fxRuby->drawGroup = Zone->playerDrawGroup[1];
         self->fxRuby      = fxRuby;
         Camera_ShakeScreen(0, 4, 4);
-        player1->drawGroup = Zone->playerDrawGroup[1] + 1;
-        if (player2->classID == Player->classID)
-            player2->drawGroup = Zone->playerDrawGroup[1] + 1;
+        for (int32 p = 0; p < 4; ++p) {
+            EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+            if (player->classID == Player->classID) {
+                player->drawGroup = Zone->playerDrawGroup[1] + 1;
+            }
+        }
     }
 
     if (!host->values[0]) {
@@ -429,12 +429,16 @@ bool32 GHZ2Outro_Cutscene_HandleRubyWarp(EntityCutsceneSeq *host)
 
                     int32 valX = (ruby->position.x - 0x400000) - player->position.x;
                     int32 valY = (ruby->position.y - (0xA00000 + 944)) - player->position.y;
-
-                    player->position.x += ((RSDK.Cos256(2 * (angle + host->timer - host->storedTimer)) << 12) + valX) >> 5;
-                    player->position.y += ((RSDK.Sin256(2 * (angle + host->timer - host->storedTimer)) << 12) + valY) >> 5;
-                    player->state          = Player_State_Static;
-                    player->tileCollisions = TILECOLLISION_NONE;
-                    player->onGround       = false;
+                    for (int32 p = 0; p < 4; ++p) {
+                        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                        if (player->classID == Player->classID) {
+                            player->position.x += ((RSDK.Cos256(2 * (angle + host->timer - host->storedTimer)) << 12) + valX) >> 5;
+                            player->position.y += ((RSDK.Sin256(2 * (angle + host->timer - host->storedTimer)) << 12) + valY) >> 5;
+                            player->state          = Player_State_Static;
+                            player->tileCollisions = TILECOLLISION_NONE;
+                            player->onGround       = false;
+                        }
+                    }
                 }
             }
         }

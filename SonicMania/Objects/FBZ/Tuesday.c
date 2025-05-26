@@ -281,6 +281,8 @@ void Tuesday_StageLoad(void)
     Tuesday->sfxBossHit    = RSDK.GetSfx("Stage/BossHit.wav");
     Tuesday->sfxExplosion  = RSDK.GetSfx("Stage/Explosion2.wav");
     Tuesday->sfxDrop       = RSDK.GetSfx("Stage/Drop.wav");
+
+    Zone_SetupHyperAttackList(Tuesday->classID, true, true, true, true, true, true);
 }
 
 void Tuesday_Hit(void)

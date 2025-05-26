@@ -47,8 +47,11 @@ void TTCutscene_StageLoad(void)
         foreach_break;
     }
 
-    leader->shield   = globals->restartShield;
-    sidekick->shield = globals->restartShieldP2;
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        if (player->classID == Player->classID)
+            player->shield = globals->restartShield[p];
+    }
 }
 
 void TTCutscene_StartCutscene(void)
@@ -76,14 +79,17 @@ void TTCutscene_Cutscene_SkipCB(void)
 
     ++SceneInfo->listPos;
 
-    globals->restartShield   = leader->shield;
-    globals->restartShieldP2 = sidekick->shield;
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        if (player->classID == Player->classID)
+            globals->restartShield[p] = player->shield;
+    }
 }
 #endif
 
 bool32 TTCutscene_Cutscene_Setup(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         Zone->playerBoundActiveB[0] = false;
@@ -107,14 +113,35 @@ bool32 TTCutscene_Cutscene_Setup(EntityCutsceneSeq *host)
         RSDK.SetSpriteAnimation(player1->aniFrames, ANI_SPRING_TWIRL, &player1->animator, false, 0);
 
         if (player2->classID == Player->classID) {
-            player1->position.x += 0x100000;
-            player1->stateInput = StateMachine_None;
+            if (player3->classID != Player->classID)
+                player1->position.x += 0x100000;
+            player2->stateInput = StateMachine_None;
 
-            player2->position.x = player1->position.x - 0x200000;
+            player2->position.x = (player3->classID == Player->classID) ? player1->position.x - 0x300000 : player1->position.x - 0x200000;
             player2->position.y = player1->position.y;
             player2->state      = Player_State_Static;
 
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SPRING_TWIRL, &player2->animator, false, 0);
+        }
+        if (player3->classID == Player->classID) {
+            if (player4->classID != Player->classID)
+                player1->position.x -= 0x100000;
+            player3->stateInput = StateMachine_None;
+
+            player3->position.x = player1->position.x + 0x200000;
+            player3->position.y = player1->position.y;
+            player3->state      = Player_State_Static;
+
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_SPRING_TWIRL, &player3->animator, false, 0);
+        }
+        if (player4->classID == Player->classID) {
+            player4->stateInput = StateMachine_None;
+
+            player4->position.x = player1->position.x - 0x400000;
+            player4->position.y = player1->position.y;
+            player4->state      = Player_State_Static;
+
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_SPRING_TWIRL, &player4->animator, false, 0);
         }
     }
 
@@ -123,7 +150,7 @@ bool32 TTCutscene_Cutscene_Setup(EntityCutsceneSeq *host)
 
 bool32 TTCutscene_Cutscene_FlyIn(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     int32 targetY = (ScreenInfo->position.y + ScreenInfo->center.y) << 16;
@@ -168,24 +195,70 @@ bool32 TTCutscene_Cutscene_FlyIn(EntityCutsceneSeq *host)
         player2->velocity.y = 0;
     }
 
+    if (player3->classID == Player->classID) {
+        int32 timerP3 = host->timer - 30;
+        if (timerP3 > 0) {
+            if (timerP3 >= 60) {
+                player3->position.y = targetY;
+            }
+            else if (timerP3 < 60) {
+                Vector2 *playerPos = &player3->position;
+                Vector2 point = MathHelpers_GetBezierPoint((timerP3 << 16) / 60, playerPos->x, startY, playerPos->x, targetY - 0x800000, playerPos->x,
+                    targetY, playerPos->x, targetY);
+                player3->position.y = point.y;
+            }
+        }
+        else {
+            player3->position.y = startY;
+        }
+
+        player3->velocity.x = 0;
+        player3->velocity.y = 0;
+    }
+
+    if (player4->classID == Player->classID) {
+        int32 timerP4 = host->timer - 45;
+        if (timerP4 > 0) {
+            if (timerP4 >= 60) {
+                player4->position.y = targetY;
+            }
+            else if (timerP4 < 60) {
+                Vector2 *playerPos = &player4->position;
+                Vector2 point = MathHelpers_GetBezierPoint((timerP4 << 16) / 60, playerPos->x, startY, playerPos->x, targetY - 0x800000, playerPos->x,
+                    targetY, playerPos->x, targetY);
+                player4->position.y = point.y;
+            }
+        }
+        else {
+            player4->position.y = startY;
+        }
+
+        player4->velocity.x = 0;
+        player4->velocity.y = 0;
+    }
+
     return host->timer == 75;
 }
 
 bool32 TTCutscene_Cutscene_Wait(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     player1->position.y = (ScreenInfo->center.y + ScreenInfo->position.y) << 16;
     if (player2->classID == Player->classID)
         player2->position.y = (ScreenInfo->center.y + ScreenInfo->position.y) << 16;
+    if (player3->classID == Player->classID)
+        player3->position.y = (ScreenInfo->center.y + ScreenInfo->position.y) << 16;
+    if (player4->classID == Player->classID)
+        player4->position.y = (ScreenInfo->center.y + ScreenInfo->position.y) << 16;
 
     return host->timer == 100;
 }
 
 bool32 TTCutscene_Cutscene_FlyOut(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     int32 startY  = (ScreenInfo->position.y + ScreenInfo->center.y) << 16;
@@ -230,24 +303,105 @@ bool32 TTCutscene_Cutscene_FlyOut(EntityCutsceneSeq *host)
         player2->velocity.y = 0;
     }
 
-    if (host->timer == 75) {
-        EntityPlayer *leader      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-        EntityPlayer *sidekick    = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    if (player3->classID == Player->classID) {
+        int32 timerP3 = host->timer - 30;
+        if (timerP3 > 0) {
+            if (timerP3 >= 60) {
+                player3->position.y = targetY;
+            }
+            else {
+                Vector2 *playerPos = &player3->position;
+                Vector2 point      = MathHelpers_GetBezierPoint((timerP3 << 16) / 60, playerPos->x, startY, playerPos->x, startY, playerPos->x,
+                    startY + 0x800000, playerPos->x, targetY);
+                playerPos->y       = point.y;
+            }
+        }
+        else {
+            player3->position.y = startY;
+        }
 
-        TTCutscene->fxFade->state = FXFade_State_FadeOut;
-
-        globals->restartShield    = leader->shield;
-        globals->restartShieldP2  = sidekick->shield;
+        player3->velocity.x = 0;
+        player3->velocity.y = 0;
     }
 
-    return host->timer == 75;
+    if (player4->classID == Player->classID) {
+        int32 timerP4 = host->timer - 45;
+        if (timerP4 > 0) {
+            if (timerP4 >= 60) {
+                player4->position.y = targetY;
+            }
+            else {
+                Vector2 *playerPos = &player4->position;
+                Vector2 point      = MathHelpers_GetBezierPoint((timerP4 << 16) / 60, playerPos->x, startY, playerPos->x, startY, playerPos->x,
+                    startY + 0x800000, playerPos->x, targetY);
+                playerPos->y       = point.y;
+            }
+        }
+        else {
+            player4->position.y = startY;
+        }
+
+        player4->velocity.x = 0;
+        player4->velocity.y = 0;
+    }
+
+    if (player3->classID != Player->classID) {
+        if (host->timer == 75) {
+            EntityPlayer *leader      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+            EntityPlayer *sidekick    = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+            TTCutscene->fxFade->state = FXFade_State_FadeOut;
+
+            for (int32 p = 0; p < 4; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                if (player->classID == Player->classID)
+                    globals->restartShield[p] = player->shield;
+            }
+        }
+
+        return host->timer == 75;
+    }
+    else if (player3->classID == Player->classID && player4->classID != Player->classID) {
+        if (host->timer == 90) {
+            EntityPlayer *leader      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+            EntityPlayer *sidekick    = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+            TTCutscene->fxFade->state = FXFade_State_FadeOut;
+
+            for (int32 p = 0; p < 4; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                if (player->classID == Player->classID)
+                    globals->restartShield[p] = player->shield;
+            }
+        }
+
+        return host->timer == 90;
+    }
+    else {
+        if (host->timer == 105) {
+            EntityPlayer *leader      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+            EntityPlayer *sidekick    = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+
+            TTCutscene->fxFade->state = FXFade_State_FadeOut;
+
+            for (int32 p = 0; p < 4; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                if (player->classID == Player->classID)
+                    globals->restartShield[p] = player->shield;
+            }
+        }
+
+        return host->timer == 105;
+    }
 }
 
 bool32 TTCutscene_Cutscene_NextScene(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player1);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     if (host->timer >= 64) {

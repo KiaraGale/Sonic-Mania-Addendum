@@ -43,6 +43,8 @@ struct ObjectPuyoBean {
     uint16 chainFrames[6];
     uint16 sfxJunk;
     uint16 sfxFall;
+    int32 touchRight;
+    int32 touchLeft;
 };
 
 // Entity Class
@@ -128,5 +130,6 @@ void PuyoBean_State_JunkPopped(void);
 void PuyoBean_State_BeginBeanPop(void);
 void PuyoBean_State_BeanPop(void);
 void PuyoBean_State_MatchLoseFall(void);
+void PuyoBean_HandleTouchInput(void);
 
 #endif //! OBJ_PUYOBEAN_H

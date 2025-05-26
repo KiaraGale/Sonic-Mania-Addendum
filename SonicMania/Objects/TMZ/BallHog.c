@@ -82,6 +82,8 @@ void BallHog_StageLoad(void)
     BallHog->sfxJump      = RSDK.GetSfx("TMZ1/HogJump.wav");
 
     DEBUGMODE_ADD_OBJ(BallHog);
+
+    Zone_SetupHyperAttackList(BallHog->classID, true, true, true, true, true, true);
 }
 
 void BallHog_DebugSpawn(void)

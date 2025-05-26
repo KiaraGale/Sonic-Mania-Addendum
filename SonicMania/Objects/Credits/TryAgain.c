@@ -117,6 +117,15 @@ void TryAgain_State_EggmanLaugh(void)
 void TryAgain_State_Stinger(void)
 {
     RSDK_THIS(TryAgain);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count && self->timer < 600)
+            self->timer = 600 - 1; // increments by 1 during the state
+    }
 
     RSDK.ProcessAnimation(&self->eggmanAnimator);
 

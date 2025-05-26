@@ -65,6 +65,8 @@ void Chopper_StageLoad(void)
     Chopper->hitboxWater.bottom = -16;
 
     DEBUGMODE_ADD_OBJ(Chopper);
+
+    Zone_SetupHyperAttackList(Chopper->classID, true, true, true, true, true, true);
 }
 void Chopper_DebugDraw(void)
 {

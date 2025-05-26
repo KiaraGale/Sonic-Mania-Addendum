@@ -14,6 +14,8 @@ struct ObjectFBZ1Outro {
     EntityCollapsingPlatform *collapsingPlatform;
     EntityCrane *craneP1;
     EntityCrane *craneP2;
+    EntityCrane *craneP3;
+    EntityCrane *craneP4;
 };
 
 // Entity Class

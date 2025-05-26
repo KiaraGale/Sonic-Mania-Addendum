@@ -21,9 +21,6 @@
     <Filter Include="Sources\Objects\Common">
       <UniqueIdentifier>{3dab64bb-a90c-4d86-8a42-bb4e2ed88ac0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\Objects\Global">
-      <UniqueIdentifier>{c7141a4a-ad07-4c80-98ba-b04b8d6390ef}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Sources\Objects\LRZ">
       <UniqueIdentifier>{a8a37a2d-e982-4f2f-a9de-99fa917b9423}</UniqueIdentifier>
     </Filter>
@@ -101,6 +98,12 @@
     </Filter>
     <Filter Include="Sources\Objects\Title">
       <UniqueIdentifier>{8a833ffe-4dbd-4c40-9b83-8e3acafaf9b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DiscordGameSDK">
+      <UniqueIdentifier>{27868500-a33e-4d69-ae54-53a1ce01d0ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Objects\Global">
+      <UniqueIdentifier>{c7141a4a-ad07-4c80-98ba-b04b8d6390ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1943,6 +1946,24 @@
     <ClInclude Include="Objects\MMZ\ConveyorPlatform.h">
       <Filter>Sources\Objects\MMZ</Filter>
     </ClInclude>
+    <ClInclude Include="Objects\Menu\AddendumToggles.h">
+      <Filter>Sources\Objects\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Global\SuperFlicky.h">
+      <Filter>Sources\Objects\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\GHZ\Mosqui.h">
+      <Filter>Sources\Objects\GHZ</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\LRZ\HPZBeam.h">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\LRZ\HPZIntro.h">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\LRZ\HPZSetup.h">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Objects\Global\ActClear.c">
@@ -3777,6 +3798,24 @@
     </ClCompile>
     <ClCompile Include="Game.c">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Menu\AddendumToggles.c">
+      <Filter>Sources\Objects\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Global\SuperFlicky.c">
+      <Filter>Sources\Objects\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\GHZ\Mosqui.c">
+      <Filter>Sources\Objects\GHZ</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZBeam.c">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZIntro.c">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZSetup.c">
+      <Filter>Sources\Objects\LRZ</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

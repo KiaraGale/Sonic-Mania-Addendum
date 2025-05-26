@@ -59,7 +59,7 @@ void CPZ2Outro_SetupCutscene(void)
 
 bool32 CPZ2Outro_Cutscene_Outro(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     Vector2 size;
@@ -83,6 +83,16 @@ bool32 CPZ2Outro_Cutscene_Outro(EntityCutsceneSeq *host)
             player2->state      = Player_State_Ground;
             player2->stateInput = Player_Input_P2_AI;
             player2->groundVel  = 0;
+        }
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Ground;
+            player3->stateInput = Player_Input_P2_AI;
+            player3->groundVel  = 0;
+        }
+        if (player4->classID == Player->classID) {
+            player4->state      = Player_State_Ground;
+            player4->stateInput = Player_Input_P2_AI;
+            player4->groundVel  = 0;
         }
     }
 

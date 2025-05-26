@@ -308,7 +308,7 @@ void Drillerdroid_State_AwaitPlayer(void)
         Zone->cameraBoundsL[0]      = (self->position.x >> 16) - 328;
 
         Music_TransitionTrack(TRACK_MINIBOSS, 0.0125);
-        self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+        self->health = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
         CREATE_ENTITY(Drillerdroid, INT_TO_VOID(DRILLERDROID_TARGET), self->position.x, self->startY)->target = player1;
         self->position.x                                                                                      = 0;
         RSDK.PlaySfx(Drillerdroid->sfxTargeting, false, 255);

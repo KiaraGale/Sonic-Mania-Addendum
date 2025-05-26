@@ -379,6 +379,11 @@ void Beanstalk_CheckPlayerCollisions_Chomper(void)
                 RSDK.PlaySfx(Explosion->sfxDestroy, false, 255);
                 self->state = Beanstalk_State_Node;
                 RSDK.SetSpriteAnimation(Beanstalk->aniFrames, 0, &self->plantAnimator, true, 0);
+
+                if (!Beanstalk->hasChomperAchievement) {
+                    API_UnlockAchievement(&achievementList[ACH_SSZ2]);
+                    Beanstalk->hasChomperAchievement = true;
+                }
             }
             else if (!Player_CheckMightyUnspin(player, 0x400, 2, &player->uncurlTimer)) {
 #endif

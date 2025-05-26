@@ -80,6 +80,7 @@ void MeterDroid_Draw_ThrownWrench(void);
 
 void MeterDroid_State_Init(void);
 void MeterDroid_State_StartFight(void);
+void MeterDroid_State_DropIn(void);
 void MeterDroid_State_Idle(void);
 void MeterDroid_State_PickMoveDir(void);
 void MeterDroid_State_MoveRight(void);

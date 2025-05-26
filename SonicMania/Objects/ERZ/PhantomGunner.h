@@ -25,6 +25,7 @@ struct ObjectPhantomGunner {
     Hitbox hitboxDud;
     uint16 aniFrames;
     uint16 sfxCannonFire;
+    uint16 sfxPinata;
 };
 
 // Entity Class

@@ -34,6 +34,30 @@ void SignPost_Draw(void)
         self->scale.x = abs(RSDK.Cos512(self->rotation));
         int32 scale   = abs(RSDK.Sin512(self->rotation));
 
+        for (int32 c = 0; c < 54; ++c)
+            SignPost->colorStorage[c] = RSDK.GetPaletteEntry(0, 64 + c);
+
+        for (int32 c = 0; c < 6; ++c) {
+            RSDK.SetPaletteEntry(0, 64 + c, Player->superPalette_Sonic[c]);
+            RSDK.SetPaletteEntry(0, 70 + c, Player->superPalette_Tails[c]);
+            RSDK.SetPaletteEntry(0, 80 + c, Player->superPalette_Knux[c]);
+            RSDK.SetPaletteEntry(0, 96 + c, Player->superPalette_Mighty[c]);
+            RSDK.SetPaletteEntry(0, 86 + c, Player->superPalette_Amy[c]);
+        }
+
+        for (int32 c = 0; c < 7; ++c)
+            RSDK.SetPaletteEntry(0, 112 + c, Player->superPalette_Ray[c]);
+
+        // Mighty signpost cyan colors
+        RSDK.SetPaletteEntry(0, 109, 0x087858);
+        RSDK.SetPaletteEntry(0, 110, 0x08C890);
+
+        // Ray signpost purple colors
+        RSDK.SetPaletteEntry(0, 123, 0x5801B8);
+        RSDK.SetPaletteEntry(0, 124, 0xA001F0);
+        RSDK.SetPaletteEntry(0, 125, 0xC818F0);
+        RSDK.SetPaletteEntry(0, 126, 0xE828F0);
+
         switch (self->rotation >> 7) {
             case 0:
             case 2:
@@ -51,6 +75,10 @@ void SignPost_Draw(void)
 
             default: break;
         }
+
+        for (int32 c = 0; c < 54; ++c)
+            RSDK.SetPaletteEntry(0, 64 + c, SignPost->colorStorage[c]);
+
         self->scale.x = scale;
         RSDK.DrawSprite(&self->sidebarAnimator, &drawPos, false);
 
@@ -326,8 +354,6 @@ void SignPost_CheckTouch(void)
 
                     RSDK.PlaySfx(SignPost->sfxSignPost, false, 0xFF);
                     self->active = ACTIVE_NORMAL;
-                    if (player->superState == SUPERSTATE_SUPER)
-                        player->superState = SUPERSTATE_FADEOUT;
 
                     int32 vel = 0;
                     if (player->onGround)

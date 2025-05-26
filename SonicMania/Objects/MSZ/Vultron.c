@@ -85,6 +85,8 @@ void Vultron_StageLoad(void)
     Vultron->hitboxRange.bottom = 128;
 
     DEBUGMODE_ADD_OBJ(Vultron);
+
+    Zone_SetupHyperAttackList(Vultron->classID, true, true, true, true, true, true);
 }
 
 void Vultron_DebugSpawn(void)

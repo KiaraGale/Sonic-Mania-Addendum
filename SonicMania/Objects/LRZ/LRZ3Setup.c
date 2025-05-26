@@ -9,7 +9,12 @@
 
 ObjectLRZ3Setup *LRZ3Setup;
 
-void LRZ3Setup_Update(void) {}
+void LRZ3Setup_Update(void)
+{
+    for (int32 c = 0; c < 11; ++c) {
+        RSDK.SetPaletteEntry(0, 240 + c, 0x202040);
+    }
+}
 
 void LRZ3Setup_LateUpdate(void) {}
 
@@ -21,6 +26,8 @@ void LRZ3Setup_Create(void *data) {}
 
 void LRZ3Setup_StageLoad(void)
 {
+    EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+
 #if MANIA_USE_PLUS
     if (SceneInfo->filter & FILTER_ENCORE) {
         RSDK.LoadPalette(0, "EncoreLRZ3.act", 0b0000000011111111);
@@ -31,47 +38,49 @@ void LRZ3Setup_StageLoad(void)
     Animals->animalTypes[0] = ANIMAL_FLICKY;
     Animals->animalTypes[1] = ANIMAL_CUCKY;
 
-    if (globals->suppressTitlecard) {
-        SaveGame_LoadPlayerState();
-        Zone_StartFadeIn(10, 0x000000);
-    }
-
-    if (isMainGameMode() && globals->enableIntro && (!CutsceneRules_CheckStageReload() || !CutsceneRules_CheckStageReload())) {
-        CREATE_ENTITY(LRZ3Cutscene, NULL, 0, 0);
-    }
-
-#if MANIA_USE_PLUS
-    if (globals->gameMode == MODE_ENCORE && globals->tempFlags) {
-        if (!CutsceneRules_CheckStageReload()) {
-            foreach_all(Player, player) { player->position.y += 0x8000000; }
+    if (SceneInfo->activeCategory != 9) {
+        if (globals->suppressTitlecard) {
+            SaveGame_LoadPlayerState();
+            Zone_StartFadeIn(10, 0x000000);
         }
-    }
-#endif
 
-    if (isMainGameMode() && CutsceneRules_IsAct2()) {
+        if ((isMainGameMode() && globals->enableIntro && !CutsceneRules_CheckStageReload()) || !CutsceneRules_CheckStageReload()) {
+            CREATE_ENTITY(LRZ3Cutscene, NULL, 0, 0);
+        }
+
 #if MANIA_USE_PLUS
-        if (globals->gameMode == MODE_ENCORE) {
-            if (!globals->tempFlags) {
-                Zone->stageFinishCallback = LRZ3Outro_StageFinish_EndAct2ST;
+        if (globals->gameMode == MODE_ENCORE && globals->tempFlags) {
+            if (!CutsceneRules_CheckStageReload()) {
+                foreach_all(Player, player) { player->position.y += 0x8000000; }
             }
         }
-        else {
-            if (!CHECK_CHARACTER_ID(ID_KNUCKLES, 1)) {
-                Zone->stageFinishCallback = LRZ3Outro_StageFinish_EndAct2ST;
+#endif
+
+        if (isMainGameMode() && CutsceneRules_IsAct2()) {
+#if MANIA_USE_PLUS
+            if (globals->gameMode == MODE_ENCORE) {
+                if (!globals->tempFlags) {
+                    Zone->stageFinishCallback = LRZ3Outro_StageFinish_EndAct2ST;
+                }
             }
             else {
-                LRZ3Setup->cutsceneOutroK = CutsceneSeq_GetEntity(LRZ3OutroK->classID);
-                if (LRZ3Setup->cutsceneOutroK)
-                    Zone->stageFinishCallback = LRZ3Setup_StageFinish_EndAct2K;
+                if (!CHECK_CHARACTER_ID(ID_KNUCKLES, 1)) {
+                    Zone->stageFinishCallback = LRZ3Outro_StageFinish_EndAct2ST;
+                }
+                else {
+                    LRZ3Setup->cutsceneOutroK = CutsceneSeq_GetEntity(LRZ3OutroK->classID);
+                    if (LRZ3Setup->cutsceneOutroK)
+                        Zone->stageFinishCallback = LRZ3Setup_StageFinish_EndAct2K;
+                }
             }
-        }
 #else
-        if (CHECK_CHARACTER_ID(ID_KNUCKLES, 1))
-            LRZ3Setup->cutsceneOutroK = CutsceneSeq_GetEntity(LRZ3OutroK->classID);
+            if (CHECK_CHARACTER_ID(ID_KNUCKLES, 1))
+                LRZ3Setup->cutsceneOutroK = CutsceneSeq_GetEntity(LRZ3OutroK->classID);
 
-        if (LRZ3Setup->cutsceneOutroK)
-            Zone->stageFinishCallback = LRZ3Setup_StageFinish_EndAct2K;
+            if (LRZ3Setup->cutsceneOutroK)
+                Zone->stageFinishCallback = LRZ3Setup_StageFinish_EndAct2K;
 #endif
+        }
     }
 }
 

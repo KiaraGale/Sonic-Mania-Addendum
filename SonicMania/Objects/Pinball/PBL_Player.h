@@ -15,6 +15,8 @@ struct ObjectPBL_Player {
     uint16 jumpFrames;
     uint16 ballFrames;
     uint16 sceneIndex;
+    int32 touchPause;
+    int32 touchJump;
 };
 
 // Entity Class
@@ -65,6 +67,7 @@ void PBL_Player_State_Launcher(void);
 void PBL_Player_State_Ground(void);
 void PBL_Player_State_Air(void);
 
+void PBL_Player_HandleTouchInput(void);
 #endif
 
 #endif //! OBJ_PBL_PLAYER_H

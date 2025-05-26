@@ -7,6 +7,14 @@
 struct ObjectBSS_HUD {
     RSDK_OBJECT
     uint16 aniFrames;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 actionPos;
+    Vector2 pausePos;
+    int32 pauseAlpha;
 };
 
 // Entity Class
@@ -35,5 +43,7 @@ void BSS_HUD_Serialize(void);
 
 // Extra Entity Functions
 void BSS_HUD_DrawNumbers(int32 value, Vector2 *drawPos);
+void BSS_HUD_DrawTouchControls(void);
+int32 BSS_HUD_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
 
 #endif //! OBJ_BSS_HUD_H

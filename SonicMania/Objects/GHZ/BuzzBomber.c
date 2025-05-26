@@ -98,7 +98,11 @@ void BuzzBomber_StageLoad(void)
     BuzzBomber->hitboxProjectile.right  = 6;
     BuzzBomber->hitboxProjectile.bottom = 6;
 
+    BuzzBomber->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
+
     DEBUGMODE_ADD_OBJ(BuzzBomber);
+
+    Zone_SetupHyperAttackList(BuzzBomber->classID, true, true, true, true, true, true);
 }
 
 void BuzzBomber_DebugDraw(void)
@@ -252,6 +256,7 @@ void BuzzBomber_State_ProjectileCharge(void)
     RSDK.ProcessAnimation(&self->animator);
 
     if (self->animator.frameID == 6) {
+        RSDK.PlaySfx(BuzzBomber->sfxShot, false, 0xFF);
         self->state            = BuzzBomber_State_ProjectileShot;
         EntityBuzzBomber *shot = (EntityBuzzBomber *)self->projectile;
         shot->projectile       = NULL;
@@ -276,8 +281,11 @@ void BuzzBomber_State_ProjectileShot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &BuzzBomber->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &BuzzBomber->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

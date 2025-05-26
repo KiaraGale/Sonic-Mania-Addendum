@@ -76,6 +76,8 @@ void Buggernaut_StageLoad(void)
     Buggernaut->hitboxParentRange.bottom = 64;
 
     DEBUGMODE_ADD_OBJ(Buggernaut);
+
+    Zone_SetupHyperAttackList(Buggernaut->classID, true, true, true, true, true, true);
 }
 
 void Buggernaut_DebugSpawn(void)

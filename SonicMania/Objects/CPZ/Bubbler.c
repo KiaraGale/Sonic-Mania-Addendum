@@ -81,6 +81,8 @@ void Bubbler_StageLoad(void)
     Bubbler->hitboxProjectile.bottom = 2;
 
     DEBUGMODE_ADD_OBJ(Bubbler);
+
+    Zone_SetupHyperAttackList(Bubbler->classID, true, true, true, true, true, true);
 }
 
 void Bubbler_DebugSpawn(void)

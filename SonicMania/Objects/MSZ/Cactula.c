@@ -66,6 +66,8 @@ void Cactula_StageLoad(void)
 
     Cactula->sfxCactDrop = RSDK.GetSfx("MSZ/CactDrop.wav");
     Soundboard_LoadSfx("MSZ/CactChopper.wav", true, Cactula_SfxChecK_CactChopper, StateMachine_None);
+
+    Zone_SetupHyperAttackList(Cactula->classID, true, true, true, true, true, true);
 }
 
 void Cactula_DebugSpawn(void)
@@ -126,7 +128,7 @@ void Cactula_State_Rising(void)
     RSDK.ProcessAnimation(&self->propellerAnimator);
 
     self->offsetY += self->velocity.y;
-    self->velocity.y += 0x4000;
+    self->velocity.y += 0x4F00;
 
     if (self->offsetY >= 0 && self->velocity.y >= 0) {
         self->offsetY    = 0;
@@ -163,8 +165,11 @@ void Cactula_State_DropBomb(void)
 
             foreach_active(Shield, shield)
             {
-                if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
-                    Shield_State_Reflect(shield, self);
+                foreach_active(Player, player)
+                {
+                    if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
+                        Shield_State_Reflect(player, shield, self);
+                }
             }
         }
 

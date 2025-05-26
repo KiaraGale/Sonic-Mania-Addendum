@@ -73,7 +73,10 @@ void UISubHeading_Create(void *data)
     }
 }
 
-void UISubHeading_StageLoad(void) {}
+void UISubHeading_StageLoad(void) { 
+    API_ResetInputSlotAssignments();
+    UISubHeading->assignedControllers = 0;
+}
 
 // ???
 // Why is this all here
@@ -154,17 +157,17 @@ void UISubHeading_SetupActions(void)
 
     EntityUIControl *saveSel = ManiaModeMenu->saveSelectMenu;
     saveSel->menuUpdateCB    = UISubHeading_SaveSel_MenuUpdateCB;
-    saveSel->yPressCB        = UISubHeading_SaveSel_YPressCB;
+    saveSel->yPressCB        = StateMachine_None;
 
     EntityUIControl *saveSelEncore = ManiaModeMenu->encoreSaveSelect;
     saveSelEncore->menuUpdateCB    = UISubHeading_SaveSel_MenuUpdateCB;
+    saveSelEncore->yPressCB        = StateMachine_None;
 }
 
 void UISubHeading_HandleMenuReturn(int32 slot)
 {
     EntityUIControl *control   = ManiaModeMenu->secretsMenu;
     SaveRAM *saveGame          = (SaveRAM *)SaveGame_GetDataPtr(slot, false);
-    AddendumData *addendumData = (AddendumData *)Addendum_GetDataPtr(slot, false);
 
     if (saveGame->medalMods & MEDAL_NOTIMEOVER)
         UIButton_SetChoiceSelection(control->buttons[0], 1);
@@ -182,29 +185,28 @@ void UISubHeading_HandleMenuReturn(int32 slot)
         else if (saveGame->medalMods & MEDAL_INSTASHIELD)
             UIButton_SetChoiceSelection(control->buttons[2], 2);
     }
-    else {
-        UIButton_SetChoiceSelection(control->buttons[2], 0);
-    }
-
-    if (addendumData->addendumMods & MEDAL_SIDEKICK) {
-        switch (addendumData->addendumMods) {
-            case MEDAL_P2NONE: UIButton_SetChoiceSelection(control->buttons[3], 0); break;
-            case MEDAL_P2SONIC: UIButton_SetChoiceSelection(control->buttons[3], 1); break;
-            case MEDAL_P2TAILS: UIButton_SetChoiceSelection(control->buttons[3], 2); break;
-            case MEDAL_P2KNUX: UIButton_SetChoiceSelection(control->buttons[3], 3); break;
-            case MEDAL_P2MIGHTY: UIButton_SetChoiceSelection(control->buttons[3], 4); break;
-            case MEDAL_P2RAY: UIButton_SetChoiceSelection(control->buttons[3], 5); break;
-            case MEDAL_P2AMY: UIButton_SetChoiceSelection(control->buttons[3], 6); break;
-        }
-    }
-
-    if (addendumData->addendumMods & MEDAL_SPINDASH)
-        UIButton_SetChoiceSelection(control->buttons[4], 1);
+    else if ((saveGame->medalMods & MEDAL_PEELOUT) && (saveGame->medalMods & MEDAL_INSTASHIELD))
+        UIButton_SetChoiceSelection(control->buttons[2], 3);
     else
-        UIButton_SetChoiceSelection(control->buttons[4], 0);
+        UIButton_SetChoiceSelection(control->buttons[2], 0);
+
+    if (saveGame->medalMods & MEDAL_P2SONIC)
+        UIButton_SetChoiceSelection(control->buttons[3], 1);
+    else if (saveGame->medalMods & MEDAL_P2TAILS)
+        UIButton_SetChoiceSelection(control->buttons[3], 2);
+    else if (saveGame->medalMods & MEDAL_P2KNUX)
+        UIButton_SetChoiceSelection(control->buttons[3], 3);
+    else if (saveGame->medalMods & MEDAL_P2MIGHTY)
+        UIButton_SetChoiceSelection(control->buttons[3], 4);
+    else if (saveGame->medalMods & MEDAL_P2RAY)
+        UIButton_SetChoiceSelection(control->buttons[3], 5);
+    else if (saveGame->medalMods & MEDAL_P2AMY)
+        UIButton_SetChoiceSelection(control->buttons[3], 6);
+    else
+        UIButton_SetChoiceSelection(control->buttons[3], 0);
 }
 
-int32 UISubHeading_GetMedalMods(void)
+int32 UISubHeading_GetMedalModsFromSecretsMenu(void)
 {
     EntityUIControl *control = ManiaModeMenu->secretsMenu;
 
@@ -228,46 +230,80 @@ int32 UISubHeading_GetMedalMods(void)
         mods |= MEDAL_INSTASHIELD;
     }
 
-    if (control->buttons[4]->selection == 1)
-        mods |= MEDAL_SPINDASH;
-
-    return mods;
-}
-#if MANIA_USE_PLUS
-int32 UISubHeading_GetAddendumMods(void)
-{
-    EntityUIControl *control = ManiaModeMenu->secretsMenu;
-
-    int32 mods = 0;
-
-    if (control->buttons[3]->selection == 1) {
-        mods |= MEDAL_SIDEKICK;
+    if (control->buttons[3]->selection == 0) {
+        mods |= MEDAL_P2NONE;
+    }
+    else if (control->buttons[3]->selection == 1) {
         mods |= MEDAL_P2SONIC;
     }
     else if (control->buttons[3]->selection == 2) {
-        mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2TAILS;
     }
     else if (control->buttons[3]->selection == 3) {
-        mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2KNUX;
     }
     else if (control->buttons[3]->selection == 4) {
-        mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2MIGHTY;
     }
     else if (control->buttons[3]->selection == 5) {
-        mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2RAY;
     }
     else if (control->buttons[3]->selection == 6) {
-        mods |= MEDAL_SIDEKICK;
         mods |= MEDAL_P2AMY;
     }
 
     return mods;
 }
-#endif
+
+int32 UISubHeading_GetMedalModsFromSaveRAM(int32 slotID)
+{
+    SaveRAM *saveGame = (SaveRAM *)SaveGame_GetDataPtr(slotID, false);
+
+    int32 mods = 0;
+
+    if (saveGame->medalMods & MEDAL_NOTIMEOVER)
+        mods |= MEDAL_NOTIMEOVER;
+
+    if (saveGame->medalMods & MEDAL_DEBUGMODE)
+        mods |= MEDAL_DEBUGMODE;
+
+    if (saveGame->medalMods & MEDAL_PEELOUT && saveGame->medalMods & MEDAL_INSTASHIELD) {
+        mods |= MEDAL_PEELOUT;
+        mods |= MEDAL_INSTASHIELD;
+    }
+    else if (saveGame->medalMods & MEDAL_PEELOUT) {
+        mods |= MEDAL_NODROPDASH;
+        mods |= MEDAL_PEELOUT;
+    }
+    else if (saveGame->medalMods & MEDAL_INSTASHIELD) {
+        mods |= MEDAL_NODROPDASH;
+        mods |= MEDAL_INSTASHIELD;
+    }
+
+    if (saveGame->medalMods & MEDAL_P2NONE) {
+        mods |= MEDAL_P2NONE;
+    }
+    else if (saveGame->medalMods & MEDAL_P2SONIC) {
+        mods |= MEDAL_P2SONIC;
+    }
+    else if (saveGame->medalMods & MEDAL_P2TAILS) {
+        mods |= MEDAL_P2TAILS;
+    }
+    else if (saveGame->medalMods & MEDAL_P2KNUX) {
+        mods |= MEDAL_P2KNUX;
+    }
+    else if (saveGame->medalMods & MEDAL_P2MIGHTY) {
+        mods |= MEDAL_P2MIGHTY;
+    }
+    else if (saveGame->medalMods & MEDAL_P2RAY) {
+        mods |= MEDAL_P2RAY;
+    }
+    else if (saveGame->medalMods & MEDAL_P2AMY) {
+        mods |= MEDAL_P2AMY;
+    }
+
+    return mods;
+}
 
 void UISubHeading_SaveFileCB(bool32 success)
 {
@@ -275,6 +311,8 @@ void UISubHeading_SaveFileCB(bool32 success)
 
     RSDK.LoadScene();
 }
+
+void UISubHeading_SaveFileCB2(bool32 success) { UIWaitSpinner_FinishWait(); }
 
 void UISubHeading_SecretsTransitionCB(void)
 {
@@ -377,16 +415,15 @@ void UISubHeading_SaveButton_ActionCB(void)
         // so only about 1/4th of the save slot is cleared, though nothin uses the extra space so it's not a big deal
 
         memset(globals->noSaveSlot, 0, 0x400);
-        memset(addendum->noSaveSlot, 0, 0x400);
+        memset(addendumVar->noSaveSlot, 0, 0x400);
         globals->continues  = 0;
         globals->saveSlotID = NO_SAVE_SLOT;
-        addendum->saveSlotID = NO_SAVE_SLOT;
+        addendumVar->saveSlotID = NO_SAVE_SLOT;
     }
     else {
-        globals->saveSlotID    = self->slotID;
-        addendum->saveSlotID   = self->slotID;
-        globals->medalMods     = 0;
-        addendum->addendumMods = 0;
+        globals->saveSlotID     = self->slotID;
+        addendumVar->saveSlotID = self->slotID;
+        globals->medalMods      = 0;
 
         if (self->isNewSave) {
             int32 *saveData = SaveGame_GetDataPtr(self->slotID % 8, self->encoreMode);
@@ -402,15 +439,30 @@ void UISubHeading_SaveButton_ActionCB(void)
                 addendumRAM->saveState = 1;
             }
 
-            saveRAM->characterID   = self->frameID;
-            saveRAM->zoneID        = 0;
-            addendumRAM->actID     = 0;
-            saveRAM->lives         = 3;
+            saveRAM->characterID    = self->frameID;
+            addendumRAM->player2ID  = self->altFrameID;
+            addendumRAM->player3ID  = self->buddyFrameID1;
+            addendumRAM->player4ID  = self->buddyFrameID2;
+            saveRAM->zoneID         = 0;
+            addendumRAM->actID      = 0;
+            saveRAM->lives          = 3;
             saveRAM->collectedEmeralds = self->saveEmeralds;
             addendumRAM->collectedTimeStones = self->saveTimeStones;
-            saveRAM->continues     = 0;
+            addendumRAM->collectedSuperEmeralds = self->saveSuperEmeralds;
+            saveRAM->continues = 0;
             UIWaitSpinner_StartWait();
             loadingSave = true;
+
+            addendumVar->playerCount = 0;
+            if (saveRAM->characterID < 6)
+                addendumVar->playerCount++;
+            if (addendumRAM->player2ID < 6)
+                addendumVar->playerCount++;
+            if (addendumRAM->player3ID < 6)
+                addendumVar->playerCount++;
+            if (addendumRAM->player4ID < 6)
+                addendumVar->playerCount++;
+
             SaveGame_SaveFile(UISubHeading_SaveFileCB);
             Addendum_SaveFile(UISubHeading_SaveFileCB);
         }
@@ -430,13 +482,10 @@ void UISubHeading_SaveButton_ActionCB(void)
     if (self->encoreMode) {
         globals->medalMods = MEDAL_NOTIMEOVER;
         saveRAM->medalMods = globals->medalMods;
-        addendumRAM->addendumMods = addendum->addendumMods;
     }
     else {
-        globals->medalMods = UISubHeading_GetMedalMods();
+        globals->medalMods = UISubHeading_GetMedalModsFromSaveRAM(self->slotID);
         saveRAM->medalMods = globals->medalMods;
-        addendum->addendumMods = UISubHeading_GetAddendumMods();
-        addendumRAM->addendumMods = addendum->addendumMods;
 
         switch (self->frameID) {
             case 0: globals->playerID = ID_SONIC; break;
@@ -448,27 +497,62 @@ void UISubHeading_SaveButton_ActionCB(void)
             default: break;
         }
 
-        if (addendum->addendumMods & MEDAL_P2SONIC)
-            globals->playerID |= ID_SONIC_ASSIST;
-        else if (addendum->addendumMods & MEDAL_P2TAILS)
-            globals->playerID |= ID_TAILS_ASSIST;
-        else if (addendum->addendumMods & MEDAL_P2KNUX)
-            globals->playerID |= ID_KNUX_ASSIST;
-        else if (addendum->addendumMods & MEDAL_P2MIGHTY)
-            globals->playerID |= ID_MIGHTY_ASSIST;
-        else if (addendum->addendumMods & MEDAL_P2RAY)
-            globals->playerID |= ID_RAY_ASSIST;
-        else if (addendum->addendumMods & MEDAL_P2AMY)
-            globals->playerID |= ID_AMY_ASSIST;
-        else if (!self->frameID)
-            globals->playerID |= ID_NONE;
+        switch (self->altFrameID) {
+            case 0: globals->playerID |= ID_SONIC_ASSIST; break;
+            case 1: globals->playerID |= ID_TAILS_ASSIST; break;
+            case 2: globals->playerID |= ID_KNUX_ASSIST; break;
+            case 3: globals->playerID |= ID_MIGHTY_ASSIST; break;
+            case 4: globals->playerID |= ID_RAY_ASSIST; break;
+            case 5: globals->playerID |= ID_AMY_ASSIST; break;
+            case 6:
+            case 7: globals->playerID |= ID_NONE << 8; break;
+            default: break;
+        }
+
+        switch (self->buddyFrameID1) {
+            case 0: globals->playerID |= ID_SONIC_ASSIST << 8; break;
+            case 1: globals->playerID |= ID_TAILS_ASSIST << 8; break;
+            case 2: globals->playerID |= ID_KNUX_ASSIST << 8; break;
+            case 3: globals->playerID |= ID_MIGHTY_ASSIST << 8; break;
+            case 4: globals->playerID |= ID_RAY_ASSIST << 8; break;
+            case 5: globals->playerID |= ID_AMY_ASSIST << 8; break;
+            case 6:
+            case 7: globals->playerID |= ID_NONE << 16; break;
+            default: break;
+        }
+
+        switch (self->buddyFrameID2) {
+            case 0: globals->playerID |= ID_SONIC_ASSIST << 16; break;
+            case 1: globals->playerID |= ID_TAILS_ASSIST << 16; break;
+            case 2: globals->playerID |= ID_KNUX_ASSIST << 16; break;
+            case 3: globals->playerID |= ID_MIGHTY_ASSIST << 16; break;
+            case 4: globals->playerID |= ID_RAY_ASSIST << 16; break;
+            case 5: globals->playerID |= ID_AMY_ASSIST << 16; break;
+            case 6:
+            case 7:
+            default: break;
+        }
+
+        addendumRAM->player2ID = self->altFrameID;
+        addendumRAM->player3ID = self->buddyFrameID1;
+        addendumRAM->player4ID = self->buddyFrameID2;
+
+        addendumVar->playerCount = 0;
+        if (saveRAM->characterID < 6)
+            addendumVar->playerCount++;
+        if (addendumRAM->player2ID < 6)
+            addendumVar->playerCount++;
+        if (addendumRAM->player3ID < 6)
+            addendumVar->playerCount++;
+        if (addendumRAM->player4ID < 6)
+            addendumVar->playerCount++;
     }
 
     if (self->type == UISAVESLOT_NOSAVE || self->isNewSave) {
         if (self->encoreMode) {
-            globals->playerID          = ID_AMY;
+            globals->playerID          = ID_SONIC;
             globals->stock             = ID_NONE;
-            globals->characterFlags    = ID_AMY;
+            globals->characterFlags    = ID_SONIC;
             globals->enableIntro       = true;
             globals->suppressTitlecard = true;
             RSDK.SetScene("Cutscenes", "Angel Island Zone Encore");

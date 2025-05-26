@@ -69,6 +69,11 @@ struct EntityUIButtonPrompt {
     Animator buttonAnimator;
     Animator promptAnimator;
     uint16 textSprite;
+    int32 textType;
+    String string;
+    int32 stringID;
+    int32 buttonCharCount;
+    Animator textAnimator;
 };
 
 // Object Struct

@@ -114,6 +114,8 @@ void HotaruMKII_StageLoad(void)
     HotaruMKII->sfxCharge = RSDK.GetSfx("SSZ1/HotaruCharge.wav");
 
     DEBUGMODE_ADD_OBJ(HotaruMKII);
+
+    Zone_SetupHyperAttackList(HotaruMKII->classID, true, true, true, true, true, true);
 }
 
 void HotaruMKII_DebugSpawn(void)

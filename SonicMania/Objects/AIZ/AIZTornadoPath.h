@@ -31,6 +31,7 @@ struct EntityAIZTornadoPath {
     int32 type;
     int32 targetSpeed;
     int32 timer;
+    int32 knuxTimer;
     bool32 easeToSpeed;
     int32 speed;
     Animator unusedAnimator;

@@ -40,6 +40,25 @@ typedef enum {
     ZONE_COUNT_SAVEFILE = ZONE_ERZ + 1,
 } ZoneIDs;
 
+typedef struct {
+    uint16 classID;
+    bool32 hyperDashTarget;   // Hyper Sonic
+    bool32 superFlickyTarget; // Hyper Tails
+    bool32 hyperQuakeTarget;  // Hyper Knuckles
+    bool32 hyperSlamTarget;   // Hyper Mighty
+    bool32 hyperLandTarget;   // Hyper Ray
+    bool32 hyperHammerTarget; // Hyper Amy
+} HyperAttackEntry;
+
+typedef struct {
+    int32 slotID;
+    uint16 classID;
+    bool32 isTargeted;
+    Hitbox hitbox;
+    Vector2 position;
+    int16 timer;
+} FlickyAttackEntry;
+
 // Object Class
 struct ObjectZone {
     RSDK_OBJECT
@@ -101,6 +120,11 @@ struct ObjectZone {
     int32 randSeed;
     int32 startingShieldP1;
     int32 startingShieldP2;
+    uint16 hyperListCount;
+    HyperAttackEntry hyperAttackList[0x80];
+    FlickyAttackEntry flickyAttackList[0x80];
+    int16 shieldTypeCollected;
+    bool32 hasShieldsAchievement;
 #endif
 };
 
@@ -174,5 +198,7 @@ void Zone_State_FadeOut_Destroy(void);
 void Zone_HandlePlayerSwap(void);
 void Zone_State_SwapPlayers(void);
 void Zone_State_HandleSwapFadeIn(void);
+void Zone_SetupHyperAttackList(uint16 classID, bool32 hyperDashTarget, bool32 superFlickyTarget, bool32 hyperQuakeTarget, bool32 hyperSlamTarget,
+                               bool32 hyperLandTarget, bool32 hyperHammerTarget);
 
 #endif //! OBJ_ZONE_H

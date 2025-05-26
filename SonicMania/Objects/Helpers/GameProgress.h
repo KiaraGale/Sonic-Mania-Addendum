@@ -6,7 +6,8 @@
 #define GAMEPROGRESS_MEDAL_COUNT   (32)
 #define GAMEPROGRESS_ZONE_COUNT    (12)
 #define GAMEPROGRESS_EMERALD_COUNT (7)
-#define ADDENDUMPROGRESS_TIMESTONE_COUNT (7)
+#define ADDENDUMPROGRESS_TIMESTONE_COUNT    (7)
+#define ADDENDUMPROGRESS_SUPEREMERALD_COUNT (7)
 
 typedef enum {
     GAMEPROGRESS_UNLOCK_TIMEATTACK,
@@ -52,8 +53,23 @@ typedef enum {
     ACH_LRZ,
     ACH_MMZ,
     ACH_TMZ,
+    ACH_ERZ,
+    ACH_GHZ2,
+    ACH_CPZ2,
+    ACH_SPZ2,
+    ACH_FBZ2,
+    ACH_PGZ2,
+    ACH_SSZ2,
+    ACH_HCZ2,
+    ACH_MSZ2,
+    ACH_OOZ2,
+    ACH_LRZ2,
+    ACH_MMZ2,
+    ACH_TMZ2,
     ACH_TIMESTONES,
+    ACH_SUPEREMERALDS,
     ACH_INSTAREFLECT,
+    ACH_FOURSHIELDS,
 } AchievementIDs;
 
 extern AchievementID achievementList[];
@@ -84,10 +100,12 @@ typedef struct {
 } ProgressRAM;
 
 typedef struct {
-    uint8 padding[0x56];
+    uint8 padding[0x54];
 
     bool32 timeStoneObtained[ADDENDUMPROGRESS_TIMESTONE_COUNT];
     bool32 allTimeStonesObtained;
+    bool32 superEmeraldObtained[ADDENDUMPROGRESS_SUPEREMERALD_COUNT];
+    bool32 allSuperEmeraldsObtained;
     bool32 specialCleared[ADDENDUMPROGRESS_TIMESTONE_COUNT];
     bool32 allSpecialCleared;
 } AddendumProgress;
@@ -150,6 +168,7 @@ void GameProgress_MarkZoneCompleted(int32 zoneID);
 bool32 GameProgress_CheckZoneClear(void);
 void GameProgress_GiveEmerald(int32 emeraldID);
 #if MANIA_USE_PLUS
+void Addendum_GiveSuperEmerald(int32 emeraldID);
 void Addendum_GiveTimeStone(int32 timeStoneID);
 #endif
 void GameProgress_GiveMedal(uint8 medalID, uint8 type);
@@ -157,6 +176,7 @@ void GameProgress_GiveEnding(uint8 ending);
 void GameProgress_PrintSaveProgress(void);
 #if MANIA_USE_PLUS
 void Addendum_PrintSaveProgress(void);
+void Addendum_PrintOptionsProgress(void);
 #endif
 int32 GameProgress_CountUnreadNotifs(void);
 int32 GameProgress_GetNextNotif(void);

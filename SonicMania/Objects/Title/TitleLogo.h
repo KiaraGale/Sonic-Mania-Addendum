@@ -23,6 +23,8 @@ struct ObjectTitleLogo {
 #if MANIA_USE_PLUS
     uint16 plusFrames;
     uint16 sfxPlus;
+    bool32 swapDrawPriority;
+    bool32 reverseColor;
 #endif
 };
 
@@ -35,10 +37,12 @@ struct EntityTitleLogo {
 #endif
     bool32 showRibbonCenter;
     int32 timer;
+    int32 drawSwapTimer;
     int32 storeY;
     Animator mainAnimator;
 #if MANIA_USE_PLUS
     Animator plusAnimator;
+    Animator plusUnderlayAnimator;
 #endif
     Animator ribbonCenterAnimator;
 };

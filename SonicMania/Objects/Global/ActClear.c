@@ -9,7 +9,16 @@
 
 ObjectActClear *ActClear;
 
-void ActClear_Update(void) {}
+void ActClear_Update(void)
+{
+    RSDK_THIS(ActClear);
+    EntityPlayer *player = self->targetPlayer;
+
+    if (self->totalScore + self->storedScore >= player->score1UP) {
+        Player_GiveLife(player);
+        while (player->score1UP <= self->totalScore + self->storedScore) player->score1UP += 50000;
+    }
+}
 
 void ActClear_LateUpdate(void)
 {
@@ -351,36 +360,1245 @@ void ActClear_Create(void *data)
 #if MANIA_USE_PLUS
         if (!ActClear->disableTimeBonus) {
 #endif
-            switch (SceneInfo->minutes) {
-                case 0:
-                    if (SceneInfo->seconds >= 30)
-                        self->timeBonus = SceneInfo->seconds < 45 ? 10000 : 5000;
-                    else
-                        self->timeBonus = 50000;
-                    break;
+            switch (Zone_GetZoneID()) {
+                default:
+                case ZONE_GHZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 0:50
+                        switch (SceneInfo->minutes) {
+                            case 0:
+                                if (!GHZSetup->hasSpeedAchievement) {
+                                    API_UnlockAchievement(&achievementList[ACH_GHZ2]);
+                                    GHZSetup->hasSpeedAchievement = true;
+                                }
 
-                case 1: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
-                case 2: self->timeBonus = 2000; break;
-                case 3: self->timeBonus = 1000; break;
-                case 4: self->timeBonus = 500; break;
-                case 5: self->timeBonus = 100; break;
+                                if (SceneInfo->seconds >= 50)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
 
-                case 9:
-                    if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+                            case 1: 
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 5: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
 #if MANIA_USE_PLUS
-                        if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
 #endif
-                            self->timeBonus = 100000;
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 0:55
+                        switch (SceneInfo->minutes) {
+                            case 0:
+                                if (SceneInfo->seconds >= 55)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 1:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 5: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
                     }
                     break;
 
-                default: break;
+                case ZONE_CPZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 1:10
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+
+                            case 1:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 2:10
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_SPZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:50; increased grace period due to heavy gunner rng
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 50)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 2:10
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_FBZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:05
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 2:50
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 50)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_PGZ:
+                    if (ActClear->displayedActID == ACT_1) {  // NOT fucking with PGZ's actual act IDs here, use the displayed one instead
+                        // 50,000 score target time is < 3:15
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 7:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (ActClear->displayedActID == ACT_2) { // NOT fucking with PGZ's actual act IDs here, use the displayed one instead
+                        // 50,000 score target time is < 1:50
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+
+                            case 1:
+                                if (SceneInfo->seconds >= 50)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 20)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 6: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_SSZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:00
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = SceneInfo->seconds < 30 ? 10000 : 5000; break;
+                            case 3: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
+                            case 4: self->timeBonus = SceneInfo->seconds < 30 ? 2000 : 1500; break;
+                            case 5: self->timeBonus = SceneInfo->seconds < 30 ? 1000 : 500; break;
+                            case 6: self->timeBonus = SceneInfo->seconds < 30 ? 250 : 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    // SSZ2 doesn't have an act clear, this happens in SSZ2M/SSZ3
+
+                    if (Zone->actID == ACT_3) { // 50,000 score target time is < 3:10
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 7:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_HCZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 4:10
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+                            case 3: self->timeBonus = 50000; break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 10000 : 5000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 4000 : 3000;
+                                else
+                                    self->timeBonus = 5000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 2000 : 1500;
+                                else
+                                    self->timeBonus = 3000;
+                                break;
+
+                            case 7:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1000 : 500;
+                                else
+                                    self->timeBonus = 1500;
+                                break;
+
+                            case 8:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 250 : 100;
+                                else
+                                    self->timeBonus = 500;
+                                break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 3:55
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 55)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 50 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 7:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 8: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_MSZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:40 (happens to be the target time for both MSZ1 and MSZK)
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 40)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 2:00
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = SceneInfo->seconds < 30 ? 10000 : 5000; break;
+                            case 3: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
+                            case 4: self->timeBonus = SceneInfo->seconds < 30 ? 2000 : 1500; break;
+                            case 5: self->timeBonus = SceneInfo->seconds < 30 ? 1000 : 500; break;
+                            case 6: self->timeBonus = SceneInfo->seconds < 30 ? 250 : 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_OOZ:
+                    if (ActClear->displayedActID == ACT_1) { // NOT fucking with OOZ's actual act IDs here, use the displayed one instead
+                        // 50,000 score target time is < 1:40
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+
+                            case 1:
+                                if (SceneInfo->seconds >= 40)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 10)
+                                    self->timeBonus = SceneInfo->seconds < 40 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 6: self->timeBonus = 100;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (ActClear->displayedActID == ACT_2) { // NOT fucking with OOZ's actual act IDs here, use the displayed one instead
+                        // 50,000 score target time is < 2:45
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 45)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_LRZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 3:00
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+                            case 3: self->timeBonus = SceneInfo->seconds < 30 ? 10000 : 5000; break;
+                            case 4: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
+                            case 5: self->timeBonus = SceneInfo->seconds < 30 ? 2000 : 1500; break;
+                            case 6: self->timeBonus = SceneInfo->seconds < 30 ? 1000 : 500; break;
+                            case 7: self->timeBonus = SceneInfo->seconds < 30 ? 250 : 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    // LRZ2 doesn't have an act clear, this happens in LRZ3
+
+                    if (Zone->actID == ACT_3) { // 50,000 score target time is < 4:00
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+                            case 2: self->timeBonus = 50000; break;
+                            case 3: self->timeBonus = 50000; break;
+                            case 4: self->timeBonus = SceneInfo->seconds < 30 ? 10000 : 5000; break;
+                            case 5: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
+                            case 6: self->timeBonus = SceneInfo->seconds < 30 ? 2000 : 1500; break;
+                            case 7: self->timeBonus = SceneInfo->seconds < 30 ? 1000 : 500; break;
+                            case 8: self->timeBonus = SceneInfo->seconds < 30 ? 250 : 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_MMZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:45
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 45)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 15)
+                                    self->timeBonus = SceneInfo->seconds < 45 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    if (Zone->actID == ACT_2) { // 50,000 score target time is < 2:35
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 35)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 5)
+                                    self->timeBonus = SceneInfo->seconds < 35 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_TMZ:
+                    if (Zone->actID == ACT_1) { // 50,000 score target time is < 2:55
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = 50000; break;
+
+                            case 2:
+                                if (SceneInfo->seconds >= 55)
+                                    self->timeBonus = 10000;
+                                else
+                                    self->timeBonus = 50000;
+                                break;
+
+                            case 3:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 5000 : 4000;
+                                else
+                                    self->timeBonus = 10000;
+                                break;
+
+                            case 4:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 3000 : 2000;
+                                else
+                                    self->timeBonus = 4000;
+                                break;
+
+                            case 5:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 1500 : 1000;
+                                else
+                                    self->timeBonus = 2000;
+                                break;
+
+                            case 6:
+                                if (SceneInfo->seconds >= 25)
+                                    self->timeBonus = SceneInfo->seconds < 55 ? 500 : 250;
+                                else
+                                    self->timeBonus = 1000;
+                                break;
+
+                            case 7: self->timeBonus = 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+
+                    // Phantom Egg resets the timer upon starting the fight, so the time spent in Act 2 is essentially erased
+
+                    if (Zone->actID == ACT_3) { // 50,000 score target time is < 1:00
+                        switch (SceneInfo->minutes) {
+                            case 0: self->timeBonus = 50000; break;
+                            case 1: self->timeBonus = SceneInfo->seconds < 30 ? 10000 : 5000; break;
+                            case 2: self->timeBonus = SceneInfo->seconds < 30 ? 4000 : 3000; break;
+                            case 3: self->timeBonus = SceneInfo->seconds < 30 ? 2000 : 1500; break;
+                            case 4: self->timeBonus = SceneInfo->seconds < 30 ? 1000 : 500; break;
+                            case 5: self->timeBonus = SceneInfo->seconds < 30 ? 250 : 100; break;
+
+                            case 9:
+                                if (!SceneInfo->debugMode && globals->gameMode < MODE_TIMEATTACK && SceneInfo->seconds == 59) {
+#if MANIA_USE_PLUS
+                                    if (globals->gameMode != MODE_ENCORE && !(globals->medalMods & MEDAL_NOTIMEOVER))
+#endif
+                                        self->timeBonus = 100000;
+                                }
+                                break;
+
+                            default: break;
+                        }
+                    }
+                    break;
+
+                case ZONE_AIZ:
+                    switch (SceneInfo->minutes) {
+                        case 0:
+                            if (SceneInfo->seconds >= 20) {
+                                if (SceneInfo->seconds >= 30) {
+                                    if (SceneInfo->seconds >= 40) {
+                                        if (SceneInfo->seconds >= 50)
+                                            self->timeBonus = 3000;
+                                        else
+                                            self->timeBonus = 4000;
+                                    }
+                                    else
+                                        self->timeBonus = 5000;
+                                }
+                                else
+                                    self->timeBonus = 10000;
+                            }
+                            else
+                                self->timeBonus = 50000;
+                            break;
+
+                        case 1:
+                            if (SceneInfo->seconds >= 10) {
+                                if (SceneInfo->seconds >= 20) {
+                                    if (SceneInfo->seconds >= 30) {
+                                        if (SceneInfo->seconds >= 40) {
+                                            if (SceneInfo->seconds >= 50)
+                                                self->timeBonus = 100;
+                                            else
+                                                self->timeBonus = 250;
+                                        }
+                                        else
+                                            self->timeBonus = 500;
+                                    }
+                                    else
+                                        self->timeBonus = 1000;
+                                }
+                                else
+                                    self->timeBonus = 1500;
+                            }
+                            else
+                                self->timeBonus = 2000;
+                            break;
+
+                        default: break;
+                    }
+                    break;
             }
 #if MANIA_USE_PLUS
         }
 #endif
-
+        self->storedScore      = player1->score;
         self->ringBonus        = 100 * player1->rings;
+        player1->superRingLossTimer = 9999;    // stop super sonic ring drain when ring bonus is recorded, lol
         self->coolBonus        = globals->coolBonus[0];
         globals->initCoolBonus = false;
 #if MANIA_USE_PLUS
@@ -430,6 +1648,13 @@ void ActClear_Create(void *data)
             RSDK.SetSpriteAnimation(ActClear->aniFrames, 5, &self->actNumAnimator, true, Zone->actID);
         else
             RSDK.SetSpriteAnimation(ActClear->aniFrames, 5, &self->actNumAnimator, true, ActClear->displayedActID - 1);
+    }
+
+    if (RSDK.CheckSceneFolder("PSZ2") && ActClear->displayedActID == 1 && !PSZ2Setup->unlockedAchievement) {
+        if (PSZ2Setup->beenFrozen == false) {
+            API_UnlockAchievement(&achievementList[ACH_PGZ2]);
+            PSZ2Setup->unlockedAchievement = true;
+        }
     }
 }
 
@@ -555,12 +1780,14 @@ void ActClear_SetupRecoverPlayers(void)
 {
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
 
     if (player2 && player2->sidekick) {
         if (player2->state != Player_State_FlyToPlayer && player2->state != Player_State_ReturnToPlayer) {
             if (player2->position.x <= TO_FIXED(ScreenInfo->size.x + ScreenInfo->position.x)
                 || abs(player2->position.y - player1->position.y) > TO_FIXED(16)) {
-                Player->respawnTimer = 240;
+                player2->respawnTimer = 240;
 
                 Entity *entStore  = SceneInfo->entity;
                 SceneInfo->entity = (Entity *)player2;
@@ -574,7 +1801,53 @@ void ActClear_SetupRecoverPlayers(void)
                 }
             }
             else {
-                Player->respawnTimer = -3600;
+                player2->respawnTimer = -3600;
+            }
+        }
+    }
+
+    if (player3 && player3->sidekick) {
+        if (player3->state != Player_State_FlyToPlayer && player3->state != Player_State_ReturnToPlayer) {
+            if (player3->position.x <= TO_FIXED(ScreenInfo->size.x + ScreenInfo->position.x)
+                || abs(player3->position.y - player1->position.y) > TO_FIXED(16)) {
+                player3->respawnTimer = 240;
+
+                Entity *entStore  = SceneInfo->entity;
+                SceneInfo->entity = (Entity *)player3;
+                Player_HandleSidekickRespawn();
+                SceneInfo->entity = entStore;
+
+                if (player3->state == Player_State_FlyToPlayer || player3->state == Player_State_ReturnToPlayer
+                    || player3->state == Player_State_HoldRespawn) {
+                    player3->active     = ACTIVE_NORMAL;
+                    player3->position.y = TO_FIXED(ScreenInfo->position.y - 16);
+                }
+            }
+            else {
+                player3->respawnTimer = -3600;
+            }
+        }
+    }
+
+    if (player4 && player4->sidekick) {
+        if (player4->state != Player_State_FlyToPlayer && player4->state != Player_State_ReturnToPlayer) {
+            if (player4->position.x <= TO_FIXED(ScreenInfo->size.x + ScreenInfo->position.x)
+                || abs(player4->position.y - player1->position.y) > TO_FIXED(16)) {
+                player4->respawnTimer = 240;
+
+                Entity *entStore  = SceneInfo->entity;
+                SceneInfo->entity = (Entity *)player4;
+                Player_HandleSidekickRespawn();
+                SceneInfo->entity = entStore;
+
+                if (player4->state == Player_State_FlyToPlayer || player4->state == Player_State_ReturnToPlayer
+                    || player4->state == Player_State_HoldRespawn) {
+                    player4->active     = ACTIVE_NORMAL;
+                    player4->position.y = TO_FIXED(ScreenInfo->position.y - 16);
+                }
+            }
+            else {
+                player4->respawnTimer = -3600;
             }
         }
     }
@@ -660,7 +1933,7 @@ void ActClear_State_ScoreShownDelay(void)
 {
     RSDK_THIS(ActClear);
 
-    if (++self->timer == 120) {
+    if (++self->timer == 140) {
         self->timer = 0;
         self->state = ActClear_State_TallyScore;
     }
@@ -671,8 +1944,18 @@ void ActClear_State_ScoreShownDelay(void)
 void ActClear_State_TallyScore(void)
 {
     RSDK_THIS(ActClear);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
 
     EntityPlayer *player = self->targetPlayer;
+
+    if (touchControls) {
+        if (TouchInfo->count && !ControllerInfo[CONT_P1].keyStart.down)
+            ControllerInfo[CONT_P1].keyStart.press = true;
+    }
 
     if (self->timeBonus > 0) {
         self->totalScore += 100;
@@ -682,7 +1965,8 @@ void ActClear_State_TallyScore(void)
 
     if (self->ringBonus > 0) {
         self->totalScore += 100;
-        self->ringBonus -= 100;
+        self->ringBonus  -= 100;
+        player->rings    -= 1;
         Player_GiveScore(player, 100);
     }
 
@@ -698,6 +1982,7 @@ void ActClear_State_TallyScore(void)
         self->timeBonus = 0;
         self->ringBonus = 0;
         self->coolBonus = 0;
+        player->rings   = 0;
     }
 
     if (self->timeBonus + self->ringBonus + self->coolBonus <= 0) {
@@ -709,6 +1994,12 @@ void ActClear_State_TallyScore(void)
         self->timer = 0;
         RSDK.PlaySfx(ActClear->sfxScoreAdd, false, 255);
     }
+
+    if (player->rings < 0)
+        player->rings = 0;
+
+    if (player->rings == 0 && player->superState != SUPERSTATE_SUPER && addendumOptions->spriteStyle == SPRITESTYLE_CHAREDITSPLUS && player->characterID == ID_SONIC)
+        RSDK.SetSpriteAnimation(player->aniFrames, 57, &player->animator, false, 0);
 
     Music->nextTrack = TRACK_NONE;
     ActClear_CheckPlayerVictory();
@@ -815,6 +2106,19 @@ void ActClear_State_SaveGameProgress(void)
 void ActClear_State_ShowResultsTA(void)
 {
     RSDK_THIS(ActClear);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (API.CheckDLC(DLC_PLUS) && HUD_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+            if (!ControllerInfo[CONT_P1].keyY.down)
+                ControllerInfo->keyY.press = true;
+        }
+
+        ControllerInfo->keyStart.press |= TouchInfo->count && !ControllerInfo->keyY.press;
+    }
 
     if (self->newRecordTimer > 0) {
         if (TimeAttackData->personalRank > 0 && !ReplayRecorder->hasSetupGhostView) {
@@ -941,9 +2245,13 @@ void ActClear_State_RecoverPlayers(void)
 
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
 
-    bool32 finishedP2  = false;
     bool32 finishedP1  = false;
+    bool32 finishedP2  = false;
+    bool32 finishedP3  = false;
+    bool32 finishedP4  = false;
     int32 screenOffX   = TO_FIXED(ScreenInfo->position.x + ScreenInfo->size.x - 16);
     player1->up        = false;
     player1->down      = false;
@@ -1015,15 +2323,104 @@ void ActClear_State_RecoverPlayers(void)
         }
     }
 
+    if (player3->classID != Player->classID) {
+        finishedP3 = true;
+    }
+    else {
+        player3->up        = false;
+        player3->down      = false;
+        player3->jumpPress = false;
+        player3->jumpHold  = false;
+
+        if (player3->state == Player_State_FlyToPlayer || player3->state == Player_State_ReturnToPlayer) {
+            if (player3->position.x < screenOffX) {
+                if (player3->onGround && !player3->groundVel) {
+                    RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, false, 0);
+                    player3->direction = FLIP_NONE;
+                    finishedP3         = true;
+                }
+            }
+        }
+        else if (player3->position.x >= screenOffX) {
+            player3->stateInput = Player_Input_P2_AI;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_RUN, &player3->animator, false, 0);
+            player3->state     = Player_State_Ground;
+            player3->groundVel = -TO_FIXED(4);
+            player3->left      = true;
+            player3->right     = false;
+
+            if (player3->position.x < screenOffX) {
+                if (player3->onGround && !player3->groundVel) {
+                    RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, false, 0);
+                    player3->direction = FLIP_NONE;
+                    finishedP3         = true;
+                }
+            }
+        }
+        else {
+            if (player3->onGround && !player3->groundVel) {
+                RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, false, 0);
+                player3->direction = FLIP_NONE;
+                finishedP3         = true;
+            }
+        }
+    }
+
+    if (player4->classID != Player->classID) {
+        finishedP4 = true;
+    }
+    else {
+        player4->up        = false;
+        player4->down      = false;
+        player4->jumpPress = false;
+        player4->jumpHold  = false;
+
+        if (player4->state == Player_State_FlyToPlayer || player4->state == Player_State_ReturnToPlayer) {
+            if (player4->position.x < screenOffX) {
+                if (player4->onGround && !player4->groundVel) {
+                    RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, false, 0);
+                    player4->direction = FLIP_NONE;
+                    finishedP4         = true;
+                }
+            }
+        }
+        else if (player4->position.x >= screenOffX) {
+            player4->stateInput = Player_Input_P2_AI;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_RUN, &player4->animator, false, 0);
+            player4->state     = Player_State_Ground;
+            player4->groundVel = -TO_FIXED(4);
+            player4->left      = true;
+            player4->right     = false;
+
+            if (player4->position.x < screenOffX) {
+                if (player4->onGround && !player4->groundVel) {
+                    RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, false, 0);
+                    player4->direction = FLIP_NONE;
+                    finishedP4         = true;
+                }
+            }
+        }
+        else {
+            if (player4->onGround && !player4->groundVel) {
+                RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, false, 0);
+                player4->direction = FLIP_NONE;
+                finishedP4         = true;
+            }
+        }
+    }
+
     if (finishedP1) {
         RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, false, 0);
         player1->direction = FLIP_NONE;
     }
 
     ++self->stageFinishTimer;
-    if ((finishedP1 && finishedP2) || self->stageFinishTimer >= 900) {
+    if ((finishedP1 && finishedP2 && finishedP3 && finishedP4) || self->stageFinishTimer >= 900) {
         if (self->timer >= 10) {
-            Player->respawnTimer = 0;
+            player1->respawnTimer = 0;
+            player2->respawnTimer = 0;
+            player3->respawnTimer = 0;
+            player4->respawnTimer = 0;
             StateMachine_Run(Zone->stageFinishCallback);
             Zone->stageFinishCallback = StateMachine_None;
             destroyEntity(self);

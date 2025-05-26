@@ -68,10 +68,16 @@ void AIZTornado_Create(void *data)
         RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 0, &self->animatorTornado, true, 0);
         RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 1, &self->animatorPropeller, true, 0);
         RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 2, &self->animatorFlame, true, 0);
-        if (GET_CHARACTER_ID(1) == ID_SONIC) // if sonic is the leader
-            RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 6, &self->animatorPilot, true, 0);
-        else
-            RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 3, &self->animatorPilot, true, 0);
+        
+        switch (GET_CHARACTER_ID(1)) {
+            case ID_SONIC:
+            case ID_KNUCKLES:
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 6, &self->animatorPilot, true, 0); break;
+
+            case ID_TAILS:
+            case ID_MIGHTY:
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 3, &self->animatorPilot, true, 0); break;
+        }
     }
 }
 
@@ -109,12 +115,16 @@ void AIZTornado_HandleMovement(void)
 void AIZTornado_HandlePlayerCollisions(void)
 {
     RSDK_THIS(AIZTornado);
-    EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player  = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     Hitbox *hitbox       = RSDK.GetHitbox(&self->animatorTornado, 0);
+    Hitbox *knuxHitbox   = RSDK.GetHitbox(&self->animatorTornado, 1);
+
     if (self->turnAngle >= 32)
         player->drawGroup = self->drawGroup + 1;
     else
         player->drawGroup = self->drawGroup;
+
     int32 x = self->position.x;
     int32 y = self->position.y;
     self->prevPos.x &= 0xFFFF0000;
@@ -135,6 +145,21 @@ void AIZTornado_HandlePlayerCollisions(void)
         if (player->velocity.y > 0x10000) {
             self->collideTimer = 0;
             self->gravityForce = 0x20000;
+        }
+    }
+
+    if (player2->classID == Player->classID && player2->characterID == ID_KNUCKLES) {
+        if (Player_CheckCollisionPlatform(player2, self, knuxHitbox)) {
+            RSDK.SetSpriteAnimation(AIZTornado->aniFrames, 9, &player2->animator, true, 0);
+            player2->state = Player_State_Static;
+            player2->position.x += self->moveVelocity.x;
+            player2->position.y += self->moveVelocity.y;
+            player2->flailing = false;
+            self->isStood     = true;
+            if (player2->velocity.y > 0x10000) {
+                self->collideTimer = 0;
+                self->gravityForce = 0x20000;
+            }
         }
     }
     self->position.x = x;

@@ -108,7 +108,7 @@ void WeatherMobile_Create(void *data)
                     self->hitbox.bottom = 22;
 
                     self->drawFX = FX_FLIP;
-                    self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+                    self->health = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 4, &self->seatAnimator, true, 0);
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 0, &self->eggmanAnimator, true, 0);
                     RSDK.SetSpriteAnimation(WeatherMobile->eggmanFrames, 6, &self->eggMobileAnimator, true, 0);
@@ -418,6 +418,12 @@ void WeatherMobile_State_SetupArena(void)
         WeatherMobile->boundsB = (Zone->cameraBoundsB[0] - 96) << 16;
 
         self->state = WeatherMobile_State_StartBoss;
+        if (SPZ2Setup->skipBoss) {
+            EntityEggPrison* prison = CREATE_ENTITY(EggPrison, INT_TO_VOID(EGGPRISON_FLYING), (ScreenInfo->position.x + ScreenInfo->center.x) << 16,(ScreenInfo->position.y - 48) << 16);
+            prison->velocity.x = 0x10000;
+            prison->active = ACTIVE_NORMAL;
+            destroyEntity(self);
+        }
     }
 }
 

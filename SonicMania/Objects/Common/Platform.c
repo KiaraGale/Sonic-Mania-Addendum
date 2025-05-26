@@ -410,7 +410,7 @@ void Platform_StageLoad(void)
     else if (RSDK.CheckSceneFolder("SPZ1")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("SPZ1/Platform.bin", SCOPE_STAGE);
     }
-    else if (RSDK.CheckSceneFolder("SPZ2")) {
+    else if (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("SPZ2/Platform.bin", SCOPE_STAGE);
     }
     else if (RSDK.CheckSceneFolder("FBZ")) {
@@ -440,6 +440,7 @@ void Platform_StageLoad(void)
     }
     else if (RSDK.CheckSceneFolder("OOZ1") || RSDK.CheckSceneFolder("OOZ2")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("OOZ/Platform.bin", SCOPE_STAGE);
+        Platform->sfxElevator = RSDK.GetSfx("OOZ/Elevator.wav");
     }
     else if (RSDK.CheckSceneFolder("LRZ1")) {
         Platform->aniFrames = RSDK.LoadSpriteAnimation("LRZ1/Platform.bin", SCOPE_STAGE);
@@ -534,6 +535,7 @@ void Platform_State_React(void)
         self->tileOrigin.x = 0;
         self->tileOrigin.y = 0;
         self->active       = ACTIVE_NORMAL;
+        RSDK.PlaySfx(Platform->sfxElevator, false, 0xFF);
         self->state        = Platform_State_ReactMove;
     }
 

@@ -32,7 +32,141 @@ void DASetup_StaticUpdate(void)
         control->childHasFocus = true;
 }
 
-void DASetup_Draw(void) {}
+void DASetup_Draw(void)
+{
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        RSDK_THIS(DASetup);
+
+        int32 alphaStore   = self->alpha;
+        int32 inkStore     = self->inkEffect;
+        int32 fxStore      = self->drawFX;
+        Vector2 scaleStore = self->scale;
+
+        DASetup->dpadPos.x = TO_FIXED(56);
+        DASetup->dpadPos.y = TO_FIXED(184);
+
+        DASetup->playPos.x = TO_FIXED(ScreenInfo[SceneInfo->currentScreenID].size.x - 56);
+        DASetup->playPos.y = TO_FIXED(188);
+
+        self->inkEffect = INK_ALPHA;
+        self->drawFX    = FX_SCALE;
+
+        int32 opacity = (int32)(0x100 * 0.625);
+        self->scale.x = 0x200;
+        self->scale.y = 0x200;
+
+        bool32 canMove = true;
+        bool32 canPlay = true;
+        bool32 canBack = true;
+
+        if (canMove) {
+            if (DASetup->dpadAlpha < opacity)
+                DASetup->dpadAlpha += 4;
+
+            // Draw DPad
+            self->alpha                   = DASetup->dpadAlpha;
+            DASetup->dpadAnimator.frameID = 10;
+            RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+
+            if (DASetup->touchDir == 2) {
+                self->alpha                        = opacity;
+                DASetup->dpadTouchAnimator.frameID = 6;
+                RSDK.DrawSprite(&DASetup->dpadTouchAnimator, &DASetup->dpadPos, true);
+            }
+            else {
+                self->alpha                   = DASetup->dpadAlpha;
+                DASetup->dpadAnimator.frameID = 6;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+            }
+
+            if (DASetup->touchDir == 1) {
+                self->alpha                        = opacity;
+                DASetup->dpadTouchAnimator.frameID = 9;
+                RSDK.DrawSprite(&DASetup->dpadTouchAnimator, &DASetup->dpadPos, true);
+            }
+            else {
+                self->alpha                   = DASetup->dpadAlpha;
+                DASetup->dpadAnimator.frameID = 9;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+            }
+
+            if (DASetup->touchDir == 0) {
+                self->alpha                        = opacity;
+                DASetup->dpadTouchAnimator.frameID = 7;
+                RSDK.DrawSprite(&DASetup->dpadTouchAnimator, &DASetup->dpadPos, true);
+            }
+            else {
+                self->alpha                   = DASetup->dpadAlpha;
+                DASetup->dpadAnimator.frameID = 7;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+            }
+
+            if (DASetup->touchDir == 3) {
+                self->alpha                        = opacity;
+                DASetup->dpadTouchAnimator.frameID = 8;
+                RSDK.DrawSprite(&DASetup->dpadTouchAnimator, &DASetup->dpadPos, true);
+            }
+            else {
+                self->alpha                   = DASetup->dpadAlpha;
+                DASetup->dpadAnimator.frameID = 8;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+            }
+        }
+        else {
+            if (DASetup->dpadAlpha > 0) {
+                DASetup->dpadAlpha -= 4;
+            }
+
+            self->alpha = DASetup->dpadAlpha;
+            if (self->alpha > 0) {
+                DASetup->dpadAnimator.frameID = 0;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->dpadPos, true);
+            }
+        }
+
+        int32 frameID = 1 + (DASetup->activeTrack == DASetup->trackID);
+        if (canPlay) {
+            if ((SceneInfo->state & 3) == ENGINESTATE_REGULAR) {
+                if (DASetup->playAlpha < opacity)
+                    DASetup->playAlpha += 4;
+
+                if (ControllerInfo->keyA.down) {
+                    self->alpha                        = opacity;
+                    DASetup->dpadTouchAnimator.frameID = frameID;
+                    RSDK.DrawSprite(&DASetup->dpadTouchAnimator, &DASetup->playPos, true);
+                }
+                else {
+                    self->alpha                   = DASetup->playAlpha;
+                    DASetup->dpadAnimator.frameID = frameID;
+                    RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->playPos, true);
+                }
+            }
+            else {
+                DASetup->playAlpha = 0;
+            }
+        }
+        else {
+            if (DASetup->playAlpha > 0)
+                DASetup->playAlpha -= 4;
+
+            self->alpha = DASetup->playAlpha;
+            if (self->alpha > 0) {
+                DASetup->dpadAnimator.frameID = frameID;
+                RSDK.DrawSprite(&DASetup->dpadAnimator, &DASetup->playPos, true);
+            }
+        }
+
+        self->alpha     = alphaStore;
+        self->inkEffect = inkStore;
+        self->drawFX    = fxStore;
+        self->scale     = scaleStore;
+    }
+}
 
 void DASetup_Create(void *data) {}
 
@@ -70,6 +204,13 @@ void DASetup_StageLoad(void)
     DASetup->sfxMedal      = RSDK.GetSfx("Special/Medal.wav");
     DASetup->sfxSSExit     = RSDK.GetSfx("Special/SSExit.wav");
     DASetup->sfxScoreTotal = RSDK.GetSfx("Global/ScoreTotal.wav");
+
+    DASetup->dpadFrames = RSDK.LoadSpriteAnimation("Global/TouchControls.bin", SCOPE_STAGE);
+
+    RSDK.SetSpriteAnimation(DASetup->dpadFrames, 0, &DASetup->dpadAnimator, true, 0);
+    RSDK.SetSpriteAnimation(DASetup->dpadFrames, 1, &DASetup->dpadTouchAnimator, true, 0);
+
+    DASetup->touchDir = -1;
 }
 
 void DASetup_DisplayTrack(int32 trackID)
@@ -160,6 +301,14 @@ void DASetup_SetupUI(void)
 
 void DASetup_State_ManageControl(void)
 {
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        DASetup_HandleTouchInput();
+
     int32 prevTrack = DASetup->trackID;
     if (UIControl->anyRightPress)
         DASetup->trackID++;
@@ -207,6 +356,107 @@ void DASetup_State_ManageControl(void)
         fade->state        = FXFade_State_FadeOut;
         fade->timer        = 0;
     }
+}
+
+void DASetup_HandleTouchInput(void)
+{
+    uint8 dir = -1;
+
+    int32 tx = 0, ty = 0;
+    if (DASetup_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+        tx -= 56;
+        ty -= 184;
+
+        switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+            case 0:
+                ControllerInfo->keyRight.down |= true;
+                dir = 0;
+                break;
+
+            case 1:
+                ControllerInfo->keyDown.down |= true;
+                dir = 1;
+                break;
+
+            case 2:
+                ControllerInfo->keyLeft.down |= true;
+                dir = 2;
+                break;
+
+            case 3:
+                ControllerInfo->keyUp.down |= true;
+                dir = 3;
+                break;
+        }
+    }
+
+    // fixes a bug with button vs touch
+    bool32 touchedConfirm = false;
+    if (DASetup_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+        ControllerInfo->keyA.down |= true;
+        touchedConfirm = true;
+    }
+
+    bool32 touchedBack = false;
+    if (DASetup_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+        ControllerInfo->keyB.down |= true;
+        touchedBack = true;
+    }
+
+    if (dir != DASetup->touchDir && ControllerInfo->keyUp.down)
+        ControllerInfo->keyUp.press |= ControllerInfo->keyUp.down;
+
+    if (dir != DASetup->touchDir && ControllerInfo->keyDown.down)
+        ControllerInfo->keyDown.press |= ControllerInfo->keyDown.down;
+
+    if (dir != DASetup->touchDir && ControllerInfo->keyLeft.down)
+        ControllerInfo->keyLeft.press |= ControllerInfo->keyLeft.down;
+
+    if (dir != DASetup->touchDir && ControllerInfo->keyRight.down)
+        ControllerInfo->keyRight.press |= ControllerInfo->keyRight.down;
+
+    if (!DASetup->touchConfirm && touchedConfirm)
+        ControllerInfo->keyA.press |= ControllerInfo->keyA.down;
+
+    if (!DASetup->touchBack && touchedBack)
+        ControllerInfo->keyB.press |= ControllerInfo->keyB.down;
+
+    DASetup->touchConfirm = ControllerInfo->keyA.down;
+    DASetup->touchBack    = ControllerInfo->keyB.down;
+    DASetup->touchDir     = dir;
+
+    UIControl->anyRightPress |= ControllerInfo->keyRight.press;
+    UIControl->anyLeftPress |= ControllerInfo->keyLeft.press;
+    UIControl->anyUpPress |= ControllerInfo->keyUp.press;
+    UIControl->anyDownPress |= ControllerInfo->keyDown.press;
+    UIControl->anyConfirmPress |= ControllerInfo->keyA.press;
+    UIControl->anyBackPress |= ControllerInfo->keyB.press;
+}
+
+int32 DASetup_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy)
+{
+    if (fx)
+        *fx = 0;
+    if (fy)
+        *fy = 0;
+
+    for (int32 t = 0; t < TouchInfo->count; ++t) {
+        int32 tx = (int32)(TouchInfo->x[t] * ScreenInfo->size.x);
+        int32 ty = (int32)(TouchInfo->y[t] * ScreenInfo->size.y);
+
+        if (TouchInfo->down[t]) {
+            if (tx >= x1 && ty >= y1 && tx <= x2 && ty <= y2) {
+                if (fx)
+                    *fx = tx;
+                if (fy)
+                    *fy = ty;
+
+                return t;
+            }
+        }
+    }
+
+    return -1;
 }
 
 #if GAME_INCLUDE_EDITOR

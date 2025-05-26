@@ -138,7 +138,7 @@ void MenuSetup_Draw(void)
 {
     RSDK_THIS(MenuSetup);
 
-    RSDK.FillScreen(self->fadeColor, self->fadeTimer, self->fadeTimer, self->fadeTimer);
+    RSDK.FillScreen(self->fadeColor, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
 }
 
 void MenuSetup_Create(void *data)
@@ -1037,19 +1037,11 @@ void MenuSetup_OpenSaveSelectMenu(void)
     control->childHasFocus = false;
 }
 
-#if MANIA_USE_PLUS
-void MenuSetup_SaveFileCB(bool32 success)
-{
-    UIWaitSpinner_FinishWait();
-    RSDK.LoadScene();
-}
-#else
 void MenuSetup_SaveFileCB(void)
 {
     UIWaitSpinner_FinishWait();
     RSDK.LoadScene();
 }
-#endif
 
 void MenuSetup_SaveSlot_ActionCB(void)
 {

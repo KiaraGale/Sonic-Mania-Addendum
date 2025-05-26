@@ -76,7 +76,7 @@ bool32 LRZ3OutroK_Cutscene_RunToTeleporter(EntityCutsceneSeq *host)
 {
     RSDK_THIS(LRZ3OutroK);
 
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntitySkyTeleporter *teleporter = LRZ3OutroK->teleporter;
@@ -88,11 +88,17 @@ bool32 LRZ3OutroK_Cutscene_RunToTeleporter(EntityCutsceneSeq *host)
 
         Zone->cameraBoundsT[0] = 0;
         Zone->cameraBoundsT[1] = 0;
+        Zone->cameraBoundsT[2] = 0;
+        Zone->cameraBoundsT[3] = 0;
         Zone->cameraBoundsR[0] = (self->position.x + self->size.x) >> 16;
         Zone->cameraBoundsR[1] = (self->position.x + self->size.x) >> 16;
+        Zone->cameraBoundsR[2] = (self->position.x + self->size.x) >> 16;
+        Zone->cameraBoundsR[3] = (self->position.x + self->size.x) >> 16;
 
         Zone->playerBoundActiveR[0] = false;
         Zone->playerBoundActiveR[1] = false;
+        Zone->playerBoundActiveR[2] = false;
+        Zone->playerBoundActiveR[3] = false;
 
         CutsceneSeq_LockAllPlayerControl();
 
@@ -105,6 +111,16 @@ bool32 LRZ3OutroK_Cutscene_RunToTeleporter(EntityCutsceneSeq *host)
             player2->state      = Player_State_Ground;
             player2->stateInput = Player_Input_P2_AI;
             player2->groundVel  = 0;
+        }
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Ground;
+            player3->stateInput = Player_Input_P2_AI;
+            player3->groundVel  = 0;
+        }
+        if (player4->classID == Player->classID) {
+            player4->state      = Player_State_Ground;
+            player4->stateInput = Player_Input_P2_AI;
+            player4->groundVel  = 0;
         }
     }
 
@@ -122,7 +138,7 @@ bool32 LRZ3OutroK_Cutscene_RunToTeleporter(EntityCutsceneSeq *host)
 
 bool32 LRZ3OutroK_Cutscene_LandOnTeleporter(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (player1->jumpPress)
@@ -132,6 +148,10 @@ bool32 LRZ3OutroK_Cutscene_LandOnTeleporter(EntityCutsceneSeq *host)
         CutsceneSeq_LockPlayerControl(player1);
         if (player2->classID == Player->classID && player2->onGround)
             CutsceneSeq_LockPlayerControl(player2);
+        if (player3->classID == Player->classID && player3->onGround)
+            CutsceneSeq_LockPlayerControl(player3);
+        if (player4->classID == Player->classID && player4->onGround)
+            CutsceneSeq_LockPlayerControl(player4);
 
         return true;
     }
@@ -154,20 +174,23 @@ bool32 LRZ3OutroK_Cutscene_UseTeleporter(EntityCutsceneSeq *host)
 
             RSDK.SetSpriteAnimation(SkyTeleporter->aniFrames, 1, &teleporter->animator, true, 0);
 
-            if (player->characterID == ID_KNUCKLES)
-                RSDK.SetSpriteAnimation(player->aniFrames, ANI_GLIDE_DROP, &player->animator, true, 3);
-            else
-                RSDK.SetSpriteAnimation(player->aniFrames, ANI_SPRING_DIAGONAL, &player->animator, false, 0);
+            switch (player->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(player->aniFrames, ANI_OUTTA_HERE, &player->animator, true, 14); break;
+                default:
+                case ID_TAILS: RSDK.SetSpriteAnimation(player->aniFrames, ANI_SPRING_DIAGONAL, &player->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(player->aniFrames, ANI_GLIDE_DROP, &player->animator, true, 3); break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(player->aniFrames, ANI_UNSPIN, &player->animator, true, 4); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(player->aniFrames, ANI_SPRING_DIAGONAL, &player->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(player->aniFrames, ANI_FREE_FALL, &player->animator, true, 3); break;
+#endif
+            }
 
             self->playerPos[player->playerID].x = player->position.x;
             self->playerPos[player->playerID].y = player->position.y;
         }
 
         RSDK.PlaySfx(LRZ3OutroK->sfxWarp, false, 255);
-    }
-
-    if (host->timer == 60) {
-        foreach_active(Player, player) { RSDK.SetSpriteAnimation(player->aniFrames, ANI_SPRING_TWIRL, &player->animator, false, 3); }
     }
 
     int32 x = teleporter->position.x;

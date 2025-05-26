@@ -9,6 +9,11 @@ typedef enum {
     RING_TYPE_SPARKLE1,
     RING_TYPE_SPARKLE2,
     RING_TYPE_SPARKLE3,
+    RING_TYPE_RED_EMBLEM,
+    RING_TYPE_GREEN_EMBLEM,
+    RING_TYPE_PURPLE_EMBLEM,
+    RING_TYPE_SILVER_EMBLEM,
+    RING_TYPE_GOLD_EMBLEM,
 } RingTypes;
 
 typedef enum {
@@ -26,6 +31,8 @@ struct ObjectRing {
     int32 pan;
     uint16 aniFrames;
     uint16 sfxRing;
+    uint16 sfxAntiRing;
+    uint16 sfxEmblem;
 };
 
 // Entity Class
@@ -45,6 +52,7 @@ struct EntityRing {
     int32 speed;
     Vector2 drawPos;
     Animator animator;
+    int32 emblemID;
 };
 
 // Object Struct
@@ -86,10 +94,12 @@ void Ring_State_LostFX(void);
 void Ring_State_Big(void);
 void Ring_State_Attracted(void);
 void Ring_State_Sparkle(void);
+void Ring_State_Emblem(void);
 
 // Draw States
 void Ring_Draw_Normal(void);
 void Ring_Draw_Oscillating(void);
 void Ring_Draw_Sparkle(void);
+void Ring_Draw_Emblem(void);
 
 #endif //! OBJ_RING_H

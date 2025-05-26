@@ -20,6 +20,7 @@ struct ObjectBeanstalk {
     uint16 sfxImpact;
     uint16 sfxBeanNode;
     uint16 sfxBeanChomp;
+    bool32 hasChomperAchievement;
 };
 
 // Entity Class

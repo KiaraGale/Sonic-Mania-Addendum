@@ -20,6 +20,7 @@ struct ObjectPBL_Setup {
     uint8 tableLow;
     uint8 tableHigh;
     uint16 sfxContinue;
+    int32 touchPause;
 };
 
 // Entity Class

@@ -12,6 +12,11 @@ struct ObjectSpecialRing {
     uint16 sfxSpecialWarp;
     uint16 modelIndex;
     uint16 sceneIndex;
+    TABLE(int32 silverRingColors[6], { 0x000000, 0x606060, 0x909090, 0x000000, 0xC0C0C0, 0xE0E0E0 });
+    TABLE(int32 hyperRingColors[6], { 0xEAEB00, 0xADD43A, 0x24B424, 0x6C8FB2, 0xBD89BD, 0xD8B424 });
+    int32 colorStorage[6];
+    int32 hyperColorState;
+    int32 hyperTimer;
 };
 
 // Entity Class
@@ -55,5 +60,7 @@ void SpecialRing_DebugSpawn(void);
 void SpecialRing_State_Idle(void);
 void SpecialRing_State_Flash(void);
 void SpecialRing_State_Warp(void);
+
+void SpecialRing_Draw_Sparkles(void);
 
 #endif //! OBJ_SPECIALRING_H

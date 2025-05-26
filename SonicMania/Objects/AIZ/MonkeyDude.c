@@ -140,6 +140,8 @@ void MonkeyDude_StageLoad(void)
 #endif
 
     DEBUGMODE_ADD_OBJ(MonkeyDude);
+
+    Zone_SetupHyperAttackList(MonkeyDude->classID, true, true, true, true, true, true);
 }
 
 void MonkeyDude_DebugDraw(void)
@@ -438,8 +440,11 @@ void MonkeyDude_State_Coconut(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &MonkeyDude->hitboxCoconut))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &MonkeyDude->hitboxCoconut))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

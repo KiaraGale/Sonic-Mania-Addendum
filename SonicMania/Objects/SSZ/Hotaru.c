@@ -131,6 +131,8 @@ void Hotaru_StageLoad(void)
     Hotaru->hitboxElectricity.bottom = 8;
 
     DEBUGMODE_ADD_OBJ(Hotaru);
+
+    Zone_SetupHyperAttackList(Hotaru->classID, true, true, true, true, true, true);
 }
 
 void Hotaru_DebugSpawn(void)

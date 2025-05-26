@@ -9,6 +9,7 @@ struct ObjectCrabmeat {
     Hitbox hitboxBadnik;
     Hitbox hitboxProjectile;
     uint16 aniFrames;
+    uint16 sfxFireball;
 };
 
 // Entity Class

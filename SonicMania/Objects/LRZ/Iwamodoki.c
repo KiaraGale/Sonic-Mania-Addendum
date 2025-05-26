@@ -89,6 +89,8 @@ void Iwamodoki_StageLoad(void)
     Iwamodoki->hitboxProjectile.bottom = 4;
 
     DEBUGMODE_ADD_OBJ(Iwamodoki);
+
+    Zone_SetupHyperAttackList(Iwamodoki->classID, true, true, true, true, true, true);
 }
 
 void Iwamodoki_DebugSpawn(void)
@@ -256,8 +258,11 @@ void Iwamodoki_State_Debris(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &Iwamodoki->hitboxProjectile))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Iwamodoki->hitboxProjectile))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (!RSDK.CheckOnScreen(self, NULL))

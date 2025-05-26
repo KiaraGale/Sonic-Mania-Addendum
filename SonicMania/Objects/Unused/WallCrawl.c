@@ -75,6 +75,8 @@ void WallCrawl_StageLoad(void)
     WallCrawl->hitboxProjectile.bottom = 9;
 
     DEBUGMODE_ADD_OBJ(WallCrawl);
+
+    Zone_SetupHyperAttackList(WallCrawl->classID, true, true, true, true, true, true);
 }
 
 void WallCrawl_DebugSpawn(void)

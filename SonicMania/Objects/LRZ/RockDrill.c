@@ -147,6 +147,8 @@ void RockDrill_StageLoad(void)
     RockDrill->sfxHit          = RSDK.GetSfx("Stage/BossHit.wav");
     RockDrill->sfxExplosion    = RSDK.GetSfx("Stage/Explosion2.wav");
     RockDrill->sfxDrill        = RSDK.GetSfx("LRZ/Drill.wav");
+
+    Zone_SetupHyperAttackList(RockDrill->classID, true, true, true, true, true, true);
 }
 
 void RockDrill_CheckPlayerCollisions(void)

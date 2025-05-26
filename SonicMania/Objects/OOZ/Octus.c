@@ -82,6 +82,8 @@ void Octus_StageLoad(void)
     Octus->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
 
     DEBUGMODE_ADD_OBJ(Octus);
+
+    Zone_SetupHyperAttackList(Octus->classID, true, true, true, true, true, true);
 }
 
 void Octus_DebugSpawn(void)
@@ -248,8 +250,11 @@ void Octus_State_Shot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Octus->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Octus->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

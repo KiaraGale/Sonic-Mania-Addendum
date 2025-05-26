@@ -120,6 +120,9 @@ void MetalSonic_StageLoad(void)
     MetalSonic->sfxMSTransform = RSDK.GetSfx("SSZ2/MSTransform.wav");
     MetalSonic->sfxTransform2  = RSDK.GetSfx("Stage/Transform2.wav");
     MetalSonic->sfxAmySqueal   = RSDK.GetSfx("SSZ2/AmySqueal.wav");
+    MetalSonic->sfxElecPulse = RSDK.GetSfx("Stage/ElecPulse.wav");
+
+    Zone_SetupHyperAttackList(MetalSonic->classID, true, true, true, true, true, true);
 #endif
 }
 
@@ -996,6 +999,7 @@ void MetalSonic_State_SetupElectricAttack_Phase1(void)
         self->velocity.y  = 0x88000;
         self->attackTimer = 15;
         self->state       = MetalSonic_State_ElectricAttack_Phase1;
+        RSDK.PlaySfx(MetalSonic->sfxElecPulse, false, 255);
     }
 
     MetalSonic_HandleStageWrap();

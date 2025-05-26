@@ -11,6 +11,7 @@ struct ObjectTMZ3Setup {
     int32 unused;
     int32 bannerAniFrame;
     uint16 aniTiles;
+    bool32 lightsPaletteRotation;
 };
 
 // Entity Class

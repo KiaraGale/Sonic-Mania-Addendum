@@ -55,6 +55,8 @@ void Pointdexter_StageLoad(void)
     Pointdexter->hitbox.bottom = 6;
 
     DEBUGMODE_ADD_OBJ(Pointdexter);
+
+    Zone_SetupHyperAttackList(Pointdexter->classID, true, true, true, true, true, true);
 }
 
 void Pointdexter_DebugSpawn(void)

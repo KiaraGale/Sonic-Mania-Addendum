@@ -54,6 +54,8 @@ void Jawz_StageLoad(void)
     Jawz->hitboxBadnik.bottom = 5;
 
     DEBUGMODE_ADD_OBJ(Jawz);
+
+    Zone_SetupHyperAttackList(Jawz->classID, true, true, true, true, true, true);
 }
 
 void Jawz_DebugSpawn(void)
@@ -76,7 +78,7 @@ void Jawz_CheckPlayerCollisions(void)
     foreach_active(Player, player)
     {
         if (Player_CheckBadnikTouch(player, self, &Jawz->hitboxBadnik) && !Player_CheckBadnikBreak(player, self, true)) {
-            CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), self->position.x, self->position.y)->drawGroup = Zone->objectDrawGroup[1];
+            CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_BOSS), self->position.x, self->position.y)->drawGroup = Zone->objectDrawGroup[1];
             RSDK.PlaySfx(Explosion->sfxDestroy, false, 255);
             destroyEntity(self);
         }

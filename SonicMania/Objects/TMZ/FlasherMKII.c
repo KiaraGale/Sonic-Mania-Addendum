@@ -80,6 +80,9 @@ void FlasherMKII_StageLoad(void)
 
     FlasherMKII->sfxFlop = RSDK.GetSfx("TMZ1/FlasherFlop.wav");
     FlasherMKII->sfxZap  = RSDK.GetSfx("TMZ1/FlasherZap.wav");
+    FlasherMKII->sfxZap2  = RSDK.GetSfx("Stage/Zap.wav");
+
+    Zone_SetupHyperAttackList(FlasherMKII->classID, true, true, true, true, true, true);
 }
 
 void FlasherMKII_DebugSpawn(void)
@@ -113,7 +116,7 @@ void FlasherMKII_HandlePlayerCollisions(void)
 
         if (Player_CheckBadnikTouch(player, self, hitbox)) {
             if ((self->animator.animationID & 3) == 3) {
-                if (player->shield == SHIELD_LIGHTNING || player->invincibleTimer || player->blinkTimer) {
+                if (player->shield == SHIELD_LIGHTNING || player->invincibleTimer || player->superInvulnTimer || player->blinkTimer) {
                     if (Player_CheckBadnikBreak(player, self, true))
                         RSDK.StopSfx(FlasherMKII->sfxZap);
                 }
@@ -291,6 +294,10 @@ void FlasherMKII_State_StrongFlash(void)
 {
     RSDK_THIS(FlasherMKII);
 
+    if (!(self->timer & 30)) {
+        RSDK.PlaySfx(FlasherMKII->sfxZap2, false, 255);
+    }
+    
     if (++self->timer == 120) {
         self->timer = 0;
         RSDK.SetSpriteAnimation(FlasherMKII->aniFrames, self->type + 2, &self->animator, false, 0);

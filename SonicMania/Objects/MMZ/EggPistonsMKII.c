@@ -72,9 +72,9 @@ void EggPistonsMKII_Create(void *data)
                     self->updateRange.y = 0x800000;
 
                     self->hitbox.left   = -33;
-                    self->hitbox.top    = -37;
+                    self->hitbox.top    = -31;
                     self->hitbox.right  = 33;
-                    self->hitbox.bottom = 6;
+                    self->hitbox.bottom = 12;
 
                     self->state     = EggPistonsMKII_State_SetupArena;
                     self->visible   = false;
@@ -161,6 +161,7 @@ void EggPistonsMKII_StageLoad(void)
     EggPistonsMKII->sfxElectrify = RSDK.GetSfx("Stage/Electrify.wav");
     EggPistonsMKII->sfxExplosion = RSDK.GetSfx("Stage/Explosion2.wav");
     EggPistonsMKII->sfxAlarm     = RSDK.GetSfx("MMZ/Alarm.wav");
+    EggPistonsMKII->sfxShatter   = RSDK.GetSfx("Stage/WindowShatter.wav");
 
     RSDK.StopSfx(EggPistonsMKII->sfxAlarm);
 }
@@ -215,8 +216,11 @@ void EggPistonsMKII_CheckPlayerCollisions_Ball(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 }
 
@@ -395,7 +399,7 @@ void EggPistonsMKII_State_EnterBoss(void)
             Zone->playerBoundActiveL[0] = true;
             Zone->cameraBoundsL[0]      = (self->position.x >> 16) - ScreenInfo->center.x;
             Music_TransitionTrack(TRACK_MINIBOSS, 0.0125);
-            EggPistonsMKII->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+            EggPistonsMKII->health = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
 
             self->timer = 142;
             for (int32 i = 0; i < 2; ++i) {
@@ -506,8 +510,25 @@ void EggPistonsMKII_State_StartPinchMode(void)
         CREATE_ENTITY(EggPistonsMKII, INT_TO_VOID(EGGPISTON_ALARM), self->position.x, self->position.y);
 
         EntityEggPistonsMKII *orbSpawner = RSDK_GET_ENTITY(SceneInfo->entitySlot + 6, EggPistonsMKII);
-        RSDK.PlaySfx(EggPistonsMKII->sfxExplosion, false, 255);
+        RSDK.PlaySfx(EggPistonsMKII->sfxShatter, false, 255);
         CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), orbSpawner->position.x, orbSpawner->position.y)->drawGroup = Zone->objectDrawGroup[1];
+        for (int32 i = 0; i < 6; ++i) {
+            int32 x = orbSpawner->position.x + RSDK.Rand(-0x80000, 0x80000);
+            int32 y = orbSpawner->position.y + RSDK.Rand(-0x80000, 0x80000);
+            EntityDebris* debris = CREATE_ENTITY(Debris, NULL, x, y);
+
+            debris->state = Debris_State_Fall;
+            debris->gravityStrength = 0x4000;
+            debris->velocity.x = RSDK.Rand(0, 0x20000);
+            if (debris->position.x < orbSpawner->position.x)
+                debris->velocity.x = -debris->velocity.x;
+
+            debris->velocity.y = RSDK.Rand(-0x40000, -0x10000);
+            debris->drawFX = FX_FLIP;
+            debris->direction = i & 3;
+            debris->drawGroup = Zone->objectDrawGroup[1];
+            RSDK.SetSpriteAnimation(ItemBox->aniFrames, 6, &debris->animator, true, RSDK.Rand(0, 4));
+        }
 
         EggPistonsMKII->isPhase2 = true;
         destroyEntity(orbSpawner);

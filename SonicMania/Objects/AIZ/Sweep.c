@@ -108,6 +108,8 @@ void Sweep_StageLoad(void)
     Sweep->sfxPon = RSDK.GetSfx("Stage/Pon.wav");
 
     DEBUGMODE_ADD_OBJ(Sweep);
+
+    Zone_SetupHyperAttackList(Sweep->classID, true, true, true, true, true, true);
 }
 
 void Sweep_DebugSpawn(void)
@@ -142,27 +144,8 @@ void Sweep_CheckPlayerCollisions(void)
 
     foreach_active(Player, player)
     {
-        Hitbox hitbox;
-        Hitbox *playerHitbox = Player_GetHitbox(player);
-        RSDK.GetHitbox(&player->animator, 0);
-
-        EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(player), Shield);
-        if (shield->classID == Shield->classID && shield->state == Shield_State_Insta) {
-            hitbox.left   = 2 * playerHitbox->left - (playerHitbox->left >> 1);
-            hitbox.top    = 2 * playerHitbox->top - (playerHitbox->top >> 1);
-            hitbox.right  = 2 * playerHitbox->right - (playerHitbox->right >> 1);
-            hitbox.bottom = 2 * playerHitbox->bottom - (playerHitbox->bottom >> 1);
-            playerHitbox  = &hitbox;
-        }
-
-        int32 side = MathHelpers_CheckBoxCollision(self, &Sweep->hitboxBadnik, player, playerHitbox);
-        if (side) {
-            if (self->state != Sweep_State_Turn
-                && ((self->direction == FLIP_NONE && side == C_LEFT) || (self->direction == FLIP_X && side == C_RIGHT)))
-                Player_Hurt(player, self);
-            else
-                Player_CheckBadnikBreak(player, self, true);
-        }
+        if (Player_CheckBadnikTouch(player, self, &Sweep->hitboxBadnik))
+            Player_CheckBadnikBreak(player, self, true);
     }
 }
 
@@ -337,8 +320,11 @@ void Sweep_State_Projectile(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Sweep->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Sweep->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

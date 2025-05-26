@@ -33,7 +33,7 @@ void BSS_Message_Draw(void)
     RSDK.DrawSprite(&self->rightAnimator, &drawPos, true);
 
     if (self->fadeEnabled)
-        RSDK.FillScreen(self->color, self->timer, self->timer, self->timer);
+        RSDK.FillScreen(self->color, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void BSS_Message_Create(void *data)

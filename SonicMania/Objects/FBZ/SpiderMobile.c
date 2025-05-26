@@ -55,7 +55,7 @@ void SpiderMobile_Create(void *data)
                         self->drawGroup         = Zone->objectDrawGroup[1];
                         self->drawFX            = FX_ROTATE | FX_FLIP;
                         self->webCurveDirection = 1;
-                        self->health            = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+                        self->health            = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                         self->active            = ACTIVE_BOUNDS;
                         self->updateRange.x     = 0x400000;
                         self->updateRange.y     = 0x400000;
@@ -693,6 +693,10 @@ void SpiderMobile_Draw_Cockpit(void)
 void SpiderMobile_StateBody_AwaitPlayer(void)
 {
     RSDK_THIS(SpiderMobile);
+    bool32 ultraWide = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &ultraWide);
+#endif
 
     if (++self->timer >= 8) {
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
@@ -718,6 +722,14 @@ void SpiderMobile_StateBody_AwaitPlayer(void)
         else {
             self->timer = 8;
         }
+    }
+
+    if (ultraWide) {
+        Zone->cameraBoundsL[0] = (self->position.x >> 16) - ScreenInfo->center.x;
+        Zone->cameraBoundsR[0] = (self->position.x >> 16) + ScreenInfo->center.x;
+
+        SpiderMobile->boundsL = (Zone->cameraBoundsL[0] + 64) << 16;
+        SpiderMobile->boundsR = (Zone->cameraBoundsR[0] - 64) << 16;
     }
 }
 
@@ -1208,8 +1220,11 @@ void SpiderMobile_StateOrb_Fired(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &SpiderMobile->hitboxOrb))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &SpiderMobile->hitboxOrb))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (!RSDK.CheckOnScreen(self, NULL))

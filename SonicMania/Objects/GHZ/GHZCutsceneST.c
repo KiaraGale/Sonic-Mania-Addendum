@@ -133,7 +133,7 @@ void GHZCutsceneST_Cutscene_SkipCB(void)
 
 bool32 GHZCutsceneST_Cutscene_FadeIn(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityFXRuby *fxRuby    = GHZCutsceneST->fxRuby;
@@ -163,10 +163,20 @@ bool32 GHZCutsceneST_Cutscene_FadeIn(EntityCutsceneSeq *host)
             player2->state      = Player_State_Static;
             player2->stateInput = StateMachine_None;
         }
+        if (player3->classID == Player->classID) {
+            player3->position.y = ruby->position.y;
+            player3->state      = Player_State_Static;
+            player3->stateInput = StateMachine_None;
+        }
+        if (player4->classID == Player->classID) {
+            player4->position.y = ruby->position.y;
+            player4->state      = Player_State_Static;
+            player4->stateInput = StateMachine_None;
+        }
     }
 
     int32 id = 0;
-    for (int32 angle = 0; angle < 0x80; angle += 0x40) {
+    for (int32 angle = 0; angle < 0x80; angle += 0x20) {
         EntityPlayer *player = RSDK_GET_ENTITY(id++, Player);
         if (!player || player->classID == TYPE_BLANK)
             break;
@@ -180,8 +190,10 @@ bool32 GHZCutsceneST_Cutscene_FadeIn(EntityCutsceneSeq *host)
 }
 bool32 GHZCutsceneST_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
 
     EntityPhantomRuby *ruby = GHZCutsceneST->phantomRuby;
     EntityFXRuby *fxRuby    = GHZCutsceneST->fxRuby;
@@ -191,7 +203,7 @@ bool32 GHZCutsceneST_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
     EntityPlayer **curPlayer = &player1;
     if (fxRuby->outerRadius <= 0) {
         int32 id = 0;
-        for (int32 angle = 0; angle < 0x80; angle += 0x10) {
+        for (int32 angle = 0; angle < 0x80; angle += 0x20) {
             EntityPlayer *player = RSDK_GET_ENTITY(id++, Player);
             if (!player || player->classID == TYPE_BLANK)
                 break;
@@ -212,7 +224,7 @@ bool32 GHZCutsceneST_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
     }
     else {
         int32 id = 0;
-        for (int32 angle = 0; angle < 0x80; angle += 0x10) {
+        for (int32 angle = 0; angle < 0x80; angle += 0x20) {
             EntityPlayer *player = RSDK_GET_ENTITY(id++, Player);
             if (!player || player->classID == TYPE_BLANK)
                 break;
@@ -228,8 +240,10 @@ bool32 GHZCutsceneST_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
 }
 bool32 GHZCutsceneST_Cutscene_ExitHBH(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
 
     EntityPhantomRuby *ruby  = GHZCutsceneST->phantomRuby;
     EntityAIZKingClaw *claw  = GHZCutsceneST->claw;

@@ -28,8 +28,10 @@ void TMZ3Setup_StaticUpdate(void)
     if (!(Zone->timer & 7))
         RSDK.RotatePalette(0, 250, 252, true);
 
-    RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(Zone->timer) >> 1) + 128, 192, 197);
-    RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(Zone->timer + 128) >> 1) + 128, 198, 203);
+    if (TMZ3Setup->lightsPaletteRotation) {
+        RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(Zone->timer) >> 1) + 128, 192, 197);
+        RSDK.SetLimitedFade(0, 1, 2, (RSDK.Sin256(Zone->timer + 128) >> 1) + 128, 198, 203);
+    }
 }
 
 void TMZ3Setup_Draw(void) {}
@@ -45,6 +47,7 @@ void TMZ3Setup_StageLoad(void)
 
     TMZ3Setup->palDuration = RSDK.Rand(2, 60);
     TMZ3Setup->palTimer    = 192;
+    TMZ3Setup->lightsPaletteRotation = true;
 
     ++Zone->objectDrawGroup[0];
 
@@ -56,8 +59,11 @@ void TMZ3Setup_StageLoad(void)
         Zone_StartFadeIn(10, 0xF0F0F0);
     }
 
-    leader->shield   = globals->restartShield;
-    sidekick->shield = globals->restartShieldP2;
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        if (player->classID == Player->classID)
+            player->shield = globals->restartShield[p];
+    }
 
     RSDK.SetDrawGroupProperties(0, false, TMZ3Setup_DrawHook_ApplyDynTilesPalette);
     RSDK.SetDrawGroupProperties(1, false, TMZ3Setup_DrawHook_RemoveDynTilesPalette);

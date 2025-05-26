@@ -85,6 +85,8 @@ void Technosqueek_StageLoad(void)
     Technosqueek->hitboxBadnik.bottom = 4;
 
     DEBUGMODE_ADD_OBJ(Technosqueek);
+
+    Zone_SetupHyperAttackList(Technosqueek->classID, true, true, true, true, true, true);
 }
 
 void Technosqueek_DebugSpawn(void)

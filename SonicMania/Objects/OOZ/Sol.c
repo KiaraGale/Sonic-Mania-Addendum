@@ -24,9 +24,17 @@ void Sol_Draw(void)
 {
     RSDK_THIS(Sol);
 
-    for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
-        if ((1 << i) & self->activeOrbs)
-            RSDK.DrawSprite(&self->ballAnimator, &self->positions[i], false);
+    if (globals->gameMode == MODE_ENCORE) {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if (i & self->activeOrbs)
+                RSDK.DrawSprite(&self->ballAnimator, &self->positions[i], false);
+        }
+    }
+    else {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if ((1 << i) & self->activeOrbs)
+                RSDK.DrawSprite(&self->ballAnimator, &self->positions[i], false);
+        }
     }
 
     RSDK.DrawSprite(&self->mainAnimator, NULL, false);
@@ -44,9 +52,10 @@ void Sol_Create(void *data)
         RSDK.SetSpriteAnimation(Sol->aniFrames, 1, &self->mainAnimator, true, 0);
         self->active = ACTIVE_NORMAL;
         self->drawFX |= FX_ROTATE;
-        self->updateRange.x = 0x1000000;
-        self->updateRange.y = 0x1000000;
-        self->state         = Sol_State_SmallFireball;
+        self->updateRange.x   = 0x1000000;
+        self->updateRange.y   = 0x1000000;
+        self->state           = Sol_State_SmallFireball;
+        self->isSmallFireball = true;
     }
     else {
         self->startPos      = self->position;
@@ -54,12 +63,20 @@ void Sol_Create(void *data)
         self->active        = ACTIVE_BOUNDS;
         self->updateRange.x = 0x800000;
         self->updateRange.y = 0x800000;
-        self->activeOrbs    = 2 | 8;
+        if (globals->gameMode == MODE_ENCORE) {
+            self->activeOrbs = 7;
+            self->fireOrbs   = true;
+        }
+        else {
+            self->activeOrbs = 2 | 8;
+            self->fireOrbs   = false;
+        }
 
         RSDK.SetSpriteAnimation(Sol->aniFrames, 0, &self->mainAnimator, true, 0);
         RSDK.SetSpriteAnimation(Sol->aniFrames, 1, &self->ballAnimator, true, 0);
         self->state      = Sol_State_Init;
         self->velocity.x = self->direction == FLIP_NONE ? -0x4000 : 0x4000;
+        self->isSmallFireball = false;
     }
 }
 
@@ -79,6 +96,8 @@ void Sol_StageLoad(void)
     Sol->hitboxOrb.bottom = 4;
 
     DEBUGMODE_ADD_OBJ(Sol);
+
+    Zone_SetupHyperAttackList(Sol->classID, true, true, true, true, true, true);
 }
 
 void Sol_DebugSpawn(void)
@@ -101,20 +120,41 @@ void Sol_HandlePlayerInteractions(void)
     int32 storeX = self->position.x;
     int32 storeY = self->position.y;
 
-    for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
-        if ((1 << i) & self->activeOrbs) {
-            self->position.x = self->positions[i].x;
-            self->position.y = self->positions[i].y;
+    if (globals->gameMode == MODE_ENCORE) {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if (i & self->activeOrbs) {
+                self->position.x = self->positions[i].x;
+                self->position.y = self->positions[i].y;
 
-            foreach_active(Player, player)
-            {
+                foreach_active(Player, player)
+                {
 #if MANIA_USE_PLUS
-                if (player->state != Player_State_MightyHammerDrop) {
+                    if (player->state != Player_State_MightyHammerDrop) {
 #endif
-                    Sol_HandlePlayerHurt();
+                        Sol_HandlePlayerHurt();
 #if MANIA_USE_PLUS
+                    }
+#endif
                 }
+            }
+        }
+    }
+    else {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if ((1 << i) & self->activeOrbs) {
+                self->position.x = self->positions[i].x;
+                self->position.y = self->positions[i].y;
+
+                foreach_active(Player, player)
+                {
+#if MANIA_USE_PLUS
+                    if (player->state != Player_State_MightyHammerDrop) {
 #endif
+                        Sol_HandlePlayerHurt();
+#if MANIA_USE_PLUS
+                    }
+#endif
+                }
             }
         }
     }
@@ -126,23 +166,45 @@ void Sol_HandlePlayerInteractions(void)
     {
         if (Player_CheckBadnikTouch(player, self, &Sol->hitboxBadnik) && Player_CheckBadnikBreak(player, self, false)) {
             int32 angle = self->angle;
-            for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
-                if ((1 << i) & self->activeOrbs) {
-                    self->position.x = self->positions[i].x;
-                    self->position.y = self->positions[i].y;
+            if (globals->gameMode == MODE_ENCORE) {
+                for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+                    if (i & self->activeOrbs) {
+                        self->position.x = self->positions[i].x;
+                        self->position.y = self->positions[i].y;
 
-                    EntitySol *sol = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
+                        EntitySol *sol = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
 
-                    sol->state = Sol_State_ActiveFireball;
+                        sol->state = Sol_State_ActiveFireball;
 #if MANIA_USE_PLUS
-                    if (player->state == Player_State_MightyHammerDrop)
-                        sol->interaction = false;
+                        if (player->state == Player_State_MightyHammerDrop)
+                            sol->interaction = false;
 #endif
-                    sol->velocity.x = 0x380 * RSDK.Cos256(angle);
-                    sol->velocity.y = 0x380 * RSDK.Sin256(angle);
-                }
+                        sol->velocity.x = 0x380 * RSDK.Cos256(angle);
+                        sol->velocity.y = 0x380 * RSDK.Sin256(angle);
+                    }
 
-                angle += (0x100 / SOL_FLAMEORB_COUNT);
+                    angle += (0x100 / SOL_FLAMEORB_COUNT);
+                }
+            }
+            else {
+                for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+                    if ((1 << i) & self->activeOrbs) {
+                        self->position.x = self->positions[i].x;
+                        self->position.y = self->positions[i].y;
+
+                        EntitySol *sol = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
+
+                        sol->state = Sol_State_ActiveFireball;
+#if MANIA_USE_PLUS
+                        if (player->state == Player_State_MightyHammerDrop)
+                            sol->interaction = false;
+#endif
+                        sol->velocity.x = 0x380 * RSDK.Cos256(angle);
+                        sol->velocity.y = 0x380 * RSDK.Sin256(angle);
+                    }
+
+                    angle += (0x100 / SOL_FLAMEORB_COUNT);
+                }
             }
 
             destroyEntity(self);
@@ -161,10 +223,15 @@ void Sol_HandlePlayerHurt(void)
         }
     }
 
-    foreach_active(Shield, shield)
-    {
-        if (Shield_CheckCollisionTouch(shield, self, &Sol->hitboxOrb))
-            Shield_State_Reflect(shield, self);
+    if (self->isSmallFireball) {
+        foreach_active(Shield, shield)
+        {
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Sol->hitboxOrb))
+                    Shield_State_Reflect(player, shield, self);
+            }
+        }
     }
 }
 
@@ -178,13 +245,25 @@ void Sol_HandleRotation(void)
     else
         self->angle = (angle + 1) & 0xFF;
 
-    for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
-        if ((1 << i) & self->activeOrbs) {
-            self->positions[i].x = (RSDK.Cos256(angle) << 12) + self->position.x;
-            self->positions[i].y = (RSDK.Sin256(angle) << 12) + self->position.y;
-        }
+    if (globals->gameMode == MODE_ENCORE) {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if (i & self->activeOrbs) {
+                self->positions[i].x = (RSDK.Cos256(angle) << 12) + self->position.x;
+                self->positions[i].y = (RSDK.Sin256(angle) << 12) + self->position.y;
+            }
 
-        angle += (0x100 / SOL_FLAMEORB_COUNT);
+            angle += (0x100 / SOL_FLAMEORB_COUNT);
+        }
+    }
+    else {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if ((1 << i) & self->activeOrbs) {
+                self->positions[i].x = (RSDK.Cos256(angle) << 12) + self->position.x;
+                self->positions[i].y = (RSDK.Sin256(angle) << 12) + self->position.y;
+            }
+
+            angle += (0x100 / SOL_FLAMEORB_COUNT);
+        }
     }
 }
 
@@ -275,16 +354,31 @@ void Sol_State_ShootingOrbs(void)
     uint8 angle = self->angle;
     Sol_HandleRotation();
 
-    for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
-        if (angle == 0x40) {
-            if ((1 << i) & self->activeOrbs) {
-                self->activeOrbs &= ~(1 << i);
-                EntitySol *sol  = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
-                sol->velocity.x = self->direction == FLIP_NONE ? -0x20000 : 0x20000;
+    if (globals->gameMode == MODE_ENCORE) {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if (angle == 0x40) {
+                if (i & self->activeOrbs) {
+                    self->activeOrbs &= ~i;
+                    EntitySol *sol  = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
+                    sol->velocity.x = self->direction == FLIP_NONE ? -0x20000 : 0x20000;
+                }
             }
-        }
 
-        angle += (0x100 / SOL_FLAMEORB_COUNT);
+            angle += (0x100 / SOL_FLAMEORB_COUNT);
+        }
+    }
+    else {
+        for (int32 i = 0; i < SOL_FLAMEORB_COUNT; ++i) {
+            if (angle == 0x40) {
+                if ((1 << i) & self->activeOrbs) {
+                    self->activeOrbs &= ~(1 << i);
+                    EntitySol *sol  = CREATE_ENTITY(Sol, INT_TO_VOID(true), self->positions[i].x, self->positions[i].y);
+                    sol->velocity.x = self->direction == FLIP_NONE ? -0x20000 : 0x20000;
+                }
+            }
+
+            angle += (0x100 / SOL_FLAMEORB_COUNT);
+        }
     }
 
     Sol_HandlePlayerInteractions();

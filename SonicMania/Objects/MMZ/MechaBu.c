@@ -76,6 +76,8 @@ void MechaBu_StageLoad(void)
 
     MechaBu->sfxSawUp   = RSDK.GetSfx("MMZ/SawUp.wav");
     MechaBu->sfxSawDown = RSDK.GetSfx("MMZ/SawDown.wav");
+
+    Zone_SetupHyperAttackList(MechaBu->classID, true, true, true, true, true, true);
 }
 
 void MechaBu_DebugSpawn(void)

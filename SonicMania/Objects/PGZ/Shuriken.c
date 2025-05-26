@@ -89,6 +89,8 @@ void Shuriken_StageLoad(void)
 
     Shuriken->sfxArrowLaunch = RSDK.GetSfx("PSZ/ArrowLaunch.wav");
     Shuriken->sfxArrowHit    = RSDK.GetSfx("PSZ/ArrowHit.wav");
+
+    Zone_SetupHyperAttackList(Shuriken->classID, true, true, true, true, true, true);
 }
 
 void Shuriken_CheckPlayerCollisions(void)

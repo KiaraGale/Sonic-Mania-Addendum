@@ -62,7 +62,7 @@ void DiveEggman_Create(void *data)
                 self->updateRange.x     = 0x800000;
                 self->startY            = self->position.y;
                 self->updateRange.y     = 0x800000;
-                self->health            = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
+                self->health            = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
                 DiveEggman->screwMobile = RSDK_GET_ENTITY(SceneInfo->entitySlot - 1, ScrewMobile);
                 RSDK.SetSpriteAnimation(DiveEggman->diveFrames, 0, &self->animator, true, 0);
                 self->state = DiveEggman_StateEggman_AwaitPlayer;

@@ -246,8 +246,7 @@ void PSZ1Setup_StageLoad(void)
         RSDK.LoadPalette(0, "EncorePSZ1.act", 0b0000000011111111);
 
     // Fun Fact: Pre-Plus didn't have animal types set for PGZ! It'd always be flickies due to that being the default value!
-    Animals->animalTypes[0] = ANIMAL_POCKY;
-    Animals->animalTypes[1] = ANIMAL_BECKY;
+    Animals->animalTypes[0] = ANIMAL_FLICKY;
 
     BGSwitch->switchCallback[PSZ1_BG_INSIDE]  = PSZ1Setup_BGSwitch_Inside;
     BGSwitch->switchCallback[PSZ1_BG_OUTSIDE] = PSZ1Setup_BGSwitch_Outside;

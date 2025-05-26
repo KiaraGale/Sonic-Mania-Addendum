@@ -42,6 +42,14 @@ void LevelSelect_StaticUpdate(void)
 void LevelSelect_Draw(void)
 {
     RSDK_THIS(LevelSelect);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        LevelSelect_DrawTouchUI();
+    }
 
     StateMachine_Run(self->stateDraw);
 }
@@ -89,33 +97,50 @@ void LevelSelect_StageLoad(void)
 
     globals->medalMods |= MEDAL_DEBUGMODE;
 #if MANIA_USE_PLUS
-    LevelSelect->cheatCodePtrs[0] = LevelSelect->cheat_RickyMode;
-    LevelSelect->cheatCodePtrs[1] = LevelSelect->cheat_AllEmeralds;
-    LevelSelect->cheatCodePtrs[2] = LevelSelect->cheat_MaxContinues;
-    LevelSelect->cheatCodePtrs[3] = LevelSelect->cheat_SwapGameMode;
-    LevelSelect->cheatCodePtrs[4] = LevelSelect->cheat_UnlockAllMedals;
-    LevelSelect->cheatCodePtrs[5] = LevelSelect->cheat_SuperDash;
-    LevelSelect->cheatCodePtrs[6] = LevelSelect->cheat_MaxControl;
-    LevelSelect->cheatCodePtrs[7] = LevelSelect->cheat_ToggleSuperMusic;
+    LevelSelect->cheatCodePtrs[0]  = LevelSelect->cheat_RickyMode;
+    LevelSelect->cheatCodePtrs[1]  = LevelSelect->cheat_AllEmeralds;
+    LevelSelect->cheatCodePtrs[2]  = LevelSelect->cheat_MaxContinues;
+    LevelSelect->cheatCodePtrs[3]  = LevelSelect->cheat_SwapGameMode;
+    LevelSelect->cheatCodePtrs[4]  = LevelSelect->cheat_UnlockAllMedals;
+    LevelSelect->cheatCodePtrs[5]  = LevelSelect->cheat_SuperDash;
+    LevelSelect->cheatCodePtrs[6]  = LevelSelect->cheat_MaxControl;
+    LevelSelect->cheatCodePtrs[7]  = LevelSelect->cheat_ToggleSuperMusic;
+    LevelSelect->cheatCodePtrs[8]  = LevelSelect->cheat_AllTimeStones;
+    LevelSelect->cheatCodePtrs[9]  = LevelSelect->cheat_AllSuperEmeralds;
+    LevelSelect->cheatCodePtrs[10] = LevelSelect->cheat_Secret;
 
-    LevelSelect->checkCheatActivated[0] = LevelSelect_Cheat_RickyMode;
-    LevelSelect->checkCheatActivated[1] = LevelSelect_Cheat_AllEmeralds;
-    LevelSelect->checkCheatActivated[2] = LevelSelect_Cheat_MaxContinues;
-    LevelSelect->checkCheatActivated[3] = LevelSelect_Cheat_SwapGameMode;
-    LevelSelect->checkCheatActivated[4] = LevelSelect_Cheat_UnlockAllMedals;
-    LevelSelect->checkCheatActivated[5] = LevelSelect_Cheat_SuperDash;
-    LevelSelect->checkCheatActivated[6] = LevelSelect_Cheat_MaxControl;
-    LevelSelect->checkCheatActivated[7] = LevelSelect_Cheat_ToggleSuperMusic;
+    LevelSelect->checkCheatActivated[0]  = LevelSelect_Cheat_RickyMode;
+    LevelSelect->checkCheatActivated[1]  = LevelSelect_Cheat_AllEmeralds;
+    LevelSelect->checkCheatActivated[2]  = LevelSelect_Cheat_MaxContinues;
+    LevelSelect->checkCheatActivated[3]  = LevelSelect_Cheat_SwapGameMode;
+    LevelSelect->checkCheatActivated[4]  = LevelSelect_Cheat_UnlockAllMedals;
+    LevelSelect->checkCheatActivated[5]  = LevelSelect_Cheat_SuperDash;
+    LevelSelect->checkCheatActivated[6]  = LevelSelect_Cheat_MaxControl;
+    LevelSelect->checkCheatActivated[7]  = LevelSelect_Cheat_ToggleSuperMusic;
+    LevelSelect->checkCheatActivated[8]  = LevelSelect_Cheat_AllTimeStones;
+    LevelSelect->checkCheatActivated[9]  = LevelSelect_Cheat_AllSuperEmeralds;
+    LevelSelect->checkCheatActivated[10] = LevelSelect_Cheat_Secret;
 
-    LevelSelect->cheatCodePos[0] = 0;
-    LevelSelect->cheatCodePos[1] = 0;
-    LevelSelect->cheatCodePos[2] = 0;
-    LevelSelect->cheatCodePos[3] = 0;
-    LevelSelect->cheatCodePos[4] = 0;
-    LevelSelect->cheatCodePos[5] = 0;
-    LevelSelect->cheatCodePos[6] = 0;
-    LevelSelect->cheatCodePos[7] = 0;
+    LevelSelect->cheatCodePos[0]  = 0;
+    LevelSelect->cheatCodePos[1]  = 0;
+    LevelSelect->cheatCodePos[2]  = 0;
+    LevelSelect->cheatCodePos[3]  = 0;
+    LevelSelect->cheatCodePos[4]  = 0;
+    LevelSelect->cheatCodePos[5]  = 0;
+    LevelSelect->cheatCodePos[6]  = 0;
+    LevelSelect->cheatCodePos[7]  = 0;
+    LevelSelect->cheatCodePos[8]  = 0;
+    LevelSelect->cheatCodePos[9]  = 0;
+    LevelSelect->cheatCodePos[10] = 0;
 #endif
+    LevelSelect->dpadFrames = RSDK.LoadSpriteAnimation("Global/TouchControls.bin", SCOPE_STAGE);
+
+    RSDK.SetSpriteAnimation(LevelSelect->dpadFrames, 0, &LevelSelect->dpadAnimator, true, 0);
+    RSDK.SetSpriteAnimation(LevelSelect->dpadFrames, 1, &LevelSelect->dpadTouchAnimator, true, 0);
+
+    LevelSelect->touchDir = -1;
+
+    LevelSelect->allEmeralds = false;
 }
 
 #if MANIA_USE_PLUS
@@ -125,6 +150,9 @@ void LevelSelect_Cheat_AllEmeralds(void)
     RSDK.PlaySfx(LevelSelect->sfxEmerald, false, 255);
 
     for (int32 e = 0; e < 7; ++e) SaveGame_SetEmerald(e);
+
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD)
+        LevelSelect->allEmeralds = true;
 }
 
 void LevelSelect_Cheat_ToggleSuperMusic(void)
@@ -136,7 +164,7 @@ void LevelSelect_Cheat_ToggleSuperMusic(void)
 void LevelSelect_Cheat_MaxContinues(void)
 {
     RSDK.PlaySfx(LevelSelect->sfxContinue, false, 255);
-    SaveGame_GetSaveRAM()->continues = 14;
+    SaveGame_GetSaveRAM()->continues = 99;
 }
 
 void LevelSelect_Cheat_MaxControl(void)
@@ -185,12 +213,42 @@ void LevelSelect_Cheat_UnlockAllMedals(void)
         RSDK.PlaySfx(LevelSelect->sfxRing, false, 255);
     }
 }
+
+void LevelSelect_Cheat_AllSuperEmeralds(void)
+{
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        if (LevelSelect->allEmeralds) {
+            Music_FadeOut(0.125);
+            RSDK.PlaySfx(LevelSelect->sfxContinue, false, 255);
+            RSDK.PlaySfx(LevelSelect->sfxEmerald, false, 254);
+
+            for (int32 e = 0; e < 7; ++e) Addendum_SetSuperEmerald(e);
+        }
+    }
+}
+
+void LevelSelect_Cheat_AllTimeStones(void)
+{
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+        Music_FadeOut(0.125);
+        RSDK.PlaySfx(LevelSelect->sfxEmerald, false, 255);
+
+        for (int32 t = 0; t < 7; ++t) Addendum_SetTimeStone(t);
+    }
+}
+
+void LevelSelect_Cheat_Secret(void)
+{
+    Music_FadeOut(0.125);
+    RSDK.PlaySfx(LevelSelect->sfxAltRing, false, 255);
+    addendumVar->secretMovesets = true;
+}
 #endif
 
 void LevelSelect_Draw_Fade(void)
 {
     RSDK_THIS(LevelSelect);
-    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void LevelSelect_State_Init(void)
@@ -327,6 +385,14 @@ void LevelSelect_State_FadeIn(void)
 void LevelSelect_State_Navigate(void)
 {
     RSDK_THIS(LevelSelect);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        LevelSelect_HandleTouchInput();
+    }
 
     bool32 confirmPress = API_GetConfirmButtonFlip() ? ControllerInfo->keyB.press : ControllerInfo->keyA.press;
 
@@ -400,7 +466,7 @@ void LevelSelect_State_Navigate(void)
 #if MANIA_USE_PLUS
             self->offsetUFO = self->soundTestID % 14;
             self->offsetBSS = self->soundTestID & 0x1F;
-            for (int32 i = 0; i < 8; ++i) {
+            for (int32 i = 0; i < 10; ++i) {
                 if (self->soundTestID != LevelSelect->cheatCodePtrs[i][LevelSelect->cheatCodePos[i]]) {
                     LevelSelect->cheatCodePos[i] = 0;
                 }
@@ -669,6 +735,322 @@ void LevelSelect_HandleNewStagePos(void)
     else {
         RSDK.PlaySfx(LevelSelect->sfxFail, false, 255);
     }
+}
+
+void LevelSelect_HandleTouchInput(void)
+{
+    RSDK_THIS(LevelSelect);
+
+    uint8 dir = -1;
+
+    int32 tx = 0, ty = 0;
+    if (LevelSelect_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+        tx -= 56;
+        ty -= 184;
+
+        switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+            case 0:
+                ControllerInfo->keyRight.down |= true;
+                dir = 0;
+                break;
+
+            case 1:
+                ControllerInfo->keyDown.down |= true;
+                dir = 1;
+                break;
+
+            case 2:
+                ControllerInfo->keyLeft.down |= true;
+                dir = 2;
+                break;
+
+            case 3:
+                ControllerInfo->keyUp.down |= true;
+                dir = 3;
+                break;
+        }
+    }
+
+    InputState *confirmButton = API_GetConfirmButtonFlip() ? &ControllerInfo->keyB : &ControllerInfo->keyA;
+
+    int32 jumpX = ScreenInfo->size.x - 104;
+    int32 jumpY = 140;
+
+    // fixes a bug with button vs touch
+    bool32 touchedConfirm = false;
+    if (LevelSelect_CheckTouchRect(jumpX, jumpY, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+        confirmButton->down |= true;
+        touchedConfirm = true;
+    }
+
+    bool32 touchedSwap = false;
+    if (LevelSelect_CheckTouchRect(jumpX, jumpY - 64, ScreenInfo->size.x, jumpY, NULL, NULL) >= 0) {
+        ControllerInfo->keyX.down |= true;
+        touchedSwap = true;
+    }
+
+    bool32 touchedSwapP2 = false;
+    if (LevelSelect_CheckTouchRect(jumpX - 64, jumpY, jumpX, ScreenInfo->size.x, NULL, NULL) >= 0) {
+        ControllerInfo->keyY.down |= true;
+        touchedSwapP2 = true;
+    }
+
+    if (dir != LevelSelect->touchDir && ControllerInfo->keyUp.down)
+        ControllerInfo->keyUp.press |= ControllerInfo->keyUp.down;
+
+    if (dir != LevelSelect->touchDir && ControllerInfo->keyDown.down)
+        ControllerInfo->keyDown.press |= ControllerInfo->keyDown.down;
+
+    if (dir != LevelSelect->touchDir && ControllerInfo->keyLeft.down)
+        ControllerInfo->keyLeft.press |= ControllerInfo->keyLeft.down;
+
+    if (dir != LevelSelect->touchDir && ControllerInfo->keyRight.down)
+        ControllerInfo->keyRight.press |= ControllerInfo->keyRight.down;
+
+    if (!LevelSelect->touchConfirm && touchedConfirm)
+        confirmButton->press |= confirmButton->down;
+
+    if (!LevelSelect->touchSwap && touchedSwap)
+        ControllerInfo->keyX.press |= ControllerInfo->keyX.down;
+    LevelSelect->touchSwap = ControllerInfo->keyX.down;
+
+    if (!LevelSelect->touchSwapP2 && touchedSwapP2)
+        ControllerInfo->keyY.press |= ControllerInfo->keyY.down;
+    LevelSelect->touchSwapP2 = ControllerInfo->keyY.down;
+
+    LevelSelect->touchConfirm = confirmButton->down;
+    LevelSelect->touchDir     = dir;
+}
+
+void LevelSelect_DrawTouchUI(void)
+{
+    RSDK_THIS(LevelSelect);
+
+    int32 alphaStore   = self->alpha;
+    int32 inkStore     = self->inkEffect;
+    int32 fxStore      = self->drawFX;
+    Vector2 scaleStore = self->scale;
+
+    LevelSelect->dpadPos.x = TO_FIXED(56);
+    LevelSelect->dpadPos.y = TO_FIXED(184);
+
+    LevelSelect->confirmPos.x = TO_FIXED(ScreenInfo[SceneInfo->currentScreenID].size.x - 56);
+    LevelSelect->confirmPos.y = TO_FIXED(188);
+
+    LevelSelect->swapPos.x = LevelSelect->confirmPos.x;
+    LevelSelect->swapPos.y = LevelSelect->confirmPos.y - TO_FIXED(64);
+
+    LevelSelect->swapP2Pos.x = LevelSelect->confirmPos.x - TO_FIXED(64);
+    LevelSelect->swapP2Pos.y = LevelSelect->confirmPos.y;
+
+    self->inkEffect = INK_ALPHA;
+    self->drawFX    = FX_SCALE;
+
+    int32 opacity = (int32)(0x100 * 0.625);
+    self->scale.x = 0x200;
+    self->scale.y = 0x200;
+
+    InputState *confirmButton = API_GetConfirmButtonFlip() ? &ControllerInfo->keyB : &ControllerInfo->keyA;
+
+    bool32 canMove    = true;
+    bool32 canConfirm = true;
+    bool32 canSwap    = true;
+    bool32 canSwapP2  = true;
+
+    if (canMove) {
+        if (LevelSelect->dpadAlpha < opacity)
+            LevelSelect->dpadAlpha += 4;
+
+        // Draw DPad
+        self->alpha                           = LevelSelect->dpadAlpha;
+        LevelSelect->dpadAnimator.frameID = 10;
+        RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+
+        if (LevelSelect->touchDir == 2 || ControllerInfo->keyLeft.down) {
+            self->alpha                                = opacity;
+            LevelSelect->dpadTouchAnimator.frameID = 6;
+            RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->dpadPos, true);
+        }
+        else {
+            self->alpha                           = LevelSelect->dpadAlpha;
+            LevelSelect->dpadAnimator.frameID = 6;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+
+        if (LevelSelect->touchDir == 1 || ControllerInfo->keyDown.down) {
+            self->alpha                                = opacity;
+            LevelSelect->dpadTouchAnimator.frameID = 9;
+            RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->dpadPos, true);
+        }
+        else {
+            self->alpha                           = LevelSelect->dpadAlpha;
+            LevelSelect->dpadAnimator.frameID = 9;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+
+        if (LevelSelect->touchDir == 0 || ControllerInfo->keyRight.down) {
+            self->alpha                                = opacity;
+            LevelSelect->dpadTouchAnimator.frameID = 7;
+            RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->dpadPos, true);
+        }
+        else {
+            self->alpha                           = LevelSelect->dpadAlpha;
+            LevelSelect->dpadAnimator.frameID = 7;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+
+        if (LevelSelect->touchDir == 3 || ControllerInfo->keyUp.down) {
+            self->alpha                                = opacity;
+            LevelSelect->dpadTouchAnimator.frameID = 8;
+            RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->dpadPos, true);
+        }
+        else {
+            self->alpha                           = LevelSelect->dpadAlpha;
+            LevelSelect->dpadAnimator.frameID = 8;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+
+        if ((!ControllerInfo->keyUp.down && !ControllerInfo->keyDown.down && !ControllerInfo->keyLeft.down && !ControllerInfo->keyRight.down)) {
+            self->alpha               = LevelSelect->dpadAlpha;
+            LevelSelect->dpadAnimator.frameID = 11;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+    }
+    else {
+        if (LevelSelect->dpadAlpha > 0) {
+            LevelSelect->dpadAlpha -= 4;
+        }
+
+        self->alpha = LevelSelect->dpadAlpha;
+        if (self->alpha > 0) {
+            LevelSelect->dpadAnimator.frameID = 0;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->dpadPos, true);
+        }
+    }
+
+    if (canConfirm) {
+        if ((SceneInfo->state & 3) == ENGINESTATE_REGULAR) {
+            if (LevelSelect->confirmAlpha < opacity)
+                LevelSelect->confirmAlpha += 4;
+
+            if (confirmButton->down) {
+                self->alpha                                = opacity;
+                LevelSelect->dpadTouchAnimator.frameID = 1;
+                RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->confirmPos, true);
+            }
+            else {
+                self->alpha                           = LevelSelect->confirmAlpha;
+                LevelSelect->dpadAnimator.frameID = 1;
+                RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->confirmPos, true);
+            }
+        }
+        else {
+            LevelSelect->confirmAlpha = 0;
+        }
+    }
+    else {
+        if (LevelSelect->confirmAlpha > 0)
+            LevelSelect->confirmAlpha -= 4;
+
+        self->alpha = LevelSelect->confirmAlpha;
+        if (self->alpha > 0) {
+            LevelSelect->dpadAnimator.frameID = 1;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->confirmPos, true);
+        }
+    }
+
+    if (canSwap) {
+        if ((SceneInfo->state & 3) == ENGINESTATE_REGULAR) {
+            if (LevelSelect->swapAlpha < opacity)
+                LevelSelect->swapAlpha += 4;
+
+            if (ControllerInfo->keyX.down) {
+                self->alpha                                = opacity;
+                LevelSelect->dpadTouchAnimator.frameID = 4;
+                RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->swapPos, true);
+            }
+            else {
+                self->alpha                           = LevelSelect->swapAlpha;
+                LevelSelect->dpadAnimator.frameID = 4;
+                RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->swapPos, true);
+            }
+        }
+        else {
+            LevelSelect->swapAlpha = 0;
+        }
+    }
+    else {
+        if (LevelSelect->swapAlpha > 0)
+            LevelSelect->swapAlpha -= 4;
+
+        self->alpha = LevelSelect->swapAlpha;
+        if (self->alpha > 0) {
+            LevelSelect->dpadAnimator.frameID = 4;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->swapPos, true);
+        }
+    }
+
+    if (canSwapP2) {
+        if ((SceneInfo->state & 3) == ENGINESTATE_REGULAR) {
+            if (LevelSelect->swapP2Alpha < opacity)
+                LevelSelect->swapP2Alpha += 4;
+
+            if (ControllerInfo->keyY.down) {
+                self->alpha                                = opacity;
+                LevelSelect->dpadTouchAnimator.frameID = 4;
+                RSDK.DrawSprite(&LevelSelect->dpadTouchAnimator, &LevelSelect->swapP2Pos, true);
+            }
+            else {
+                self->alpha                           = LevelSelect->swapP2Alpha;
+                LevelSelect->dpadAnimator.frameID = 4;
+                RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->swapP2Pos, true);
+            }
+        }
+        else {
+            LevelSelect->swapP2Alpha = 0;
+        }
+    }
+    else {
+        if (LevelSelect->swapP2Alpha > 0)
+            LevelSelect->swapP2Alpha -= 4;
+
+        self->alpha = LevelSelect->swapP2Alpha;
+        if (self->alpha > 0) {
+            LevelSelect->dpadAnimator.frameID = 4;
+            RSDK.DrawSprite(&LevelSelect->dpadAnimator, &LevelSelect->swapP2Pos, true);
+        }
+    }
+
+    self->alpha     = alphaStore;
+    self->inkEffect = inkStore;
+    self->drawFX    = fxStore;
+    self->scale     = scaleStore;
+}
+
+int32 LevelSelect_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32* fx, int32* fy)
+{
+    if (fx)
+        *fx = 0;
+    if (fy)
+        *fy = 0;
+
+    for (int32 t = 0; t < TouchInfo->count; ++t) {
+        int32 tx = (int32)(TouchInfo->x[t] * ScreenInfo->size.x);
+        int32 ty = (int32)(TouchInfo->y[t] * ScreenInfo->size.y);
+
+        if (TouchInfo->down[t]) {
+            if (tx >= x1 && ty >= y1 && tx <= x2 && ty <= y2) {
+                if (fx)
+                    *fx = tx;
+                if (fy)
+                    *fy = ty;
+
+                return t;
+            }
+        }
+    }
+
+    return -1;
 }
 
 #if GAME_INCLUDE_EDITOR

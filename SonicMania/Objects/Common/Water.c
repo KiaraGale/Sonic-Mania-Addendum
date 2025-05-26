@@ -535,7 +535,7 @@ void Water_State_Water(void)
                         }
                     }
 
-                    if (player->shield != SHIELD_BUBBLE) {
+                    if (player->shield != SHIELD_BUBBLE && !player->hyperState) {
                         Water_SpawnBubble(player, playerID);
 
                         bool32 playAlertSfx = false;
@@ -601,7 +601,21 @@ void Water_State_Water(void)
                             case 1740: playAlertSfx = true; break;
 
                             case 1800:
-                                player->deathType = PLAYER_DEATH_DROWN;
+                                if (SceneInfo->debugMode) {
+                                    player->state = Player_State_Hurt;
+                                    RSDK.SetSpriteAnimation(player->aniFrames, ANI_HURT, &player->animator, false, 0);
+                                    player->velocity.y     = -0x40000;
+                                    player->onGround       = false;
+                                    player->tileCollisions = TILECOLLISION_DOWN;
+                                    player->blinkTimer     = 120;
+                                    if (player->underwater) {
+                                        player->velocity.x >>= 1;
+                                        player->velocity.y = -0x20000;
+                                    }
+                                    RSDK.PlaySfx(Player->sfxHurt, false, 0xFF);
+                                }
+                                else
+                                    player->deathType = PLAYER_DEATH_DROWN;
                                 if (!pool)
                                     player->drawGroup = Zone->playerDrawGroup[1];
                                 playAlertSfx = true;
@@ -791,7 +805,7 @@ void Water_State_Bubble(void)
             foreach_active(Player, player)
             {
                 if (Player_CheckValidState(player) || player->state == Player_State_FlyToPlayer) {
-                    if (player->shield != SHIELD_BUBBLE && player->underwater && !Water_GetPlayerBubble(player)
+                    if (player->shield != SHIELD_BUBBLE && !player->hyperState && player->underwater && !Water_GetPlayerBubble(player)
                         && player->position.x >= self->position.x - TO_FIXED(16) && player->position.x <= self->position.x + TO_FIXED(16)) {
 
                         bool32 inWater = false;

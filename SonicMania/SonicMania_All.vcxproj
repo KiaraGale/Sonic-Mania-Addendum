@@ -190,6 +190,7 @@
     <ClInclude Include="Objects\GHZ\GHZCutsceneK.h" />
     <ClInclude Include="Objects\GHZ\GHZCutsceneST.h" />
     <ClInclude Include="Objects\GHZ\GHZSetup.h" />
+    <ClInclude Include="Objects\GHZ\Mosqui.h" />
     <ClInclude Include="Objects\GHZ\Motobug.h" />
     <ClInclude Include="Objects\GHZ\Newtron.h" />
     <ClInclude Include="Objects\GHZ\SpikeLog.h" />
@@ -240,6 +241,7 @@
     <ClInclude Include="Objects\Global\Spikes.h" />
     <ClInclude Include="Objects\Global\Spring.h" />
     <ClInclude Include="Objects\Global\StarPost.h" />
+    <ClInclude Include="Objects\Global\SuperFlicky.h" />
     <ClInclude Include="Objects\Global\SuperSparkle.h" />
     <ClInclude Include="Objects\Global\TimeAttackGate.h" />
     <ClInclude Include="Objects\Global\TitleCard.h" />
@@ -303,7 +305,10 @@
     <ClInclude Include="Objects\LRZ\Flamethrower.h" />
     <ClInclude Include="Objects\LRZ\HeavyKing.h" />
     <ClInclude Include="Objects\LRZ\HeavyRider.h" />
+    <ClInclude Include="Objects\LRZ\HPZBeam.h" />
     <ClInclude Include="Objects\LRZ\HPZEmerald.h" />
+    <ClInclude Include="Objects\LRZ\HPZIntro.h" />
+    <ClInclude Include="Objects\LRZ\HPZSetup.h" />
     <ClInclude Include="Objects\LRZ\Iwamodoki.h" />
     <ClInclude Include="Objects\LRZ\KingAttack.h" />
     <ClInclude Include="Objects\LRZ\KingClaw.h" />
@@ -338,6 +343,7 @@
     <ClInclude Include="Objects\LRZ\Turbine.h" />
     <ClInclude Include="Objects\LRZ\TurretSwitch.h" />
     <ClInclude Include="Objects\LRZ\WalkerLegs.h" />
+    <ClInclude Include="Objects\Menu\AddendumToggles.h" />
     <ClInclude Include="Objects\Menu\CompetitionMenu.h" />
     <ClInclude Include="Objects\Menu\DAControl.h" />
     <ClInclude Include="Objects\Menu\DASetup.h" />
@@ -1619,6 +1625,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Objects\GHZ\Mosqui.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Objects\GHZ\Motobug.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -1884,6 +1896,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Objects\Global\StarPost.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Objects\Global\SuperFlicky.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -2207,7 +2225,25 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZBeam.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Objects\LRZ\HPZEmerald.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZIntro.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZSetup.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -2412,6 +2448,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Objects\LRZ\WalkerLegs.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Objects\Menu\AddendumToggles.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -4394,13 +4436,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\Game\</OutDir>
-    <TargetName>Game</TargetName>
+    <TargetName>Addendum</TargetName>
     <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\Game\Intermediate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\Game\</OutDir>
-    <TargetName>Game</TargetName>
+    <TargetName>Addendum</TargetName>
     <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\Game\Intermediate\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -4457,7 +4499,7 @@
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RETRO_REVISION=2;RETRO_STANDALONE=1;_DEBUG;SONICMANIA_EXPORTS;_WINDOWS;_USRDLL;RETRO_STANDALONE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RETRO_REVISION=2;RETRO_STANDALONE=1;_DEBUG;SONICMANIA_EXPORTS;_WINDOWS;_USRDLL;RETRO_STANDALONE=1;RETRO_USE_MOD_LOADER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -4482,11 +4524,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RETRO_REVISION=2;RETRO_STANDALONE=1;NDEBUG;SONICMANIA_EXPORTS;_WINDOWS;_USRDLL;RETRO_STANDALONE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RETRO_REVISION=2;RETRO_STANDALONE=1;NDEBUG;SONICMANIA_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Objects\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

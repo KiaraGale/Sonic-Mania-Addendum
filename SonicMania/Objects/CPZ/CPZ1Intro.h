@@ -40,7 +40,7 @@ void CPZ1Intro_Serialize(void);
 // Extra Entity Functions
 void CPZ1Intro_SetupCutscene(void);
 void CPZ1Intro_Particle_ChemDrop(EntityDebris *debris);
-void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer *player1, EntityPlayer *player2, int32 targetY);
+void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer *player1, EntityPlayer *player2, EntityPlayer *player3, EntityPlayer *player4, int32 targetY);
 
 bool32 CPZ1Intro_CheckSonicAnimFinish(void);
 bool32 CPZ1Intro_CheckTailsAnimFinish(int32 timer);

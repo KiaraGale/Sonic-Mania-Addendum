@@ -12,6 +12,14 @@ ObjectDebugMode *DebugMode;
 void DebugMode_Update(void)
 {
     RSDK_THIS(DebugMode);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        DebugMode_HandleTouchInput();
+    }
 
     API_SetAchievementsEnabled(false);
 
@@ -167,6 +175,161 @@ void DebugMode_AddObject(uint16 id, void (*draw)(void), void (*spawn)(void))
         DebugMode->draw[DebugMode->itemCount]     = draw;
         DebugMode->spawn[DebugMode->itemCount]    = spawn;
         DebugMode->itemCount++;
+    }
+}
+
+void DebugMode_HandleTouchInput(void)
+{
+    RSDK_THIS(DebugMode);
+
+    RSDKControllerState *controller = &ControllerInfo[CONT_P1];
+
+    int32 tx = 0, ty = 0;
+    if (HUD_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+        tx -= 56;
+        ty -= 184;
+
+        switch (((RSDK.ATan2(tx, ty) + 16) & 0xFF) >> 5) {
+        case 0:
+            ControllerInfo->keyRight.down |= true;
+            controller->keyRight.down = true;
+            break;
+
+        case 1:
+            ControllerInfo->keyRight.down |= true;
+            controller->keyRight.down = true;
+
+            ControllerInfo->keyDown.down |= true;
+            controller->keyDown.down = true;
+            break;
+
+        case 2:
+            ControllerInfo->keyDown.down |= true;
+            controller->keyDown.down = true;
+            break;
+
+        case 3:
+            ControllerInfo->keyDown.down |= true;
+            controller->keyDown.down = true;
+
+            ControllerInfo->keyLeft.down |= true;
+            controller->keyLeft.down = true;
+            break;
+
+        case 4:
+            ControllerInfo->keyLeft.down |= true;
+            controller->keyLeft.down = true;
+            break;
+
+        case 5:
+            ControllerInfo->keyLeft.down |= true;
+            controller->keyLeft.down = true;
+
+            ControllerInfo->keyUp.down |= true;
+            controller->keyUp.down = true;
+            break;
+
+        case 6:
+            ControllerInfo->keyUp.down |= true;
+            controller->keyUp.down = true;
+            break;
+
+        case 7:
+            ControllerInfo->keyUp.down |= true;
+            controller->keyUp.down = true;
+
+            ControllerInfo->keyRight.down |= true;
+            controller->keyRight.down = true;
+            break;
+        }
+    }
+
+    if (DebugMode->itemType == 0xFF)
+        DebugMode->itemType = DebugMode->itemTypeCount ? (DebugMode->itemTypeCount - 1) : 0;
+
+    tx = 0, ty = 0;
+    if (HUD_CheckTouchRect(ScreenInfo->center.x - 48, 0, ScreenInfo->center.x + 48, 56, &tx, &ty) >= 0) {
+        if (tx > ScreenInfo->center.x) {
+        if (!Player->touchJump) {
+            DebugMode->itemType++;
+            if (DebugMode->itemType >= DebugMode->itemTypeCount) {
+                DebugMode->itemType      = 0;
+                DebugMode->itemTypeCount = 0;
+
+                DebugMode->itemID++;
+                if (DebugMode->itemID >= DebugMode->itemCount)
+                    DebugMode->itemID = 0;
+            }
+        }
+
+        Player->touchJump = true;
+        }
+        else {
+        if (!Player->touchJump) {
+            DebugMode->itemType--;
+
+            if (DebugMode->itemType == 0xFF) {
+                DebugMode->itemTypeCount = 0;
+
+                DebugMode->itemID--;
+                if (DebugMode->itemID < 0)
+                    DebugMode->itemID = DebugMode->itemCount - 1;
+            }
+        }
+
+        Player->touchJump = true;
+        }
+    }
+    else {
+        switch (HUD_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->size.x, SCREEN_YSIZE, NULL, NULL)) {
+        case -1: Player->touchJump = false; break;
+
+        case 0:
+            ControllerInfo->keyC.down = true;
+            controller->keyC.down     = true;
+            if (!Player->touchJump) {
+                ControllerInfo->keyC.press = true;
+                controller->keyC.press     = true;
+            }
+            Player->touchJump = controller->keyC.down;
+            break;
+        }
+    }
+
+    bool32 touchedDebug = false;
+    if (HUD_CheckTouchRect(0, 0, 112, 56, NULL, NULL) >= 0) {
+#if GAME_VERSION != VER_100
+        ControllerInfo->keyX.down = true;
+        controller->keyX.down     = true;
+#else
+        ControllerInfo->keyY.down  = true;
+        controller->keyY.down      = true;
+#endif
+        touchedDebug = true;
+    }
+
+    if (!Player->touchDebug && touchedDebug) {
+#if GAME_VERSION != VER_100
+        ControllerInfo->keyX.press = true;
+        controller->keyX.press     = true;
+#else
+        ControllerInfo->keyY.press = true;
+        controller->keyY.press     = true;
+#endif
+    }
+#if GAME_VERSION != VER_100
+    Player->touchDebug = controller->keyX.down;
+#else
+    Player->touchDebug = controller->keyY.down;
+#endif
+
+    // funny S1/S2 2013 level select thingie!!
+    if (HUD_CheckTouchRect(ScreenInfo->size.x - 88, 0, ScreenInfo->size.x, 40, NULL, NULL) >= 0 || controller->keyStart.press || Unknown_pausePress) {
+        if (SceneInfo->state == ENGINESTATE_REGULAR) {
+            RSDK.SetScene("Presentation", "Level Select");
+            Zone_StartFadeOut(20, 0x000000);
+            Music_FadeOut(0.025);
+        }
     }
 }
 

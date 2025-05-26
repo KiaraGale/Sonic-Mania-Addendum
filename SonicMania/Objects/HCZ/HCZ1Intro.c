@@ -56,6 +56,8 @@ bool32 HCZ1Intro_Cutscene_Intro(EntityCutsceneSeq *host)
 
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
     EntityCamera *camera  = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
 
     if (!host->timer) {
@@ -85,8 +87,28 @@ bool32 HCZ1Intro_Cutscene_Intro(EntityCutsceneSeq *host)
 #if MANIA_USE_PLUS
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_FLUME, &player2->animator, false, 0);
 #else
-            RSDK.SetSpriteAnimation(player1->aniFrames, ANI_HURT, &player1->animator, false, 0);
+            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_HURT, &player2->animator, false, 0);
 #endif
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->position.x = player2->position.x - 0x200000;
+            player3->position.y = player2->position.y;
+            player3->state      = Player_State_Air;
+            player3->onGround   = false;
+            player3->stateInput = StateMachine_None;
+
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_FLUME, &player3->animator, false, 0);
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->position.x = player3->position.x - 0x200000;
+            player4->position.y = player3->position.y;
+            player4->state      = Player_State_Air;
+            player4->onGround   = false;
+            player4->stateInput = StateMachine_None;
+
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_FLUME, &player4->animator, false, 0);
         }
     }
 
@@ -109,6 +131,18 @@ bool32 HCZ1Intro_Cutscene_Intro(EntityCutsceneSeq *host)
             player2->velocity.x = 0;
             player2->velocity.y = 0;
         }
+
+        if (player3->classID == Player->classID) {
+            player3->position.y = 0;
+            player3->velocity.x = 0;
+            player3->velocity.y = 0;
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->position.y = 0;
+            player4->velocity.x = 0;
+            player4->velocity.y = 0;
+        }
     }
 
     if (RSDK.GetEntityCount(TitleCard->classID, false) || RSDK_GET_ENTITY(SLOT_ACTCLEAR, TitleCard)->classID) {
@@ -127,6 +161,19 @@ bool32 HCZ1Intro_Cutscene_Intro(EntityCutsceneSeq *host)
         if (player2->underwater) {
             player2->stateInput = Player_Input_P2_AI;
             return true;
+        }
+
+        if (player3->classID == Player->classID) {
+            if (player3->underwater) {
+                player3->stateInput = Player_Input_P2_AI;
+            }
+        }
+
+        if (player4->classID == Player->classID) {
+            if (player4->underwater) {
+                player4->stateInput = Player_Input_P2_AI;
+                return true;
+            }
         }
     }
 

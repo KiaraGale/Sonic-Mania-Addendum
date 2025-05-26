@@ -13,6 +13,13 @@ void CutsceneSeq_Update(void)
 {
 #if MANIA_USE_PLUS
     RSDK_THIS(CutsceneSeq);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        ControllerInfo->keyStart.press |= TouchInfo->count;
 
     CutsceneSeq_CheckSkip(self->skipType, self, self->skipCallback);
 #endif
@@ -21,6 +28,17 @@ void CutsceneSeq_Update(void)
 void CutsceneSeq_LateUpdate(void)
 {
     RSDK_THIS(CutsceneSeq);
+    bool32 ultraWide = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &ultraWide);
+#endif
+
+    if (ultraWide) {
+        if (self->currentState == FBZ1Outro_Cutscene_PrepareFBZ2 && Zone->cameraBoundsL[0] == 13568) {
+            Zone->cameraBoundsL[0] = ScreenInfo->position.x;
+            Zone->cameraBoundsL[1] = ScreenInfo->position.x;
+        }
+    }
 
     self->currentState = self->cutsceneStates[self->stateID];
     if (self->currentState) {
@@ -80,12 +98,19 @@ void CutsceneSeq_Draw(void)
         RSDK.FillScreen(0xFFF0F0, self->fadeWhite, self->fadeWhite - 256, self->fadeWhite - 256);
 
     if (self->fadeBlack > 0)
-        RSDK.FillScreen(0x000000, self->fadeBlack, self->fadeBlack, self->fadeBlack);
+        RSDK.FillScreen(0x000000, self->fadeBlack, self->fadeBlack - 128, self->fadeBlack - 256);
 }
 
 void CutsceneSeq_Create(void *data)
 {
     RSDK_THIS(CutsceneSeq);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        ControllerInfo->keyStart.press |= TouchInfo->count;
 
     self->active    = ACTIVE_NORMAL;
     self->visible   = false;
@@ -179,12 +204,14 @@ void CutsceneSeq_LockPlayerControl(EntityPlayer *player)
     player->jumpHold  = false;
     player->jumpPress = false;
 
-    Player->upState        = 0;
-    Player->downState      = 0;
-    Player->leftState      = 0;
-    Player->rightState     = 0;
-    Player->jumpPressState = 0;
-    Player->jumpHoldState  = 0;
+    for (int32 p = 0; p < 4; ++p) {
+        Player->upState[p]        = 0;
+        Player->downState[p]      = 0;
+        Player->leftState[p]      = 0;
+        Player->rightState[p]     = 0;
+        Player->jumpPressState[p] = 0;
+        Player->jumpHoldState[p]  = 0;
+    }
 }
 
 void CutsceneSeq_LockAllPlayerControl(void)

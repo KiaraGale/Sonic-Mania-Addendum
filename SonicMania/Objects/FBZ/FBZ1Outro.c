@@ -62,6 +62,12 @@ void FBZ1Outro_StageLoad(void)
 
         if (crane->position.x == 0x33640000 && crane->position.y == 0x9100000)
             FBZ1Outro->craneP2 = crane;
+
+        if (crane->position.x == 0x33880000 && crane->position.y == 0x9100000)
+            FBZ1Outro->craneP3 = crane;
+
+        if (crane->position.x == 0x33AC0000 && crane->position.y == 0x9100000)
+            FBZ1Outro->craneP4 = crane;
     }
 
     FBZ1Outro->sfxDrop = RSDK.GetSfx("Stage/Drop.wav");
@@ -125,7 +131,7 @@ bool32 FBZ1Outro_Cutscene_CrushTrash(EntityCutsceneSeq *host)
 {
     RSDK_THIS(FBZ1Outro);
 
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityBigSqueeze *bossBorderL = FBZ1Outro->bossBorderL;
@@ -147,6 +153,18 @@ bool32 FBZ1Outro_Cutscene_CrushTrash(EntityCutsceneSeq *host)
             player2->state = Player_State_Static;
             CutsceneSeq_LockPlayerControl(player2);
         }
+        if (player3->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_BALANCE_1, &player3->animator, false, 0);
+
+            player3->state = Player_State_Static;
+            CutsceneSeq_LockPlayerControl(player3);
+        }
+        if (player4->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_BALANCE_1, &player4->animator, false, 0);
+
+            player4->state = Player_State_Static;
+            CutsceneSeq_LockPlayerControl(player4);
+        }
     }
 
     player1->nextGroundState = StateMachine_None;
@@ -154,6 +172,14 @@ bool32 FBZ1Outro_Cutscene_CrushTrash(EntityCutsceneSeq *host)
     if (player2->classID == Player->classID) {
         player2->nextGroundState = StateMachine_None;
         player2->nextAirState    = StateMachine_None;
+    }
+    if (player3->classID == Player->classID) {
+        player3->nextGroundState = StateMachine_None;
+        player3->nextAirState    = StateMachine_None;
+    }
+    if (player4->classID == Player->classID) {
+        player4->nextGroundState = StateMachine_None;
+        player4->nextAirState    = StateMachine_None;
     }
 
     if (BigSqueeze->crusherX[BIGSQUEEZE_CRUSHER_R] - BigSqueeze->crusherX[BIGSQUEEZE_CRUSHER_L] <= 0xB00000) {
@@ -169,6 +195,24 @@ bool32 FBZ1Outro_Cutscene_CrushTrash(EntityCutsceneSeq *host)
         else {
             destroyEntity(FBZ1Outro->craneP2);
             self->grabbedPlayers |= 2;
+        }
+        if (player3->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_HURT, &player3->animator, false, 0);
+            player3->state    = Player_State_Air;
+            player3->onGround = false;
+        }
+        else {
+            destroyEntity(FBZ1Outro->craneP3);
+            self->grabbedPlayers |= 3;
+        }
+        if (player4->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_HURT, &player4->animator, false, 0);
+            player4->state    = Player_State_Air;
+            player4->onGround = false;
+        }
+        else {
+            destroyEntity(FBZ1Outro->craneP4);
+            self->grabbedPlayers |= 4;
         }
 
         bossBorderL->setupTimer = 0;
@@ -203,7 +247,7 @@ bool32 FBZ1Outro_Cutscene_TrashDrop(EntityCutsceneSeq *host)
 {
     RSDK_THIS(FBZ1Outro);
 
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityBigSqueeze *bossBorderL = FBZ1Outro->bossBorderL;
@@ -230,8 +274,26 @@ bool32 FBZ1Outro_Cutscene_TrashDrop(EntityCutsceneSeq *host)
             self->grabbedPlayers |= 2;
         }
     }
+    if (player3->classID == Player->classID) {
+        EntityCrane *craneP3 = FBZ1Outro->craneP3;
+        craneP3->position.x  = player3->position.x;
+        if (craneP3->state == Crane_State_RiseUp) {
+            craneP3->startPos.x = craneP3->position.x;
+            craneP3->startPos.y = craneP3->position.y;
+            self->grabbedPlayers |= 3;
+        }
+    }
+    if (player4->classID == Player->classID) {
+        EntityCrane *craneP4 = FBZ1Outro->craneP4;
+        craneP4->position.x  = player4->position.x;
+        if (craneP4->state == Crane_State_RiseUp) {
+            craneP4->startPos.x = craneP4->position.x;
+            craneP4->startPos.y = craneP4->position.y;
+            self->grabbedPlayers |= 4;
+        }
+    }
 
-    if (self->grabbedPlayers == (1 | 2))
+    if (self->grabbedPlayers == (1 | 2 | 3 | 4))
         return true;
 
     FBZ1Outro_DispenseTrash();
@@ -240,16 +302,17 @@ bool32 FBZ1Outro_Cutscene_TrashDrop(EntityCutsceneSeq *host)
 }
 bool32 FBZ1Outro_Cutscene_CraneRide(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     FBZ1Outro_DispenseTrash();
 
-    return player1->onGround && (player2->classID != Player->classID || player2->onGround);
+    return player1->onGround && (player2->classID != Player->classID || player2->onGround) 
+        && (player3->classID != Player->classID || player3->onGround) && (player4->classID != Player->classID || player4->onGround);
 }
 bool32 FBZ1Outro_Cutscene_PrepareFBZ2(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         Zone->cameraBoundsL[0]      = 13568;
@@ -262,6 +325,10 @@ bool32 FBZ1Outro_Cutscene_PrepareFBZ2(EntityCutsceneSeq *host)
     RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, false, 0);
     if (player2->classID == Player->classID)
         RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, false, 0);
+    if (player3->classID == Player->classID)
+        RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, false, 0);
+    if (player4->classID == Player->classID)
+        RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, false, 0);
 
     if (camera->offset.x || ScreenInfo->position.x < Zone->cameraBoundsL[0] || host->timer < 30) {
         if (ScreenInfo->position.x < Zone->cameraBoundsL[0])

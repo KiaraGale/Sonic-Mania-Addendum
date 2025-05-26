@@ -179,9 +179,9 @@ struct ObjectPlayer {
             0xC0000, 0x3800, 0x7000, 0x1800, 0x10000, 0x600, 0x80000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0x8000, 0x300, 0x49A1A, -0x20000 });
     TABLE(int32 knuxPhysicsTable[64],
           { 0x60000, 0xC00,  0x1800, 0x600,  0x8000,  0x600, 0x60000, -0x40000, 0x30000, 0x600,  0xC00,  0x300, 0x4000, 0x300, 0x30000, -0x20000,
-            0xA0000, 0x3000, 0x6000, 0x1800, 0x10000, 0x600, 0x70000, -0x40000, 0x50000, 0x1800, 0x3000, 0xC00, 0x8000, 0x300, 0x40000, -0x20000,
+            0xA0000, 0x3000, 0x6000, 0x1800, 0x10000, 0x600, 0x60000, -0x40000, 0x50000, 0x1800, 0x3000, 0xC00, 0x8000, 0x300, 0x30000, -0x20000,
             0xC0000, 0x1800, 0x3000, 0xC00,  0x8000,  0x600, 0x60000, -0x40000, 0x60000, 0xC00,  0x1800, 0x600, 0x4000, 0x300, 0x30000, -0x20000,
-            0xC0000, 0x3800, 0x7000, 0x1800, 0x10000, 0x600, 0x70000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0x8000, 0x300, 0x40000, -0x20000 });
+            0xC0000, 0x3800, 0x7000, 0x1800, 0x10000, 0x600, 0x60000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0x8000, 0x300, 0x30000, -0x20000 });
     TABLE(int32 mightyPhysicsTable[64],
           { 0x60000, 0xC00,  0x1800, 0x600,  0x8000,  0x600, 0x68000, -0x40000, 0x30000, 0x600,  0xC00,  0x300, 0x4000, 0x300, 0x38000, -0x20000,
             0xA0000, 0x3000, 0x6000, 0x1800, 0x10000, 0x600, 0x80000, -0x40000, 0x50000, 0x1800, 0x3000, 0xC00, 0x8000, 0x300, 0x49A1A, -0x20000,
@@ -192,24 +192,24 @@ struct ObjectPlayer {
             0xA0000, 0x3000, 0x6000, 0x1800, 0x10000, 0x600, 0x80000, -0x40000, 0x50000, 0x1800, 0x3000, 0xC00, 0x8000, 0x300, 0x49A1A, -0x20000,
             0xC0000, 0x1800, 0x3000, 0xC00,  0x8000,  0x600, 0x68000, -0x40000, 0x60000, 0xC00,  0x1800, 0x600, 0x4000, 0x300, 0x38000, -0x20000,
             0xC0000, 0x3800, 0x7000, 0x1800, 0x10000, 0x600, 0x80000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0x8000, 0x300, 0x49A1A, -0x20000 });
-    TABLE(int32 miraclePhysicsTable[64],
+    TABLE(int32 hyperPhysicsTable[64],
           { 0x60000, 0xC00,  0x1800, 0x600,  0x8000,  0x600, 0x68000, -0x40000, 0x30000, 0x600,  0xC00,  0x300, 0x4000, 0x300, 0x38000, -0x20000,
             0xC0000, 0x3800, 0x7000, 0x1800, 0x14000, 0x600, 0x90000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x49A1A, -0x20000,
             0xC0000, 0x1800, 0x3000, 0xC00,  0x8000,  0x600, 0x68000, -0x40000, 0x60000, 0xC00,  0x1800, 0x600, 0x4000, 0x300, 0x38000, -0x20000,
             0xE0000, 0x3C00, 0x8000, 0x1A00, 0x14000, 0x600, 0x90000, -0x40000, 0xB0000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x49A1A, -0x20000 });
-    TABLE(int32 miracleKnuxPhysicsTable[64],
+    TABLE(int32 hyperKnuxPhysicsTable[64],
           { 0x60000, 0xC00,  0x1800, 0x600,  0x8000,  0x600, 0x60000, -0x40000, 0x30000, 0x600,  0xC00,  0x300, 0x4000, 0x300, 0x30000, -0x20000,
-            0xC0000, 0x3800, 0x7000, 0x1800, 0x14000, 0x600, 0x80000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x40000, -0x20000,
+            0xC0000, 0x3800, 0x7000, 0x1800, 0x14000, 0x600, 0x60000, -0x40000, 0x90000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x30000, -0x20000,
             0xC0000, 0x1800, 0x3000, 0xC00,  0x8000,  0x600, 0x60000, -0x40000, 0x60000, 0xC00,  0x1800, 0x600, 0x4000, 0x300, 0x30000, -0x20000,
-            0xE0000, 0x3C00, 0x8000, 0x1A00, 0x14000, 0x600, 0x80000, -0x40000, 0xB0000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x40000, -0x20000 });
+            0xE0000, 0x3C00, 0x8000, 0x1A00, 0x14000, 0x600, 0x60000, -0x40000, 0xB0000, 0x1400, 0x2400, 0x600, 0xC000, 0x300, 0x30000, -0x20000 });
     TABLE(color superPalette_Sonic[18], { 0x000080, 0x0038C0, 0x0068F0, 0x1888F0, 0x30A0F0, 0x68D0F0, 0xF0C001, 0xF0D028, 0xF0E040, 0xF0E860,
                                           0xF0E898, 0xF0E8D0, 0xF0D898, 0xF0E0B0, 0xF0E8C0, 0xF0F0D8, 0xF0F0F0, 0xF0F0F8 });
     TABLE(color superPalette_Tails[18], { 0x800801, 0xB01801, 0xD05001, 0xE07808, 0xE89008, 0xF0A801, 0x800801, 0xB01801, 0xD05001, 0xE07808,
                                           0xE89008, 0xF0A801, 0xF03830, 0xF06848, 0xF09860, 0xF0B868, 0xF0C870, 0xF0D870 });
-    TABLE(color superPalette_Knux[18], { 0x580818, 0x980130, 0xD00840, 0xE82858, 0xF06080, 0xF08088, 0xF33F90, 0xF26496, 0xF787A5, 0xF99FAF, 0xFBB7BF,
-                                         0xFDCECE, 0xF33F90, 0xF26496, 0xF787A5, 0xF99FAF, 0xFBB7BF, 0xFDCECE });
-    TABLE(color superPalette_Mighty[18], { 0x681818, 0x942424, 0xBB2525, 0xDF3434, 0xF2604A, 0xFB916A, 0xB81919, 0xE43A3A, 0xF75F5F, 0xFC8C7E,
-                                           0xFBB8A2, 0xFED0B4, 0xB81919, 0xE43A3A, 0xF75F5F, 0xFC8C7E, 0xFBB8A2, 0xFED0B4 });
+    TABLE(color superPalette_Knux[18], { 0x580818, 0x980130, 0xD00840, 0xE82858, 0xF06080, 0xF08088, 0x580818, 0x980130, 0xD00840, 0xE82858, 0xF06080, 
+                                         0xF08088, 0xF33F90, 0xF26496, 0xF787A5, 0xF99FAF, 0xFBB7BF, 0xFDCECE });
+    TABLE(color superPalette_Mighty[18], { 0x681818, 0x942424, 0xBB2525, 0xDF3434, 0xF2604A, 0xFB916A, 0x681818, 0x942424, 0xBB2525, 0xDF3434,
+                                           0xF2604A, 0xFB916A, 0xB81919, 0xE43A3A, 0xF75F5F, 0xFC8C7E, 0xFBB8A2, 0xFED0B4 });
     TABLE(color superPalette_Ray[21], { 0x7C4616, 0xA06800, 0xB88810, 0xD0A810, 0xE0C020, 0xE8D038, 0xF0E078, 0x7C4616, 0xA06800, 0xB88810, 0xD0A810,
                                         0xE0C020, 0xE8D038, 0xF0E078, 0xBA7600, 0xE0A801, 0xF0C820, 0xF0E820, 0xF0F040, 0xF0F068, 0xF0F0B8 });
     TABLE(color superPalette_Amy[18], { 0x64036E, 0x980F8C, 0xC02AAA, 0xEA51B5, 0xF678D0, 0xFABBE3, 0xEC4F41, 0xF36F62, 0xF6887E, 0xF79F97, 0xFAB1AD,
@@ -276,21 +276,20 @@ struct ObjectPlayer {
                                               0xD672FF, 0xDE79F0, 0xBA4EFF, 0xCD5AF7, 0xDC68FE, 0xE36DF5, 0xDD7AE1, 0xE080E0 });
     bool32 cantSwap;
     int32 playerCount;
-    uint16 upState;
-    uint16 downState;
-    uint16 leftState;
-    uint16 rightState;
-    uint16 jumpPressState;
-    uint16 jumpHoldState;
-    int32 nextLeaderPosID;
-    int32 lastLeaderPosID;
-    Vector2 leaderPositionBuffer[16];
-    Vector2 targetLeaderPosition;
-    int32 autoJumpTimer;
-    int32 respawnTimer;
-    int32 aiInputSwapTimer;
+    uint16 upState[PLAYER_COUNT];
+    uint16 downState[PLAYER_COUNT];
+    uint16 leftState[PLAYER_COUNT];
+    uint16 rightState[PLAYER_COUNT];
+    uint16 jumpPressState[PLAYER_COUNT];
+    uint16 jumpHoldState[PLAYER_COUNT];
+    int32 nextLeaderPosID[PLAYER_COUNT];
+    int32 lastLeaderPosID[PLAYER_COUNT];
+    Vector2 leaderPositionBuffer[PLAYER_COUNT][16];
+    Vector2 targetLeaderPosition[PLAYER_COUNT];
+    int32 autoJumpTimer[PLAYER_COUNT];
+    int32 aiInputSwapTimer[PLAYER_COUNT];
     bool32 disableP2KeyCheck;
-    int32 rings;
+    int32 rings[4];
     STATIC(int32 ringExtraLife, 100);
     int32 powerups; // unused
     STATIC(int32 savedLives, 3);
@@ -300,22 +299,16 @@ struct ObjectPlayer {
     uint16 superFrames;
     uint16 miracleFrames;
     uint16 tailsFrames;
-    uint16 superTailsFrames;
     uint16 tailsTailsFrames;
-    uint16 superTailsTailsFrames;
     uint16 miracleTailsFrames;
     uint16 miracleTailsTailsFrames;
     uint16 knuxFrames;
-    uint16 superKnuxFrames;
     uint16 miracleKnuxFrames;
     uint16 mightyFrames;
-    uint16 superMightyFrames;
     uint16 miracleMightyFrames;
     uint16 rayFrames;
-    uint16 superRayFrames;
     uint16 miracleRayFrames;
     uint16 amyFrames;
-    uint16 superAmyFrames;
     uint16 miracleAmyFrames;
     uint16 sfxJump;
     uint16 sfxRoll;
@@ -336,6 +329,7 @@ struct ObjectPlayer {
     uint16 sfxLand;
     uint16 sfxSlide;
     uint16 sfxOuttahere;
+    uint16 sfxTransform;
     uint16 sfxTransform2;
     uint16 sfxSwap;
     uint16 sfxSwapFail;
@@ -352,9 +346,11 @@ struct ObjectPlayer {
     uint16 sfxAmyHammer;
     uint16 sfxAmyHammerFly;
     uint16 sfx1up;
+    uint16 sfxSparkleAnticipation;
+    uint16 sfxWallRumble;
     bool32 hasReflectAchievement;
     TABLE(int32 miracleColors[32],
-        { 0x4A2644, 0x2C0656, 0xFCA6DA, 0xFEC8EB, 0xFEE1F5, 0x623259, 0x8A407D, 0xC67595, 0xE5A9B4, 0xFDD6D7, 0xFFF0F0, 0x490198, 0x8A01D0, 0xC53AE9, 0xEC9FEF, 0x58CA9F,
+        { 0x4A2644, 0x2C0656, 0xFCA6DA, 0xFEC8EB, 0xFEE1F5, 0x623259, 0x853D78, 0xC67595, 0xE5A9B4, 0xFDD6D7, 0xFFF0F0, 0x490198, 0x8A01D0, 0xC53AE9, 0xEC9FEF, 0x58CA9F,
           0x76DBB6, 0x91EDCE, 0xBEF4E2, 0x8D4311, 0xC15A15, 0xE27F22, 0xEAA939, 0xEED253, 0xEBE67A, 0x6A21B5, 0x8735ED, 0x9066F4, 0x9E93F0, 0xF990C6, 0xFDBAE4, 0x942981 });
     int32 colorStorage[32];
     TABLE(int32 miracleColors_HCZ[32],
@@ -365,8 +361,19 @@ struct ObjectPlayer {
         { 0x7F007F, 0x7200CA, 0xDC3DC9, 0xE35EDA, 0xE774E4, 0x990494, 0xBB0AA0, 0xD022A4, 0xE649BB, 0xEA60CA, 0xE176CC, 0x8600DB, 0x9C08E8, 0xC705F8, 0xE73FF8, 0x8F6BAE,
           0xA978B6, 0xC37BC6, 0xD77DC3, 0x980070, 0xB40085, 0xCB1B8B, 0xE2349A, 0xE455A2, 0xE470A9, 0x8800B5, 0x9700D6, 0xA507EF, 0xBD38E8, 0xD41BB3, 0xE052D3, 0x92008B });
     int32 colorStorage_CPZ[32];
+    TABLE(int32 superExtras[15],
+        { 0xE6A900, 0xF7CF7D, 0x7ABA73, 0x60D786, 0xD3306F, 0xD87998, 0xC9C9C9, 0x1ACE3B, 0x37C5E5, 0x0038DB, 0xC313E7, 0xE51519, 0xF9B406, 0x9C2B88, 0xE944B8 });
     bool32 carryOverShieldApplied;
     bool32 restartShieldApplied;
+    bool32 restartRingsApplied;
+    uint8 touchJump;
+    uint8 touchDebug;
+    uint8 touchPause;
+    uint8 touchSuper;
+    uint8 touchSwap;
+    uint8 touchAux;
+    uint16 sfxTwinkle;
+    bool32 transformMusicNotPlaying;
 };
 #else
 struct ObjectPlayer {
@@ -468,7 +475,7 @@ struct EntityPlayer {
     int32 minJogVelocity;
     int32 minRunVelocity;
     int32 minDashVelocity;
-    int32 unused; // the only used variable in the player struct, I cant find a ref to it anywhere so...
+    int32 unused; // the only unused variable in the player struct, I cant find a ref to it anywhere so...
     int32 tailRotation;
     int32 tailDirection;
     uint16 aniFrames;
@@ -507,9 +514,12 @@ struct EntityPlayer {
 #endif
     int32 superState;
     bool32 miracleState;
+    bool32 hyperState;
     int32 superRingLossTimer;
     int32 superBlendAmount;
     int32 superBlendState;
+    int32 hyperBlendAmount;
+    int32 hyperBlendState;
     bool32 sidekick;
     int32 scoreBonus;
     int32 jumpOffset;
@@ -561,6 +571,11 @@ struct EntityPlayer {
 #if MANIA_USE_PLUS
     int32 uncurlTimer;
     bool32 hammeractivate;
+    bool32 hyperFadeInFinished;
+    int32 hyperFlashTimer;
+    bool32 hyperAttacking;
+    Vector2 prevVelocity;
+    int32 respawnTimer;
 #endif
 };
 
@@ -583,14 +598,15 @@ void Player_Serialize(void);
 // Extra Entity Functions
 void Player_LoadSprites(void);
 void Player_LoadSpritesVS(void);
+void Player_LoadSpritesCoop(void);
 void Player_SaveValues(void);
 void Player_GiveScore(EntityPlayer *player, int32 score);
 void Player_GiveRings(EntityPlayer *player, int32 amount, bool32 playSfx);
 void Player_GiveLife(EntityPlayer *entity);
 void Player_ApplyShield(EntityPlayer *player);
 void Player_ChangeCharacter(EntityPlayer *entity, int32 character);
-bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 timeStoneMasks);
-bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 timeStoneMasks);
+bool32 Player_TryTransform(EntityPlayer *player, uint8 emeraldMasks, uint8 superEmeraldMasks, uint8 timeStoneMasks);
+bool32 Player_TryTransform_ERZ(EntityPlayer *player, uint8 emeraldMasks, uint8 superEmeraldMasks, uint8 timeStoneMasks);
 void Player_BlendSuperSonicColors(int32 bankID);
 void Player_BlendSuperTailsColors(int32 bankID);
 void Player_BlendSuperKnuxColors(int32 bankID);
@@ -709,6 +725,7 @@ void Player_State_KnuxLedgePullUp(void);
 #if MANIA_USE_PLUS
 void Player_State_MightyHammerDrop(void);
 void Player_State_MightyUnspin(void);
+void Player_State_MightyWallStick(void);
 void Player_SpawnMightyHammerdropDust(int32 speed, Hitbox *hitbox);
 bool32 Player_CheckMightyUnspin(EntityPlayer *player, int32 bounceDistance, bool32 checkHammerDrop, int32 *uncurlTimer);
 void Player_State_RayGlide(void);
@@ -737,12 +754,13 @@ void Player_JumpAbility_Knux(void);
 void Player_JumpAbility_Mighty(void);
 void Player_JumpAbility_Ray(void);
 void Player_JumpAbility_Amy(void);
-void Player_State_AmyDoubleJump(void);
 
 bool32 Player_SfxCheck_RayDive(void);
 bool32 Player_SfxCheck_RaySwoop(void);
 void Player_SfxUpdate_RayDive(int32 sfxID);
 void Player_SfxUpdate_RaySwoop(int32 sfxID);
+bool32 Player_CanTransform(EntityPlayer *player);
+bool32 Player_CanSwap(EntityPlayer *player);
 #endif
 
 // Input States
@@ -754,5 +772,15 @@ void Player_Input_AI_SpindashPt2(void);
 void Player_Input_P2_Player(void);
 
 void Player_State_DrawMiracle(void);
+void Player_BlendHyperSonicColors(int32 bankID);
+void Player_BlendHyperTailsColors(int32 bankID);
+void Player_BlendHyperKnuxColors(int32 bankID);
+#if MANIA_USE_PLUS
+void Player_BlendHyperMightyColors(int32 bankID);
+void Player_BlendHyperRayColors(int32 bankID);
+void Player_BlendHyperAmyColors(int32 bankID);
+#endif
+void Player_HandleTouchInput(void);
+void Player_HandleHyperSonicDash(void);
 
 #endif //! OBJ_PLAYER_H

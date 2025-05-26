@@ -67,7 +67,7 @@ struct ObjectEncoreGoodEnd {
     uint16 unused2;
     uint16 sfxSnap;
     int32 unused3;
-    EntityDecoration *decorations[16];
+    EntityDecoration *decorations[17];
 };
 
 // Entity Class

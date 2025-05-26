@@ -126,6 +126,7 @@ void GameOver_SaveGameCallback(void)
 void GameOver_State_EnterLetters(void)
 {
     RSDK_THIS(GameOver);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     if (self->barPos.x > 0)
         self->barPos.x -= TO_FIXED(4);
@@ -163,42 +164,44 @@ void GameOver_State_EnterLetters(void)
     if (self->timer == 0) {
 #if MANIA_USE_PLUS
         EntityCompetitionSession *session = CompetitionSession_GetSession();
-        if (globals->gameMode != MODE_COMPETITION) {
-            Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
-        }
-        else {
-            if (session->playerCount <= 0) {
-                bool32 playMusic = false;
-                if (Zone->gotTimeOver)
-                    playMusic = true;
-
-                if (playMusic)
-                    Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
+        if (!(globals->gameMode == MODE_MANIA && addendumOptions->coopStyle > COOPSTYLE_MANIA && addendumVar->playerCount > 1)) {
+            if (globals->gameMode != MODE_COMPETITION) {
+                Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
             }
             else {
-                EntityCompetition *manager = Competition->sessionManager;
-                int32 gameOverCount        = 0;
-                int32 deathCount           = 0;
-                for (int32 i = 0; i < session->playerCount; ++i) {
-                    EntityGameOver *gameOver = RSDK_GET_ENTITY(i + Player->playerCount, GameOver);
+                if (session->playerCount <= 0) {
+                    bool32 playMusic = false;
+                    if (Zone->gotTimeOver)
+                        playMusic = true;
 
-                    if (gameOver->classID == GameOver->classID) {
-                        ++gameOverCount;
-                        ++deathCount;
-                    }
-                    else if (manager && manager->playerFinished[i]) {
-                        ++deathCount;
-                    }
+                    if (playMusic)
+                        Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
                 }
+                else {
+                    EntityCompetition *manager = Competition->sessionManager;
+                    int32 gameOverCount        = 0;
+                    int32 deathCount           = 0;
+                    for (int32 i = 0; i < session->playerCount; ++i) {
+                        EntityGameOver *gameOver = RSDK_GET_ENTITY(i + Player->playerCount, GameOver);
 
-                bool32 playMusic = true;
-                if (gameOverCount < session->playerCount - 1 && deathCount != session->playerCount) {
-                    if (!Zone->gotTimeOver)
-                        playMusic = false;
+                        if (gameOver->classID == GameOver->classID) {
+                            ++gameOverCount;
+                            ++deathCount;
+                        }
+                        else if (manager && manager->playerFinished[i]) {
+                            ++deathCount;
+                        }
+                    }
+
+                    bool32 playMusic = true;
+                    if (gameOverCount < session->playerCount - 1 && deathCount != session->playerCount) {
+                        if (!Zone->gotTimeOver)
+                            playMusic = false;
+                    }
+
+                    if (playMusic)
+                        Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
                 }
-
-                if (playMusic)
-                    Music_TransitionTrack(TRACK_GAMEOVER, 0.025);
             }
         }
 #else
@@ -207,13 +210,18 @@ void GameOver_State_EnterLetters(void)
     }
 
     if (++self->timer == 120) {
-        self->timer = 0;
+        if (globals->gameMode == MODE_MANIA && addendumOptions->coopStyle > COOPSTYLE_MANIA && addendumVar->playerCount > 1) {
+            self->timer = 10; // this essentially "suspends" the player in the game over state until the stage is cleared
+        }
+        else {
+            self->timer = 0;
 #if MANIA_USE_PLUS
-        if (globals->gameMode == MODE_COMPETITION || Zone->gotTimeOver)
-            self->state = GameOver_State_WaitComp;
-        else
+            if (globals->gameMode == MODE_COMPETITION || Zone->gotTimeOver)
+                self->state = GameOver_State_WaitComp;
+            else
 #endif
-            self->state = GameOver_State_Wait;
+                self->state = GameOver_State_Wait;
+        }
     }
 }
 

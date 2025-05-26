@@ -29,17 +29,21 @@ struct ObjectLevelSelect {
     TABLE(int32 cheat_SuperDash[9], { 2, 0, 1, 7, 0, 8, 1, 5, 255 });
     TABLE(int32 cheat_MaxControl[5], { 9, 0, 0, 1, 255 }); // says there's 9 values here in static obj & IDA but only 5 are loaded so it is what it is ig
     TABLE(int32 cheat_ToggleSuperMusic[9], { 6, 2, 1, 4, 255, 0, 0, 0, 0 });
+    TABLE(int32 cheat_AllTimeStones[9], { 2, 0, 2, 3, 1, 0, 2, 3, 255 }); // initial release date for Addendum
+    TABLE(int32 cheat_AllSuperEmeralds[5], { 4, 1, 2, 6, 255 });
+    TABLE(int32 cheat_Secret[8], { 13, 5, 7, 1, 13, 9, 24, 255 });
     int32 bgAniFrame;
     int32 startMusicID;
     int32 soundTestMax;
     uint16 sfxFail;
     uint16 sfxRing;
+    uint16 sfxAltRing;
     uint16 sfxEmerald;
     uint16 sfxContinue;
     uint16 sfxMedalGot;
-    int32 *cheatCodePtrs[8];
-    int32 cheatCodePos[8];
-    void (*checkCheatActivated[8])(void);
+    int32 *cheatCodePtrs[11];
+    int32 cheatCodePos[11];
+    void (*checkCheatActivated[11])(void);
 #else
     STATIC(int32 bgAniDuration, 240);
     int32 bgAniFrame;
@@ -48,6 +52,22 @@ struct ObjectLevelSelect {
     int32 soundTestMax;
     uint16 sfxFail;
 #endif
+    uint8 touchDir;
+    uint8 touchConfirm;
+    uint8 touchSwap;
+    uint8 touchSwapP2;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 confirmPos;
+    int32 confirmAlpha;
+    Vector2 swapPos;
+    int32 swapAlpha;
+    Vector2 swapP2Pos;
+    int32 swapP2Alpha;
+    bool32 allEmeralds;
 };
 
 // Entity Class
@@ -99,6 +119,8 @@ void LevelSelect_Serialize(void);
 // Extra Entity Functions
 #if MANIA_USE_PLUS
 void LevelSelect_Cheat_AllEmeralds(void);
+void LevelSelect_Cheat_AllSuperEmeralds(void);
+void LevelSelect_Cheat_AllTimeStones(void);
 void LevelSelect_Cheat_ToggleSuperMusic(void);
 void LevelSelect_Cheat_MaxContinues(void);
 void LevelSelect_Cheat_MaxControl(void);
@@ -106,6 +128,7 @@ void LevelSelect_Cheat_RickyMode(void);
 void LevelSelect_Cheat_SuperDash(void);
 void LevelSelect_Cheat_SwapGameMode(void);
 void LevelSelect_Cheat_UnlockAllMedals(void);
+void LevelSelect_Cheat_Secret(void);
 #endif
 
 void LevelSelect_Draw_Fade(void);
@@ -119,5 +142,9 @@ void LevelSelect_ManagePlayerIcon(void);
 void LevelSelect_SetLabelHighlighted(bool32 highlight);
 void LevelSelect_HandleColumnChange(void);
 void LevelSelect_HandleNewStagePos(void);
+
+void LevelSelect_HandleTouchInput(void);
+void LevelSelect_DrawTouchUI(void);
+int32 LevelSelect_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
 
 #endif //! OBJ_LEVELSELECT_H

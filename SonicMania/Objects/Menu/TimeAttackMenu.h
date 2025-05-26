@@ -8,7 +8,6 @@
 struct ObjectTimeAttackMenu {
     RSDK_OBJECT
     EntityUIControl *timeAttackControl;
-    EntityUIControl *timeAttackControl_Legacy;
     EntityUIControl *taZoneSelControl;
     EntityUIButtonPrompt *switchModePrompt;
     EntityUIControl *taDetailsControl;

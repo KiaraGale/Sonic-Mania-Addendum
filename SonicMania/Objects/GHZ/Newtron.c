@@ -99,7 +99,11 @@ void Newtron_StageLoad(void)
     Newtron->hitboxRange.right  = 128;
     Newtron->hitboxRange.bottom = 64;
 
+    Newtron->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
+
     DEBUGMODE_ADD_OBJ(Newtron);
+
+    Zone_SetupHyperAttackList(Newtron->classID, true, true, true, true, true, true);
 }
 
 void Newtron_DebugDraw(void)
@@ -254,6 +258,7 @@ void Newtron_State_Shoot(void)
     switch (++self->timer) {
         case 30:
             RSDK.SetSpriteAnimation(Newtron->aniFrames, 1, &self->animator, true, 0);
+            RSDK.PlaySfx(Newtron->sfxShot, false, 0xFF);
             if (self->direction)
                 CREATE_ENTITY(Newtron, INT_TO_VOID(NEWTRON_PROJECTILE), self->position.x - 0x140000, self->position.y - 0x80000)->velocity.x =
                     -0x20000;
@@ -306,8 +311,11 @@ void Newtron_State_Projectile(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Newtron->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Newtron->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
 }

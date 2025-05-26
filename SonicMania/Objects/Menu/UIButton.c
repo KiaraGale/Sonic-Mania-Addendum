@@ -20,16 +20,30 @@ void UIButton_Update(void)
     self->touchPosSizeS.y = self->size.y + 0x60000;
 
     if (self->textFrames != UIWidgets->textFrames || self->startListID != self->listID || self->startFrameID != self->frameID
-        || self->isDisabled != self->disabled) {
+        || self->isDisabled != self->disabled || self->dynTextFrames != UIWidgets->dynTextFrames) {
         if (self->disabled)
             RSDK.SetSpriteAnimation(UIWidgets->textFrames, 7, &self->animator, true, 0);
-        else
-            RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
+        else {
+            Localization_GetString(&self->string, self->stringID);
 
-        self->textFrames   = UIWidgets->textFrames;
-        self->startListID  = self->listID;
-        self->startFrameID = self->frameID;
-        self->isDisabled   = self->disabled;
+            if (self->string.length > 0) {
+                for (int32 c = 0; c < self->string.length; ++c)
+                    self->buttonCharCount = c + 1;
+
+                RSDK.SetSpriteAnimation(UIWidgets->dynTextFrames, self->textType, &self->textAnimator, true, 0);
+                RSDK.SetSpriteString(UIWidgets->dynTextFrames, self->textType, &self->string);
+
+                self->dynTextFrames = UIWidgets->dynTextFrames;
+                self->startListID   = self->textType;
+                self->startFrameID  = self->textAnimator.frameID;
+            }
+            else {
+                RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
+                self->textFrames   = UIWidgets->textFrames;
+                self->startListID  = self->listID;
+                self->startFrameID = self->frameID;
+            }
+        }
     }
 
     EntityUIButton *choice = UIButton_GetChoicePtr(self, self->selection);
@@ -89,7 +103,13 @@ void UIButton_Draw(void)
         if (self->disabled && self->align == UIBUTTON_ALIGN_LEFT)
             drawPos.x += 0x150000;
 
-        RSDK.DrawSprite(&self->animator, &drawPos, false);
+        if (self->string.length > 0 && !self->disabled) {
+            RSDK.DrawText(&self->textAnimator, NULL, &self->string, 0, self->buttonCharCount, 1, 0, 0, 0, false);
+        }
+        else {
+            RSDK.DrawSprite(&self->animator, &drawPos, false);
+            LogHelpers_Print("drawing sprite %d from listID %d", self->frameID, self->listID);
+        }
     }
 }
 
@@ -106,7 +126,10 @@ void UIButton_Create(void *data)
         self->bgEdgeSize    = self->size.y >> 16;
         self->size.y        = abs(self->size.y);
 
-        self->processButtonCB    = UIButton_ProcessButtonCB;
+        if (self->allowVerticalScroll)
+            self->processButtonCB = UIButton_ProcessButtonCB_Scroll;
+        else
+            self->processButtonCB = UIButton_ProcessButtonCB;
         self->touchCB            = UIButton_ProcessTouchCB_Single;
         self->selectedCB         = UIButton_SelectedCB;
         self->failCB             = UIButton_FailCB;
@@ -116,10 +139,26 @@ void UIButton_Create(void *data)
         self->checkSelectedCB    = UIButton_CheckSelectedCB;
 
         self->textVisible = true;
-        RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
-        self->textFrames   = UIWidgets->textFrames;
-        self->startListID  = self->listID;
-        self->startFrameID = self->frameID;
+
+        Localization_GetString(&self->string, self->stringID);
+
+        if (self->string.length > 0) {
+            for (int32 c = 0; c < self->string.length; ++c)
+                self->buttonCharCount = c + 1;
+
+            RSDK.SetSpriteAnimation(UIWidgets->dynTextFrames, self->textType, &self->textAnimator, true, 0);
+            RSDK.SetSpriteString(UIWidgets->dynTextFrames, self->textType, &self->string);
+
+            self->dynTextFrames = UIWidgets->dynTextFrames;
+            self->startListID   = self->textType;
+            self->startFrameID  = self->textAnimator.frameID;
+        }
+        else {
+            RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
+            self->textFrames   = UIWidgets->textFrames;
+            self->startListID  = self->listID;
+            self->startFrameID = self->frameID;
+        }
 
         int32 slot = RSDK.GetEntitySlot(self) - self->choiceCount;
         for (int32 i = 0; i < self->choiceCount; ++i) {
@@ -287,7 +326,7 @@ void *UIButton_GetActionCB(void)
 
 void UIButton_FailCB(void) { RSDK.PlaySfx(UIWidgets->sfxFail, false, 255); }
 
-void UIButton_ProcessButtonCB_Scroll(void)
+void UIButton_ProcessButtonCB_Scroll_UIChar(void)
 {
     RSDK_THIS(UIButton);
 
@@ -330,6 +369,203 @@ void UIButton_ProcessButtonCB_Scroll(void)
         if (UIControl->anyRightPress) {
             ++colID;
             changedSelection = true;
+        }
+
+        if (changedSelection) {
+#if MANIA_USE_PLUS
+            if (control->noWrap) {
+                int32 rowCount = control->rowCount;
+                int32 colCount = control->columnCount;
+
+                if (rowID < control->rowCount)
+                    rowCount = rowID;
+
+                if (rowCount >= 0) {
+                    if (rowID >= control->rowCount)
+                        rowID = control->rowCount;
+                }
+                else {
+                    rowID = 0;
+                }
+
+                if (colID < control->columnCount)
+                    colCount = colID;
+
+                if (colCount >= 0) {
+                    if (colID >= control->columnCount)
+                        colID = control->columnCount;
+                }
+                else {
+                    colID = 0;
+                }
+            }
+            else {
+#endif
+                if (rowID < 0)
+                    rowID += control->rowCount;
+
+                if (rowID >= control->rowCount)
+                    rowID -= control->rowCount;
+
+                if (colID < 0)
+                    colID += control->columnCount;
+
+                if (colID >= control->columnCount)
+                    colID -= control->columnCount;
+#if MANIA_USE_PLUS
+            }
+#endif
+
+            int32 id = control->buttonCount - 1;
+            if (colID + rowID * control->columnCount < id)
+                id = colID + rowID * control->columnCount;
+
+            if (control->buttonID != id) {
+                control->buttonID = id;
+                StateMachine_Run(self->buttonLeaveCB);
+                RSDK.PlaySfx(UIWidgets->sfxBleep, false, 0xFF);
+            }
+        }
+        else {
+            bool32 hasNoAction = true;
+            if (UIControl->anyConfirmPress) {
+                if (self->disabled) {
+                    StateMachine_Run(self->failCB);
+                }
+                else {
+                    hasNoAction = !self->actionCB;
+                }
+            }
+
+            if (hasNoAction) {
+                if (!self->isSelected) {
+                    if (control->buttonID == UIControl_GetButtonID(control, self) && control->state == UIControl_ProcessInputs
+                        && !control->dialogHasFocus) {
+                        StateMachine_Run(self->buttonEnterCB);
+                    }
+                }
+            }
+            else {
+                StateMachine_Run(self->selectedCB);
+            }
+        }
+    }
+}
+
+void UIButton_ProcessButtonCB_Scroll(void)
+{
+    RSDK_THIS(UIButton);
+    EntityUIControl *control = (EntityUIControl *)self->parent;
+    EntityUIButton *choice   = UIButton_GetChoicePtr(self, self->selection);
+
+    int32 columnID = 0, rowID = 0;
+
+#if MANIA_USE_PLUS
+    UIControl_SetTargetPos(control, self->position.x, self->position.y);
+#else
+    control->targetPos.y = self->position.y;
+#endif
+
+    if (!UIControl_isMoving(control)) {
+        int32 rowID = 0;
+        int32 colID = 0;
+
+        if (control->rowCount && control->columnCount)
+            rowID = control->buttonID / control->columnCount;
+
+        if (control->columnCount)
+            colID = control->buttonID % control->columnCount;
+
+        bool32 changedSelection = false;
+        if (control->rowCount > 1) {
+            if (UIControl->anyUpPress) {
+                --rowID;
+                changedSelection = true;
+            }
+
+            if (UIControl->anyDownPress) {
+                ++rowID;
+                changedSelection = true;
+            }
+        }
+
+        bool32 movedV   = false;
+        int32 selection = self->selection;
+        bool32 movedH   = 0;
+
+        if (choice && self->choiceCount == 1 && choice->processButtonCB && !self->choiceDir && !self->disabled) {
+            Entity *entStore  = SceneInfo->entity;
+            SceneInfo->entity = (Entity *)choice;
+#if RETRO_USE_MOD_LOADER
+            StateMachine_Run(choice->processButtonCB);
+#else
+            choice->processButtonCB();
+#endif
+            SceneInfo->entity = entStore;
+        }
+        else {
+            if (UIControl->anyLeftPress) {
+                if (self->choiceCount <= 0 || self->choiceDir || self->disabled) {
+                    if (control->columnCount > 1) {
+                        movedV = true;
+                        columnID--;
+                    }
+
+                    movedH = false;
+                }
+                else {
+                    if (--selection < 0) {
+                        while (selection < 0) selection += self->choiceCount;
+                    }
+                    choice = UIButton_GetChoicePtr(self, selection);
+
+                    while ((choice && choice->disabled) && selection != self->selection) {
+                        if (--selection < 0) {
+                            while (selection < 0) selection += self->choiceCount;
+                        }
+
+                        choice = UIButton_GetChoicePtr(self, selection);
+                    }
+
+                    movedH = true;
+                }
+            }
+
+            if (UIControl->anyRightPress) {
+                if (self->choiceCount <= 0 || self->choiceDir || self->disabled) {
+                    if (control->columnCount > 1) {
+                        ++columnID;
+                        movedV = true;
+                    }
+
+                    movedH = false;
+                }
+                else {
+                    selection = (selection + 1) % self->choiceCount;
+                    choice    = UIButton_GetChoicePtr(self, selection);
+
+                    while ((choice && choice->disabled) && selection != self->selection) {
+                        selection = (selection + 1) % self->choiceCount;
+
+                        choice = UIButton_GetChoicePtr(self, selection);
+                    }
+
+                    movedH = true;
+                }
+            }
+        }
+
+        if (movedH) {
+            if (selection < 0)
+                selection += self->choiceCount;
+
+            if (selection >= self->choiceCount)
+                selection -= self->choiceCount;
+
+            if (selection != self->selection) {
+                UIButton_SetChoiceSelectionWithCB(self, selection);
+                RSDK.PlaySfx(UIWidgets->sfxBleep, false, 255);
+            }
         }
 
         if (changedSelection) {
@@ -906,8 +1142,17 @@ void UIButton_EditorDraw(void)
 
     if (self->disabled)
         RSDK.SetSpriteAnimation(UIWidgets->textFrames, 7, &self->animator, true, 0);
-    else
-        RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
+    else {
+        if (self->string.length > 0) {
+            for (int32 c = 0; c < self->string.length; ++c)
+                self->buttonCharCount = c + 1;
+
+            RSDK.SetSpriteAnimation(UIWidgets->dynTextFrames, self->textType, &self->textAnimator, true, 0);
+            RSDK.SetSpriteString(UIWidgets->dynTextFrames, self->textType, &self->string);
+        }
+        else 
+            RSDK.SetSpriteAnimation(UIWidgets->textFrames, self->listID, &self->animator, true, self->frameID);
+    }
 
     self->textFrames   = UIWidgets->textFrames;
     self->startListID  = self->listID;
@@ -947,6 +1192,13 @@ void UIButton_EditorLoad(void)
     RSDK_ENUM_VAR("Left", UIBUTTON_ALIGN_LEFT);
     RSDK_ENUM_VAR("Center", UIBUTTON_ALIGN_CENTER);
     RSDK_ENUM_VAR("Right", UIBUTTON_ALIGN_RIGHT);
+
+    RSDK_ACTIVE_VAR(UIButton, textType);
+    RSDK_ENUM_VAR("Heading Text", UIBUTTONPROMPT_ANCHOR_NONE);
+    RSDK_ENUM_VAR("Large Text", UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW1);
+    RSDK_ENUM_VAR("Small Text", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW1);
+    RSDK_ENUM_VAR("Slim Small Text", UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW2);
+    RSDK_ENUM_VAR("Tiny Text", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW2);
 }
 #endif
 
@@ -964,4 +1216,7 @@ void UIButton_Serialize(void)
     RSDK_EDITABLE_VAR(UIButton, VAR_BOOL, freeBindP2);
     RSDK_EDITABLE_VAR(UIButton, VAR_BOOL, transition);
     RSDK_EDITABLE_VAR(UIButton, VAR_BOOL, stopMusic);
+    RSDK_EDITABLE_VAR(UIButton, VAR_BOOL, allowVerticalScroll);
+    RSDK_EDITABLE_VAR(UIButton, VAR_ENUM, textType);
+    RSDK_EDITABLE_VAR(UIButton, VAR_INT32, stringID);
 }

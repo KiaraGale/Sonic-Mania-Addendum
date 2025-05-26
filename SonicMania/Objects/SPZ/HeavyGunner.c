@@ -18,10 +18,18 @@ void HeavyGunner_Update(void)
     foreach_active(Player, player) {
         if (player->state == Player_State_Ground || player->state == Player_State_Air) {
             if ((!player->left && !player->right) || (player->left && player->right)) {
-                if (player->groundVel > 0x70000)
-                    player->groundVel -= 0x1000;
-                if (player->groundVel < 0x70000)
-                    player->groundVel += 0x2000;
+                if (globals->gameMode == MODE_ENCORE) {
+                    if (player->groundVel > 0xA8000)
+                        player->groundVel -= 0x1800;
+                    if (player->groundVel < 0xA8000)
+                        player->groundVel += 0x2800;
+                }
+                else {
+                    if (player->groundVel > 0x70000)
+                        player->groundVel -= 0x1000;
+                    if (player->groundVel < 0x70000)
+                        player->groundVel += 0x2000;
+                }
             }
         }
     }
@@ -91,10 +99,18 @@ void HeavyGunner_Create(void *data)
 
                     case HEAVYGUNNER_MISSILE_F:
                     case HEAVYGUNNER_MISSILE:
-                        if (self->type == HEAVYGUNNER_MISSILE_F)
-                            RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 29, &self->mainAnimator, true, 0);
-                        else
-                            RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 24, &self->mainAnimator, true, 0);
+                        if (globals->gameMode == MODE_ENCORE) {
+                            if (self->type == HEAVYGUNNER_MISSILE_F)
+                                RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 24, &self->mainAnimator, true, 0);
+                            else
+                                RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 30, &self->mainAnimator, true, 0);
+                        }
+                        else {
+                            if (self->type == HEAVYGUNNER_MISSILE_F)
+                                RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 29, &self->mainAnimator, true, 0);
+                            else
+                                RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 24, &self->mainAnimator, true, 0);
+                        }
                         self->drawFX     = FX_SCALE | FX_ROTATE | FX_FLIP;
                         self->velocity.x = 0x40000;
                         self->velocity.y = -0x38000;
@@ -171,6 +187,8 @@ void HeavyGunner_StageLoad(void)
     HeavyGunner->hitboxMissile.bottom = 8;
 
     HeavyGunner->active = ACTIVE_NEVER;
+
+    Zone_SetupHyperAttackList(HeavyGunner->classID, true, true, true, true, true, true);
 }
 
 bool32 HeavyGunner_SfxCheck_HeliProp(void)
@@ -306,7 +324,7 @@ void HeavyGunner_Draw_FadeOut(void)
 {
     RSDK_THIS(HeavyGunner);
 
-    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void HeavyGunner_StateManager_SetupArena(void)
@@ -315,6 +333,8 @@ void HeavyGunner_StateManager_SetupArena(void)
 
     if (++self->timer >= 8) {
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+        AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
         if (player1->position.x >= self->position.x - 0x1000000) {
             HeavyGunner->active = ACTIVE_ALWAYS;
@@ -332,6 +352,25 @@ void HeavyGunner_StateManager_SetupArena(void)
             HeavyGunner->boundsT         = Zone->cameraBoundsT[0];
             HeavyGunner->boundsB         = 0xC00;
             HeavyGunner->stageWrapActive = true;
+
+            if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+                for (int32 i = 1; i < 4; ++i) {
+                    EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                    if (player->classID == Player->classID) {
+                        if (player->position.x < HeavyGunner->boundsL) {
+                            EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player1->position.x, player1->position.y);
+                            player->position.x = player1->position.x;
+                            player->position.y = player1->position.y;
+                            player->camera->position.x = player1->camera->position.x;
+                            player->camera->position.y = player1->camera->position.y;
+                            player->velocity.x         = player1->velocity.x;
+                            player->velocity.y         = player1->velocity.y;
+                            Zone->playerBoundActiveL[i]  = true;
+                            Zone->playerBoundActiveR[i]  = true;
+                        }
+                    }
+                }
+            }
 
             int32 mult = -0x1E00 * ScreenInfo->position.y;
 
@@ -403,6 +442,7 @@ void HeavyGunner_StateManager_SetupArena(void)
 void HeavyGunner_StateManager_HandleStageWrap(void)
 {
     RSDK_THIS(HeavyGunner);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     self->position.x += Zone->autoScrollSpeed;
 
@@ -445,6 +485,29 @@ void HeavyGunner_StateManager_HandleStageWrap(void)
         else {
             self->flyInTimer++;
         }
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Zone->cameraBoundsL[i] = (self->position.x >> 16) - ScreenInfo->center.x;
+                    Zone->cameraBoundsR[i] = (self->position.x >> 16) + ScreenInfo->center.x;
+                    Zone->playerBoundsL[i] = Zone->cameraBoundsL[i] << 16;
+                    Zone->playerBoundsR[i] = Zone->cameraBoundsR[i] << 16;
+
+                    EntityCamera *cameraB = RSDK_GET_ENTITY(60 + i, Camera);
+                    cameraB->boundsL      = Zone->cameraBoundsL[i];
+                    cameraB->boundsR      = Zone->cameraBoundsR[i];
+
+                    if (self->flyInTimer == 120) {
+                        if (!RSDK.ObjectTileGrip(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x800000, 0x40))
+                            self->position.y += 0x80000;
+                        Zone->cameraBoundsB[i] = (self->position.y >> 16) + 168;
+                        Zone->cameraBoundsT[i] = Zone->cameraBoundsB[i] - ScreenInfo->size.y;
+                    }
+                }
+            }
+        }
     }
     else if (self->position.x < 0x49800000) {
         Zone->cameraBoundsL[0] = (self->position.x >> 16) - ScreenInfo->center.x;
@@ -465,6 +528,29 @@ void HeavyGunner_StateManager_HandleStageWrap(void)
         else {
             self->flyInTimer++;
         }
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Zone->cameraBoundsL[i] = (self->position.x >> 16) - ScreenInfo->center.x;
+                    Zone->cameraBoundsR[i] = (self->position.x >> 16) + ScreenInfo->center.x;
+                    Zone->playerBoundsL[i] = Zone->cameraBoundsL[i] << 16;
+                    Zone->playerBoundsR[i] = Zone->cameraBoundsR[i] << 16;
+
+                    EntityCamera *cameraS = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
+                    cameraS->boundsL      = Zone->cameraBoundsL[i];
+                    cameraS->boundsR      = Zone->cameraBoundsR[i];
+
+                    if (self->flyInTimer == 120) {
+                        if (!RSDK.ObjectTileGrip(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x800000, 0x40))
+                            self->position.y += 0x80000;
+                        Zone->cameraBoundsB[i] = (self->position.y >> 16) + 168;
+                        Zone->cameraBoundsT[i] = Zone->cameraBoundsB[i] - ScreenInfo->size.y;
+                    }
+                }
+            }
+        }
     }
     else {
         Zone->cameraBoundsL[0]      = HeavyGunner->boundsL;
@@ -472,6 +558,19 @@ void HeavyGunner_StateManager_HandleStageWrap(void)
         Zone->cameraBoundsT[0]      = HeavyGunner->boundsT;
         Zone->cameraBoundsB[0]      = HeavyGunner->boundsB;
         Zone->playerBoundActiveR[0] = false;
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Zone->cameraBoundsL[i]      = HeavyGunner->boundsL;
+                    Zone->cameraBoundsR[i]      = HeavyGunner->boundsR;
+                    Zone->cameraBoundsT[i]      = HeavyGunner->boundsT;
+                    Zone->cameraBoundsB[i]      = HeavyGunner->boundsB;
+                    Zone->playerBoundActiveR[i] = false;
+                }
+            }
+        }
 
         for (int32 p = 0; p < Player->playerCount; ++p) {
             EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
@@ -489,15 +588,29 @@ void HeavyGunner_StateManager_HandleStageWrap(void)
         self->state = HeavyGunner_StateManager_HandlePathChange;
     }
 
-    if (Zone->autoScrollSpeed > 0x70000) {
-        Zone->autoScrollSpeed -= 0x2000;
-        if (Zone->autoScrollSpeed < 0x70000)
-            Zone->autoScrollSpeed = 0x70000;
+    if (globals->gameMode == MODE_ENCORE) {
+        if (Zone->autoScrollSpeed > 0xA8000) {
+            Zone->autoScrollSpeed -= 0x2000;
+            if (Zone->autoScrollSpeed < 0xA8000)
+                Zone->autoScrollSpeed = 0xA8000;
+        }
+        else if (Zone->autoScrollSpeed < 0xA8000) {
+            Zone->autoScrollSpeed += 0x2000;
+            if (Zone->autoScrollSpeed > 0xA8000)
+                Zone->autoScrollSpeed = 0xA8000;
+        }
     }
-    else if (Zone->autoScrollSpeed < 0x70000) {
-        Zone->autoScrollSpeed += 0x2000;
-        if (Zone->autoScrollSpeed > 0x70000)
-            Zone->autoScrollSpeed = 0x70000;
+    else {
+        if (Zone->autoScrollSpeed > 0x70000) {
+            Zone->autoScrollSpeed -= 0x2000;
+            if (Zone->autoScrollSpeed < 0x70000)
+                Zone->autoScrollSpeed = 0x70000;
+        }
+        else if (Zone->autoScrollSpeed < 0x70000) {
+            Zone->autoScrollSpeed += 0x2000;
+            if (Zone->autoScrollSpeed > 0x70000)
+                Zone->autoScrollSpeed = 0x70000;
+        }
     }
 
     for (int32 p = 0; p < Player->playerCount; ++p) {
@@ -528,46 +641,42 @@ void HeavyGunner_StateManager_HandleStageWrap(void)
 void HeavyGunner_StateManager_HandlePathChange(void)
 {
     RSDK_THIS(HeavyGunner);
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityCamera *camera1 = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
-    EntityCamera *camera = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
-    if (camera->position.x <= 0x51800000) {
-        for (int32 p = 0; p < Player->playerCount; ++p) {
-            EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+    if (camera1->position.x <= 0x51800000) {
+        if (player1->onGround) {
+            if (player1->groundVel < 0x80000)
+                player1->groundVel = 0x80000;
+        }
+        else if (player1->velocity.x < 0x80000) {
+            player1->velocity.x = 0x80000;
+        }
 
-            if (player->onGround) {
-                if (player->groundVel < 0x80000)
-                    player->groundVel = 0x80000;
-            }
-            else if (player->velocity.x < 0x80000) {
-                player->velocity.x = 0x80000;
-            }
+        player1->direction = FLIP_NONE;
 
-            player->direction = FLIP_NONE;
-
-            if (player->state == Player_State_KnuxGlideLeft) {
-                player->timer            = 0;
-                player->animator.frameID = 6;
-                player->state            = Player_State_KnuxGlideRight;
-                player->abilitySpeed     = Zone->autoScrollSpeed;
-            }
-            else if (player->state == Player_State_KnuxGlideRight) {
-                if (player->abilitySpeed < Zone->autoScrollSpeed)
-                    player->abilitySpeed = Zone->autoScrollSpeed;
-            }
+        if (player1->state == Player_State_KnuxGlideLeft) {
+            player1->timer            = 0;
+            player1->animator.frameID = 6;
+            player1->state            = Player_State_KnuxGlideRight;
+            player1->abilitySpeed     = Zone->autoScrollSpeed;
+        }
+        else if (player1->state == Player_State_KnuxGlideRight) {
+            if (player1->abilitySpeed < Zone->autoScrollSpeed)
+                player1->abilitySpeed = Zone->autoScrollSpeed;
         }
     }
     else {
-        camera->position.x -= 0x10000000;
-        self->position.x = camera->position.x - 0x100000;
-        self->position.y = camera->position.y - 0x800000;
+        camera1->position.x -= 0x10000000;
+        self->position.x = camera1->position.x - 0x100000;
+        self->position.y = camera1->position.y - 0x800000;
         HeavyGunner_HandleBGWrap(0x100000);
 
-        for (int32 p = 0; p < Player->playerCount; ++p) {
-            EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
-            player->position.x -= 0x10000000;
-            if (player->velocity.x > Zone->autoScrollSpeed)
-                Zone->autoScrollSpeed = player->velocity.x;
-        }
+        player1->position.x -= 0x10000000;
+        if (player1->velocity.x > Zone->autoScrollSpeed)
+            Zone->autoScrollSpeed = player1->velocity.x;
 
         foreach_active(Ring, ring) { ring->position.x -= 0x10000000; }
 
@@ -594,15 +703,57 @@ void HeavyGunner_StateManager_HandlePathChange(void)
         self->state                  = HeavyGunner_StateManager_HandleStageWrap;
 
         EntityHeavyGunner *heli = RSDK_GET_ENTITY(SceneInfo->entitySlot + 4, HeavyGunner);
-        heli->position.x        = camera->position.x - 0x1200000;
-        heli->position.y        = camera->position.y - 0xC00000;
+        heli->position.x        = camera1->position.x - 0x1200000;
+        heli->position.y        = camera1->position.y - 0xC00000;
         RSDK.SetSpriteAnimation(HeavyGunner->aniFrames, 1, &heli->gunnerAnimator, true, 0);
         heli->state = HeavyGunner_StateHeli_AwaitPlayer;
 
         for (int32 c = 3 - heli->nextRoboID; c > 0; --c) {
             EntityHeavyGunner *robo = RSDK_GET_ENTITY(SceneInfo->entitySlot + c, HeavyGunner);
-            robo->position.x        = camera->position.x - 0x200000;
-            robo->position.y        = camera->position.y - 0xC00000;
+            robo->position.x        = camera1->position.x - 0x200000;
+            robo->position.y        = camera1->position.y - 0xC00000;
+        }
+    }
+
+    if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+        for (int32 i = 1; i < 4; ++i) {
+            EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+            EntityCamera *camera2 = RSDK_GET_ENTITY(60 + i, Camera);
+            if (player->classID == Player->classID) {
+                if (camera2->position.x <= 0x51800000) {
+                    if (player->onGround) {
+                        if (player->groundVel < 0x80000)
+                            player->groundVel = 0x80000;
+                    }
+                    else if (player->velocity.x < 0x80000) {
+                        player->velocity.x = 0x80000;
+                    }
+
+                    player->direction = FLIP_NONE;
+
+                    if (player->state == Player_State_KnuxGlideLeft) {
+                        player->timer            = 0;
+                        player->animator.frameID = 6;
+                        player->state            = Player_State_KnuxGlideRight;
+                        player->abilitySpeed     = Zone->autoScrollSpeed;
+                    }
+                    else if (player->state == Player_State_KnuxGlideRight) {
+                        if (player->abilitySpeed < Zone->autoScrollSpeed)
+                            player->abilitySpeed = Zone->autoScrollSpeed;
+                    }
+                }
+                else {
+                    camera2->position.x -= 0x10000000;
+                    self->position.x = camera2->position.x - 0x100000;
+                    self->position.y = camera2->position.y - 0x800000;
+
+                    player->position.x -= 0x10000000;
+                    if (player->velocity.x > Zone->autoScrollSpeed)
+                        Zone->autoScrollSpeed = player->velocity.x;
+
+                    Zone->playerBoundActiveR[i]  = true;
+                }
+            }
         }
     }
 }
@@ -876,7 +1027,7 @@ void HeavyGunner_StateMissile_FindFloor(void)
 
     if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x100000, true)) {
         self->direction  = FLIP_X;
-        self->velocity.x = self->type == HEAVYGUNNER_MISSILE ? -0x10000 : -0x20000;
+        self->velocity.x = globals->gameMode == MODE_ENCORE ? self->type == HEAVYGUNNER_MISSILE ? -0x18000 : -0x28000 : self->type == HEAVYGUNNER_MISSILE ? -0x10000 : -0x20000;
         self->state      = HeavyGunner_StateMissile_AttackPlayer;
     }
 }
@@ -1269,6 +1420,8 @@ void HeavyGunner_StateMissile_AttackGunner(void)
 void HeavyGunner_StateHeli_AwaitPlayer(void)
 {
     RSDK_THIS(HeavyGunner);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     if (RSDK_GET_ENTITY(SLOT_PLAYER1, Player)->position.x > self->position.x) {
         self->velocity.x = 0x40000;
@@ -1280,6 +1433,16 @@ void HeavyGunner_StateHeli_AwaitPlayer(void)
         RSDK.PlaySfx(HeavyGunner->sfxRumble, false, 255);
         RSDK.PlaySfx(HeavyGunner->sfxWooshIn, false, 255);
         Zone->deathBoundary[0] += 0x8000000;
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Camera_ShakeScreen(i, 12, 12);
+                    Zone->deathBoundary[i] += 0x8000000;
+                }
+            }
+        }
     }
 }
 
@@ -1559,6 +1722,9 @@ void HeavyGunner_StateHeli_Exploding(void)
 void HeavyGunner_StateHeli_ExplodeAndFall(void)
 {
     RSDK_THIS(HeavyGunner);
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     RSDK.ProcessAnimation(&self->mainAnimator);
     RSDK.ProcessAnimation(&self->rBladeAnimator);
@@ -1597,33 +1763,59 @@ void HeavyGunner_StateHeli_ExplodeAndFall(void)
         Music_TransitionTrack(TRACK_STAGE, 0.0125);
         RSDK.PlaySfx(HeavyGunner->sfxExplosion3, false, 255);
 
-        EntityCamera *camera = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
-        camera->position.x   = 0x57C00000;
-        if (camera->position.y <= 0x6600000) {
-            camera->position.y = 0x2EC0000;
-            if (camera->position.y > 0x3800000)
-                camera->position.y = 0x5EC0000;
+        EntityCamera *camera1 = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
+        camera1->position.x   = 0x57C00000;
+        if (camera1->position.y <= 0x6600000) {
+            camera1->position.y = 0x2EC0000;
+            if (camera1->position.y > 0x3800000)
+                camera1->position.y = 0x5EC0000;
         }
         else {
-            camera->position.y = 0x8EC0000;
+            camera1->position.y = 0x8EC0000;
         }
 
-        foreach_active(Player, player)
-        {
-            player->position.x = 0x57C00000;
-            player->position.y = camera->position.y;
-        }
+        player1->position.x = 0x57C00000;
+        player1->position.y = camera1->position.y;
 
         foreach_all(SignPost, signPost)
         {
-            signPost->position.y   = camera->position.y;
+            signPost->position.y   = camera1->position.y;
             Zone->cameraBoundsL[0] = (signPost->position.x >> 16) - 512;
+            if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+                if (player2->classID == Player->classID)
+                    Zone->cameraBoundsL[1] = (signPost->position.x >> 16) - 512;
+            }
             RSDK.ObjectTileGrip(signPost, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x180000, 0x40);
         }
 
         Zone->autoScrollSpeed       = 0;
         Zone->cameraBoundsR[0]      = HeavyGunner->boundsR;
         Zone->playerBoundActiveR[0] = false;
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                EntityCamera *camera2 = RSDK_GET_ENTITY(60 + i, Camera);
+                if (player->classID == Player->classID) {
+                    camera2->position.x   = 0x57C00000;
+                    if (camera2->position.y <= 0x6600000) {
+                        camera2->position.y = 0x2EC0000;
+                        if (camera2->position.y > 0x3800000)
+                            camera2->position.y = 0x5EC0000;
+                    }
+                    else {
+                        camera2->position.y = 0x8EC0000;
+                    }
+
+                    player->position.x = 0x57C00000;
+                    player->position.y = camera2->position.y;
+
+                    Zone->cameraBoundsR[i]      = HeavyGunner->boundsR;
+                    Zone->playerBoundActiveR[i] = false;
+                }
+            }
+        }
+
         destroyEntitySlot(SceneInfo->entitySlot - 4);
     }
 }

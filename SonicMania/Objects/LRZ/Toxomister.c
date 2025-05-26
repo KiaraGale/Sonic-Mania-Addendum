@@ -83,6 +83,8 @@ void Toxomister_StageLoad(void)
     Toxomister->hitboxCloud.bottom = 8;
 
     DEBUGMODE_ADD_OBJ(Toxomister);
+
+    Zone_SetupHyperAttackList(Toxomister->classID, true, true, true, true, true, true);
 }
 
 void Toxomister_DebugSpawn(void)

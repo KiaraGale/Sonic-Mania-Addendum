@@ -111,6 +111,8 @@ void Splats_StageLoad(void)
 
     Splats->sfxSplatsSpawn = RSDK.GetSfx("PSZ/SplatsSpawn.wav");
     Splats->sfxSplatsLand  = RSDK.GetSfx("PSZ/SplatsLand.wav");
+
+    Zone_SetupHyperAttackList(Splats->classID, true, true, true, true, true, true);
 }
 
 void Splats_DebugDraw(void)

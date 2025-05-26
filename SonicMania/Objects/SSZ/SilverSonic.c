@@ -87,6 +87,8 @@ void SilverSonic_StageLoad(void)
     SilverSonic->sfxBoost   = RSDK.GetSfx("SSZ2/SSBoost.wav");
     SilverSonic->sfxRebound = RSDK.GetSfx("SSZ2/SSRebound.wav");
     SilverSonic->sfxArm     = RSDK.GetSfx("SSZ2/SSArm.wav");
+
+    Zone_SetupHyperAttackList(SilverSonic->classID, true, true, true, true, true, true);
 }
 
 void SilverSonic_HandleNextAttack(void)

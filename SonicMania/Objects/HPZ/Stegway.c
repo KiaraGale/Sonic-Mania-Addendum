@@ -70,6 +70,8 @@ void Stegway_StageLoad(void)
     Stegway->sfxRelease = RSDK.GetSfx("Global/Release.wav");
 
     DEBUGMODE_ADD_OBJ(Stegway);
+
+    Zone_SetupHyperAttackList(Stegway->classID, true, true, true, true, true, true);
 }
 
 void Stegway_DebugSpawn(void)

@@ -23,6 +23,8 @@ struct ObjectUFO_Player {
     uint16 ballModel;
     uint16 tumbleModel;
     uint16 sceneIndex;
+    uint8 touchJump;
+    uint8 touchPause;
 };
 
 // Entity Class
@@ -88,5 +90,6 @@ void UFO_Player_State_Trip(void);
 void UFO_Player_State_CourseOut(void);
 void UFO_Player_State_UFOCaught_Charge(void);
 void UFO_Player_State_UFOCaught_Released(void);
+void UFO_Player_HandleTouchInput(void);
 
 #endif //! OBJ_UFO_PLAYER_H

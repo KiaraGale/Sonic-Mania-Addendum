@@ -7,6 +7,8 @@
 struct ObjectSPZ2Outro {
     RSDK_OBJECT
     bool32 ignoreP2;
+    bool32 ignoreP3;
+    bool32 ignoreP4;
     int32 unused;
     EntityTVFlyingBattery *tvFlyingBattery;
     EntityWeatherTV *weatherTV;

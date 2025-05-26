@@ -44,6 +44,7 @@ void UFO_Circuit_StaticUpdate(void) {}
 void UFO_Circuit_Draw(void)
 {
     RSDK_THIS(UFO_Circuit);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     if (self->zdepth >= 0x4000) {
         RSDK.Prepare3DScene(UFO_Circuit->sceneIndex);
@@ -58,8 +59,58 @@ void UFO_Circuit_Draw(void)
 
         RSDK.AddMeshFrameTo3DScene(self->ufoAnimator.animationID, UFO_Circuit->sceneIndex, &self->ufoAnimator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
                                    &self->matWorld, &self->matNormal, 0xFFFFFF);
-        RSDK.AddMeshFrameTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, &self->ufoAnimator, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
-                                   &self->matWorld, &self->matNormal, 0xFFFFFF);
+
+        switch (UFO_Setup->specialStageID) {
+            default:
+            case 0: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[0 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 1: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[1 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 2: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[2 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 3: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[3 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 4: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[4 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 5: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[5 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 6: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, UFO_Circuit->emeraldColors[6 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 7: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[14] : UFO_Circuit->emeraldColors[0 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 8: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[15] : UFO_Circuit->emeraldColors[1 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 9: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[16] : UFO_Circuit->emeraldColors[2 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 10: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[17] : UFO_Circuit->emeraldColors[3 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 11: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[18] : UFO_Circuit->emeraldColors[4 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 12: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[19] : UFO_Circuit->emeraldColors[5 + (7 * addendumOptions->emeraldPalette)]); break;
+
+            case 13: RSDK.AddModelTo3DScene(UFO_Circuit->emeraldModel, UFO_Circuit->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED_SCREEN,
+                &self->matWorld, &self->matNormal, addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE ? 
+                UFO_Circuit->emeraldColors[20] : UFO_Circuit->emeraldColors[6 + (7 * addendumOptions->emeraldPalette)]); break;
+        }
 
         RSDK.Draw3DScene(UFO_Circuit->sceneIndex);
     }
@@ -120,25 +171,14 @@ void UFO_Circuit_Create(void *data)
 
 void UFO_Circuit_StageLoad(void)
 {
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
+
     UFO_Circuit->ufoModel = RSDK.LoadMesh("Special/UFOChase.bin", SCOPE_STAGE);
 
-    switch (UFO_Setup->specialStageID) {
-        default:
-        case 0: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldGreen.bin", SCOPE_STAGE); break;
-        case 1: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldYellow.bin", SCOPE_STAGE); break;
-        case 2: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldBlue.bin", SCOPE_STAGE); break;
-        case 3: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldPurple.bin", SCOPE_STAGE); break;
-        case 4: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldGrey.bin", SCOPE_STAGE); break;
-        case 5: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldCyan.bin", SCOPE_STAGE); break;
-        case 6: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/EmeraldRed.bin", SCOPE_STAGE); break;
-        case 7: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneGreen.bin", SCOPE_STAGE); break;
-        case 8: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneOrange.bin", SCOPE_STAGE); break;
-        case 9: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneYellow.bin", SCOPE_STAGE); break;
-        case 10: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneBlue.bin", SCOPE_STAGE); break;
-        case 11: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneCyan.bin", SCOPE_STAGE); break;
-        case 12: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStonePurple.bin", SCOPE_STAGE); break;
-        case 13: UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStoneRed.bin", SCOPE_STAGE); break;
-    }
+    if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE && UFO_Setup->specialStageID > 6)
+        UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/TimeStone.bin", SCOPE_STAGE);
+    else
+        UFO_Circuit->emeraldModel = RSDK.LoadMesh("Special/Emerald.bin", SCOPE_STAGE);
 
     UFO_Circuit->sceneIndex = RSDK.Create3DScene("View:Special", 4096, SCOPE_STAGE);
 

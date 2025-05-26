@@ -23,6 +23,7 @@ struct ObjectDERobot {
     uint16 aniFrames;
     Hitbox hitboxHand;
     Hitbox hitboxBody;
+    Hitbox hitboxLeg;
     uint16 unused1;
     uint16 unused2;
     uint16 unused3;
@@ -106,6 +107,7 @@ void DERobot_CheckPlayerCollisions_ArmExtend(void);
 void DERobot_CheckPlayerCollisions_Hand(void);
 bool32 DERobot_CheckRubyGrabbed(void);
 void DERobot_CheckPlayerCollisions_Bomb(void);
+void DERobot_CheckPlayerCollisions_Leg(void);
 
 void DERobot_Draw_RelativeToParent(void);
 void DERobot_Draw_Arm(void);

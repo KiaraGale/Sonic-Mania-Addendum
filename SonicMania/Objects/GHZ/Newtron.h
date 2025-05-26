@@ -17,6 +17,7 @@ struct ObjectNewtron {
     Hitbox hitboxProjectile;
     Hitbox hitboxRange;
     uint16 aniFrames;
+    uint16 sfxShot;
 };
 
 // Entity Class

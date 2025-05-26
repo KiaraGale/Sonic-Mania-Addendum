@@ -111,6 +111,14 @@ void GHZSetup_StageLoad(void)
         }
     }
 #endif
+    if (SceneInfo->filter & FILTER_ENCORE || (RSDK.CheckSceneFolder("GHZCutscene") && globals->gameMode == MODE_ENCORE)) {
+        RSDK.SetPaletteEntry(0, 246, 0x73597D);
+        RSDK.SetPaletteEntry(0, 247, 0xFCDAB5);
+    }
+    else {
+        RSDK.SetPaletteEntry(0, 246, 0x6C4CE1);
+        RSDK.SetPaletteEntry(0, 247, 0xF2E3EF);
+    }
 }
 
 void GHZSetup_SetupAct1BG(void)

@@ -65,7 +65,7 @@ void BigSqueeze_Create(void *data)
                     self->hitbox.right  = 32;
                     self->hitbox.bottom = 16;
 
-                    self->timer = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+                    self->timer = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 1, &self->animator, true, 0);
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 2, &self->domeAnimator, true, 0);
                     RSDK.SetSpriteAnimation(BigSqueeze->aniFrames, 3, &self->prongsAnimator, true, 0);
@@ -298,7 +298,7 @@ void BigSqueeze_Draw_Boss(void)
     RSDK.DrawSprite(&self->prongsAnimator, NULL, false);
     RSDK.DrawSprite(&self->electricAnimator, NULL, false);
 
-    RSDK.SetPaletteEntry(0, 156, 0x202020);
+    RSDK.SetPaletteEntry(0, 156, 0x100818);
     RSDK.SetPaletteEntry(0, 33, 0x303840);
     drawPos.x = self->position.x;
     drawPos.y = self->position.y;

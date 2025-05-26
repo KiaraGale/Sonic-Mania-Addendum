@@ -56,7 +56,7 @@ void SSZ2Setup_StageLoad(void)
     SSZ2Setup->sfxSpark = RSDK.GetSfx("SSZ2/Spark.wav");
 
     Animals->animalTypes[0] = ANIMAL_FLICKY;
-    Animals->animalTypes[1] = ANIMAL_PICKY;
+    Animals->animalTypes[1] = ANIMAL_PECKY;
 
     SSZ2Setup->towerID = RSDK.GetTileLayerID("Tower");
     if (SSZ2Setup->towerID < LAYER_COUNT) {

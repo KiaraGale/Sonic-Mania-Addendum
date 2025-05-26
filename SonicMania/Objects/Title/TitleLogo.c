@@ -36,6 +36,18 @@ void TitleLogo_Draw(void)
 {
     RSDK_THIS(TitleLogo);
 
+    Vector2 drawPos;
+
+    foreach_active(TitleLogo, titleLogo) {
+        if (titleLogo->type == TITLELOGO_GAMETITLE) {
+            drawPos.x = titleLogo->position.x;
+            drawPos.y = titleLogo->position.y;
+        }
+
+        if (titleLogo->type == TITLELOGO_PLUS && TitleLogo->swapDrawPriority)
+            RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 4, &titleLogo->mainAnimator, true, 0);
+    }
+
     switch (self->type) {
         case TITLELOGO_EMBLEM:
             RSDK.SetClipBounds(0, 0, 0, ScreenInfo->size.x, ScreenInfo->size.y);
@@ -54,9 +66,17 @@ void TitleLogo_Draw(void)
             self->direction = FLIP_NONE;
             RSDK.DrawSprite(&self->mainAnimator, NULL, false);
 
-            if (self->showRibbonCenter)
+            if (self->showRibbonCenter) {
+                if (TitleLogo->swapDrawPriority)
+                    RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 3, &self->ribbonCenterAnimator, true, 1);
+
                 RSDK.DrawSprite(&self->ribbonCenterAnimator, NULL, false);
+            }
             break;
+
+        case TITLELOGO_GAMETITLE:
+            if (!TitleLogo->swapDrawPriority)
+                RSDK.DrawSprite(&self->mainAnimator, NULL, false); break;
 
         case TITLELOGO_PRESSSTART:
             if (!(self->timer & 0x10))
@@ -65,8 +85,16 @@ void TitleLogo_Draw(void)
 
 #if MANIA_USE_PLUS
         case TITLELOGO_PLUS:
-            RSDK.DrawSprite(&self->mainAnimator, NULL, false);
-            RSDK.DrawSprite(&self->plusAnimator, NULL, false);
+            if (!TitleLogo->swapDrawPriority) {
+                RSDK.DrawSprite(&self->plusUnderlayAnimator, NULL, false);
+                RSDK.DrawSprite(&self->plusAnimator, NULL, false);
+                RSDK.DrawSprite(&self->mainAnimator, &drawPos, false);
+            }
+            else {
+                RSDK.DrawSprite(&self->plusUnderlayAnimator, NULL, false);
+                RSDK.DrawSprite(&self->mainAnimator, &drawPos, false);
+                RSDK.DrawSprite(&self->plusAnimator, NULL, false);
+            }
             break;
 #endif
 
@@ -81,6 +109,9 @@ void TitleLogo_Create(void *data)
     self->drawFX = FX_FLIP;
 
     if (!SceneInfo->inEditor) {
+        TitleLogo->swapDrawPriority = false;
+        TitleLogo->reverseColor     = false;
+
         switch (self->type) {
             case TITLELOGO_EMBLEM: RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 0, &self->mainAnimator, true, 0); break;
 
@@ -103,7 +134,6 @@ void TitleLogo_Create(void *data)
 #if MANIA_USE_PLUS
             case TITLELOGO_PLUS:
                 if (API.CheckDLC(DLC_PLUS)) {
-                    RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 0, &self->mainAnimator, true, 0);
                     self->storeY = self->position.y;
                 }
                 else {
@@ -187,6 +217,7 @@ void TitleLogo_SetupPressStart(void)
         case LANGUAGE_KO: RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 8, &self->mainAnimator, true, 8); break;
         case LANGUAGE_SC: RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 8, &self->mainAnimator, true, 9); break;
         case LANGUAGE_TC: RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 8, &self->mainAnimator, true, 10); break;
+        case LANGUAGE_EUS: RSDK.SetSpriteAnimation(TitleLogo->aniFrames, 8, &self->mainAnimator, true, 11); break;
 #endif
 
         default: break;
@@ -238,6 +269,11 @@ void TitleLogo_State_HandleSetup(void)
             }
         }
     }
+
+    if (self->type == TITLELOGO_PLUS) {
+        if (++self->drawSwapTimer >= 19)
+            TitleLogo->swapDrawPriority = true;
+    }
 }
 
 void TitleLogo_State_PlusLogo(void)
@@ -247,13 +283,14 @@ void TitleLogo_State_PlusLogo(void)
     if (self->timer <= 0) {
         self->timer = RSDK.Rand(120, 240);
 
-        RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 1, &self->plusAnimator, true, 0);
+        RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 0, &self->plusUnderlayAnimator, true, 0);
+        RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 6 + TitleLogo->reverseColor, &self->plusAnimator, true, 0);
         self->state = TitleLogo_State_PlusShine;
     }
-    else {
+    else
         self->timer--;
-    }
 }
+
 void TitleLogo_State_PlusShine(void)
 {
     RSDK_THIS(TitleLogo);
@@ -261,7 +298,13 @@ void TitleLogo_State_PlusShine(void)
     RSDK.ProcessAnimation(&self->plusAnimator);
 
     if (self->plusAnimator.frameID == self->plusAnimator.frameCount - 1) {
-        RSDK.SetSpriteAnimation(-1, 0, &self->plusAnimator, true, 0);
+        // invert the current value
+        if (TitleLogo->reverseColor == 0)
+            TitleLogo->reverseColor = 1;
+        else
+            TitleLogo->reverseColor = 0;
+
+        RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 1, &self->plusAnimator, true, TitleLogo->reverseColor);
         self->state = TitleLogo_State_PlusLogo;
     }
 }

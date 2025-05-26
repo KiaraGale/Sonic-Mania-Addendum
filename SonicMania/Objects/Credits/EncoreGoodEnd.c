@@ -353,7 +353,9 @@ void EncoreGoodEnd_StatePlayer_EndingSonic(void)
 bool32 EncoreGoodEnd_Cutscene_MoveToPlace(EntityCutsceneSeq *host)
 {
     RSDK_THIS(EncoreGoodEnd);
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
+    UNUSED(player3);
+    UNUSED(player4);
 
     if (!host->timer) {
         player1->state      = Player_State_Static;

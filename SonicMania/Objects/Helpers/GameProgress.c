@@ -9,26 +9,41 @@
 
 // clang-format off
 AchievementID achievementList[] = {
-    { .idPS4 = 0,  .idUnknown = 19, .id = "ACH_GOLD_MEDAL" },
-    { .idPS4 = 1,  .idUnknown = 20, .id = "ACH_SILVER_MEDAL" },
-    { .idPS4 = 2,  .idUnknown = 21, .id = "ACH_EMERALDS" },
-    { .idPS4 = 3,  .idUnknown = 22, .id = "ACH_GAME_CLEARED" },
-    { .idPS4 = 4,  .idUnknown = 23, .id = "ACH_STARPOST" },
-    { .idPS4 = 5,  .idUnknown = 24, .id = "ACH_SIGNPOST" },
-    { .idPS4 = 6,  .idUnknown = 25, .id = "ACH_GHZ" },
-    { .idPS4 = 7,  .idUnknown = 26, .id = "ACH_CPZ" },
-    { .idPS4 = 8,  .idUnknown = 27, .id = "ACH_SPZ" },
-    { .idPS4 = 9,  .idUnknown = 28, .id = "ACH_FBZ" },
-    { .idPS4 = 10, .idUnknown = 29, .id = "ACH_PGZ" },
-    { .idPS4 = 11, .idUnknown = 30, .id = "ACH_SSZ" },
-    { .idPS4 = 12, .idUnknown = 31, .id = "ACH_HCZ" },
-    { .idPS4 = 13, .idUnknown = 32, .id = "ACH_MSZ" },
-    { .idPS4 = 14, .idUnknown = 33, .id = "ACH_OOZ" },
-    { .idPS4 = 15, .idUnknown = 34, .id = "ACH_LRZ" },
-    { .idPS4 = 16, .idUnknown = 35, .id = "ACH_MMZ" },
-    { .idPS4 = 17, .idUnknown = 36, .id = "ACH_TMZ" },
-    { .idPS4 = 18, .idUnknown = 37, .id = "ACH_TIMESTONES" },
-    { .idPS4 = 19, .idUnknown = 38, .id = "ACH_INSTAREFLECT" },
+    { .idPS4 = 0,  .idUnknown = 35, .id = "ACH_GOLD_MEDAL" },
+    { .idPS4 = 1,  .idUnknown = 36, .id = "ACH_SILVER_MEDAL" },
+    { .idPS4 = 2,  .idUnknown = 37, .id = "ACH_EMERALDS" },
+    { .idPS4 = 3,  .idUnknown = 38, .id = "ACH_GAME_CLEARED" },
+    { .idPS4 = 4,  .idUnknown = 39, .id = "ACH_STARPOST" },
+    { .idPS4 = 5,  .idUnknown = 40, .id = "ACH_SIGNPOST" },
+    { .idPS4 = 6,  .idUnknown = 41, .id = "ACH_GHZ" },
+    { .idPS4 = 7,  .idUnknown = 42, .id = "ACH_CPZ" },
+    { .idPS4 = 8,  .idUnknown = 43, .id = "ACH_SPZ" },
+    { .idPS4 = 9,  .idUnknown = 44, .id = "ACH_FBZ" },
+    { .idPS4 = 10, .idUnknown = 45, .id = "ACH_PGZ" },
+    { .idPS4 = 11, .idUnknown = 46, .id = "ACH_SSZ" },
+    { .idPS4 = 12, .idUnknown = 47, .id = "ACH_HCZ" },
+    { .idPS4 = 13, .idUnknown = 48, .id = "ACH_MSZ" },
+    { .idPS4 = 14, .idUnknown = 49, .id = "ACH_OOZ" },
+    { .idPS4 = 15, .idUnknown = 50, .id = "ACH_LRZ" },
+    { .idPS4 = 16, .idUnknown = 51, .id = "ACH_MMZ" },
+    { .idPS4 = 17, .idUnknown = 52, .id = "ACH_TMZ" },
+    { .idPS4 = 18, .idUnknown = 53, .id = "ACH_ERZ" },
+    { .idPS4 = 19, .idUnknown = 54, .id = "ACH_GHZ2" },
+    { .idPS4 = 20, .idUnknown = 55, .id = "ACH_CPZ2" },
+    { .idPS4 = 21, .idUnknown = 56, .id = "ACH_SPZ2" },
+    { .idPS4 = 22, .idUnknown = 57, .id = "ACH_FBZ2" },
+    { .idPS4 = 23, .idUnknown = 58, .id = "ACH_PGZ2" },
+    { .idPS4 = 24, .idUnknown = 59, .id = "ACH_SSZ2" },
+    { .idPS4 = 25, .idUnknown = 60, .id = "ACH_HCZ2" },
+    { .idPS4 = 26, .idUnknown = 61, .id = "ACH_MSZ2" },
+    { .idPS4 = 27, .idUnknown = 62, .id = "ACH_OOZ2" },
+    { .idPS4 = 28, .idUnknown = 63, .id = "ACH_LRZ2" },
+    { .idPS4 = 29, .idUnknown = 64, .id = "ACH_MMZ2" },
+    { .idPS4 = 30, .idUnknown = 65, .id = "ACH_TMZ2" },
+    { .idPS4 = 31, .idUnknown = 66, .id = "ACH_TIMESTONES" },
+    { .idPS4 = 32, .idUnknown = 67, .id = "ACH_SUPEREMERALDS" },
+    { .idPS4 = 33, .idUnknown = 68, .id = "ACH_INSTAREFLECT" },
+    { .idPS4 = 34, .idUnknown = 69, .id = "ACH_FOURSHIELDS" },
 };
 // clang-format on
 
@@ -47,7 +62,7 @@ void GameProgress_Create(void *data) {}
 void GameProgress_StageLoad(void) {}
 
 ProgressRAM *GameProgress_GetProgressRAM(void) { return (ProgressRAM *)&globals->saveRAM[0x900]; }
-AddendumProgress *Addendum_GetProgressRAM(void) { return (AddendumProgress *)&addendum->saveRAM[0x900]; }
+AddendumProgress *Addendum_GetProgressRAM(void) { return (AddendumProgress *)&addendumVar->saveRAM[0x900]; }
 
 int32 GameProgress_GetNotifStringID(int32 type)
 {
@@ -162,18 +177,22 @@ float GameProgress_GetCompletionPercent(ProgressRAM *progress)
 float Addendum_GetCompletionPercent(AddendumProgress *progress)
 {
     int32 timeStonesGotten = 0;
+    int32 superEmeraldsGotten = 0;
 
     for (int32 i = 0; i < 7; ++i) {
         if (i < ADDENDUMPROGRESS_TIMESTONE_COUNT)
             timeStonesGotten += progress->timeStoneObtained[i] == 1;
+        if (i < ADDENDUMPROGRESS_SUPEREMERALD_COUNT)
+            superEmeraldsGotten += progress->superEmeraldObtained[i] == 1;
     }
 
     // get the count of the unlock
     // then multiply by its completion weight
     // then finally divide by the maximum count to normalize it
 
-    float specialPercent = ((MIN(timeStonesGotten, ADDENDUMPROGRESS_TIMESTONE_COUNT)) / (float)ADDENDUMPROGRESS_TIMESTONE_COUNT);
-    return specialPercent;
+    float timeStonePercent    = ((MIN(timeStonesGotten, ADDENDUMPROGRESS_TIMESTONE_COUNT) * 0.5) / (float)ADDENDUMPROGRESS_TIMESTONE_COUNT);
+    float superEmeraldPercent = ((MIN(superEmeraldsGotten, ADDENDUMPROGRESS_SUPEREMERALD_COUNT) * 0.5) / (float)ADDENDUMPROGRESS_SUPEREMERALD_COUNT);
+    return timeStonePercent + superEmeraldPercent;
 }
 
 #if MANIA_USE_PLUS
@@ -265,6 +284,8 @@ void GameProgress_UnlockAll(void)
 
     progress->allSpecialCleared   = true;
     progress->allEmeraldsObtained = true;
+    addendumProgress->allTimeStonesObtained = true;
+    addendumProgress->allSuperEmeraldsObtained = true;
     progress->unlockedEndingID    = GAMEPROGRESS_ENDING_GOOD;
     progress->silverMedalCount    = GAMEPROGRESS_MEDAL_COUNT;
     progress->goldMedalCount      = GAMEPROGRESS_MEDAL_COUNT;
@@ -277,6 +298,9 @@ void GameProgress_UnlockAll(void)
 
         if (m < ADDENDUMPROGRESS_TIMESTONE_COUNT)
             addendumProgress->timeStoneObtained[m] = true;
+
+        if (m < ADDENDUMPROGRESS_SUPEREMERALD_COUNT)
+            addendumProgress->superEmeraldObtained[m] = true;
 
         if (m < GAMEPROGRESS_ZONE_COUNT)
             progress->zoneCleared[m] = true;
@@ -391,6 +415,25 @@ void GameProgress_GiveEmerald(int32 emeraldID)
 }
 
 #if MANIA_USE_PLUS
+void Addendum_GiveSuperEmerald(int32 emeraldID)
+{
+    if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {
+        LogHelpers_Print("WARNING GameProgress Attempted to get time stone before loading SaveGame file");
+        return;
+    }
+
+    AddendumProgress *progress = Addendum_GetProgressRAM();
+
+    progress->superEmeraldObtained[emeraldID] = true;
+    bool32 allSuperEmeralds                   = true;
+    for (int32 i = 0; i < GAMEPROGRESS_EMERALD_COUNT; ++i) {
+        allSuperEmeralds = allSuperEmeralds && progress->superEmeraldObtained[i];
+    }
+
+    if (allSuperEmeralds)
+        progress->allSuperEmeraldsObtained = true;
+}
+
 void Addendum_GiveTimeStone(int32 timeStoneID)
 {
     if (SceneInfo->inEditor || API_GetNoSave() || globals->saveLoaded != STATUS_OK) {
@@ -522,7 +565,7 @@ void GameProgress_PrintSaveProgress(void)
 #if MANIA_USE_PLUS
 void Addendum_PrintSaveProgress(void)
 {
-    if (SceneInfo->inEditor || API_GetNoSave() || addendum->saveLoaded != STATUS_OK) {
+    if (SceneInfo->inEditor || API_GetNoSave() || addendumVar->saveLoaded != STATUS_OK) {
         LogHelpers_Print("WARNING GameProgress Attempted to dump before loading AddendumData file");
         return;
     }
@@ -544,7 +587,26 @@ void Addendum_PrintSaveProgress(void)
     else
         LogHelpers_Print("YOU'VE NOT ENOUGH TIME STONES!\n");
 
+    for (int32 e = 0; e < ADDENDUMPROGRESS_SUPEREMERALD_COUNT; ++e) {
+        if (progress->superEmeraldObtained[e])
+            LogHelpers_Print("Super Emerald %d => TRUE", e);
+        else
+            LogHelpers_Print("Super Emerald %d => FALSE", e);
+    }
+
+    if (progress->allSuperEmeraldsObtained)
+        LogHelpers_Print("ALL SUPER EMERALDS!\n");
+    else
+        LogHelpers_Print("YOU'VE NOT ENOUGH SUPER EMERALDS!\n");
+
     LogHelpers_Print("\n=========================");
+}
+
+void Addendum_PrintOptionsProgress(void)
+{
+    LogHelpers_Print("=========================");
+    LogHelpers_Print("Addendum Options Loaded!");
+    LogHelpers_Print("=========================");
 }
 #endif
 int32 GameProgress_CountUnreadNotifs(void)

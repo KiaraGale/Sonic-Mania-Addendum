@@ -74,6 +74,7 @@ void SizeLaser_Serialize(void);
 
 // Extra Entity Functions
 bool32 SizeLaser_SfxCheck_SizeLaser(void);
+bool32 SizeLaser_SfxCheck_SizeLaser2(void);
 
 void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 chibiFlag);
 void SizeLaser_PlayerState_Resize(void);

@@ -89,6 +89,8 @@ void MicDrop_StageLoad(void)
     DEBUGMODE_ADD_OBJ(MicDrop);
 
     MicDrop->sfxElectrify = RSDK.GetSfx("Stage/Electrify.wav");
+
+    Zone_SetupHyperAttackList(MicDrop->classID, true, true, true, true, true, true);
 }
 
 void MicDrop_DebugSpawn(void)

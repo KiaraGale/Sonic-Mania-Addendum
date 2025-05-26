@@ -40,6 +40,16 @@ void UIVideo_StageLoad(void) {}
 
 bool32 UIVideo_SkipCB(void)
 {
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count && !ControllerInfo->keyStart.down)
+            ControllerInfo->keyStart.press = true;
+    }
+
     if (ControllerInfo->keyStart.press || ControllerInfo->keyA.press || ControllerInfo->keyB.press) {
         Music_FadeOut(0.0125);
 

@@ -48,7 +48,7 @@ bool32 SSZ1Outro_Cutscene_TimeWarpRunway(EntityCutsceneSeq *host)
 {
     RSDK_THIS(SSZ1Outro);
 
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -80,6 +80,14 @@ bool32 SSZ1Outro_Cutscene_TimeWarpRunway(EntityCutsceneSeq *host)
         if (player2->classID == Player->classID) {
             player2->state      = Player_State_Ground;
             player2->stateInput = StateMachine_None;
+        }
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Ground;
+            player3->stateInput = StateMachine_None;
+        }
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Ground;
+            player3->stateInput = StateMachine_None;
         }
     }
 
@@ -114,6 +122,38 @@ bool32 SSZ1Outro_Cutscene_TimeWarpRunway(EntityCutsceneSeq *host)
 
         player2->nextAirState    = StateMachine_None;
         player2->nextGroundState = StateMachine_None;
+    }
+
+    if (player3->classID == Player->classID) {
+        if (player2->position.x > player3->position.x)
+            player3->right = true;
+
+        if (player2->groundVel < player3->groundVel)
+            player3->groundVel = player2->groundVel;
+
+        if (player2->groundVel < player2->velocity.x)
+            player3->velocity.x = player2->groundVel;
+        else
+            player3->velocity.x = player2->velocity.x;
+
+        player3->nextAirState    = StateMachine_None;
+        player3->nextGroundState = StateMachine_None;
+    }
+
+    if (player4->classID == Player->classID) {
+        if (player3->position.x > player4->position.x)
+            player4->right = true;
+
+        if (player3->groundVel < player4->groundVel)
+            player4->groundVel = player3->groundVel;
+
+        if (player3->groundVel < player3->velocity.x)
+            player4->velocity.x = player3->groundVel;
+        else
+            player4->velocity.x = player3->velocity.x;
+
+        player4->nextAirState    = StateMachine_None;
+        player4->nextGroundState = StateMachine_None;
     }
 
     if (host->values[0]) {

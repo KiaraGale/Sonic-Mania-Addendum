@@ -33,10 +33,6 @@ void CompetitionMenu_Initialize(void)
         if (RSDK.CompareStrings(&tag, &control->tag, false))
             CompetitionMenu->competitionControl = control;
 
-        RSDK.SetString(&tag, "Competition Legacy");
-        if (RSDK.CompareStrings(&tag, &control->tag, false))
-            CompetitionMenu->competitionControl_Legacy = control;
-
         RSDK.SetString(&tag, "Competition Rules");
         if (RSDK.CompareStrings(&tag, &control->tag, false)) {
             CompetitionMenu->compRulesControl = control;
@@ -72,21 +68,16 @@ void CompetitionMenu_Initialize(void)
 
     foreach_all(UIButtonPrompt, prompt)
     {
-        EntityUIControl *compControl        = CompetitionMenu->competitionControl;
-        EntityUIControl *compControl_Legacy = CompetitionMenu->competitionControl_Legacy;
+        EntityUIControl *compControl = CompetitionMenu->competitionControl;
 
         if (UIControl_ContainsPos(compControl, &prompt->position) && prompt->buttonID == 5)
             CompetitionMenu->startCompPrompt = prompt;
-
-        if (UIControl_ContainsPos(compControl_Legacy, &prompt->position) && prompt->buttonID == 5)
-            CompetitionMenu->startCompPrompt_Legacy = prompt;
     }
 }
 
 void CompetitionMenu_SetupActions(void)
 {
     EntityUIControl *compControl        = CompetitionMenu->competitionControl;
-    EntityUIControl *compControl_Legacy = CompetitionMenu->competitionControl_Legacy;
     EntityUIControl *rulesControl       = CompetitionMenu->compRulesControl;
     EntityUIControl *roundControl       = CompetitionMenu->compRoundControl;
     EntityUIControl *totalControl       = CompetitionMenu->compTotalControl;
@@ -100,11 +91,6 @@ void CompetitionMenu_SetupActions(void)
     compControl->processButtonInputCB = CompetitionMenu_VS_ProcessInputCB;
     compControl->menuSetupCB          = CompetitionMenu_VS_MenuSetupCB;
     if (compControl->active == ACTIVE_ALWAYS)
-        CompetitionMenu_VS_MenuSetupCB();
-
-    compControl_Legacy->processButtonInputCB = CompetitionMenu_VS_ProcessInputCB;
-    compControl_Legacy->menuSetupCB          = CompetitionMenu_VS_MenuSetupCB;
-    if (compControl_Legacy->active == ACTIVE_ALWAYS)
         CompetitionMenu_VS_MenuSetupCB();
 
     rulesControl->menuSetupCB = CompetitionMenu_Rules_MenuSetupCB;
@@ -135,8 +121,6 @@ void CompetitionMenu_HandleMenuReturn(void)
         foreach_all(UIControl, control)
         {
             EntityUIControl *compControl = CompetitionMenu->competitionControl;
-            if (!API.CheckDLC(DLC_PLUS))
-                compControl = CompetitionMenu->competitionControl_Legacy;
 
             if (control == compControl) {
                 foreach_all(UIVsCharSelector, selector)
@@ -167,8 +151,8 @@ void CompetitionMenu_HandleMenuReturn(void)
                 UIButton_SetChoiceSelectionWithCB(control->buttons[2], session->screenBorderType[2]);
                 CompetitionMenu_SetupSplitScreenChoices(session->playerCount);
 
-                if (addendum->competitonMods) {
-                    switch (addendum->competitonMods) {
+                if (addendumOpt->competitonMods) {
+                    switch (addendumOpt->competitonMods) {
                         case COMP_NORMALRUN: UIButton_SetChoiceSelection(control->buttons[3], 0); break;
                         case COMP_SUPERRUN: UIButton_SetChoiceSelection(control->buttons[3], 1); break;
                         case COMP_MIRACLERUN: UIButton_SetChoiceSelection(control->buttons[3], 2); break;
@@ -229,17 +213,11 @@ void CompetitionMenu_HandleStartCompPrompt(void)
     EntityUIButtonPrompt *startComp = CompetitionMenu->startCompPrompt;
     if (startComp)
         startComp->visible = readyCount > 1 && readyCount == activeCount;
-
-    EntityUIButtonPrompt *startCompLegacy = CompetitionMenu->startCompPrompt_Legacy;
-    if (startCompLegacy)
-        startCompLegacy->visible = readyCount > 1 && readyCount == activeCount;
 }
 
 int32 CompetitionMenu_GetReadyPlayerCount(void)
 {
     EntityUIControl *control = CompetitionMenu->competitionControl;
-    if (!API.CheckDLC(DLC_PLUS))
-        control = CompetitionMenu->competitionControl_Legacy;
 
     if (!control)
         return 0;
@@ -257,8 +235,6 @@ int32 CompetitionMenu_GetReadyPlayerCount(void)
 int32 CompetitionMenu_GetTotalPlayerCount(void)
 {
     EntityUIControl *control = CompetitionMenu->competitionControl;
-    if (!API.CheckDLC(DLC_PLUS))
-        control = CompetitionMenu->competitionControl_Legacy;
 
     if (!control)
         return 0;
@@ -436,8 +412,6 @@ void CompetitionMenu_GotoCompZones(void) { UIControl_MatchMenuTag("Competition Z
 void CompetitionMenu_VS_ProcessInputCB(void)
 {
     EntityUIControl *control = CompetitionMenu->competitionControl;
-    if (!API.CheckDLC(DLC_PLUS))
-        control = CompetitionMenu->competitionControl_Legacy;
 
     if (control) {
         for (int32 i = 0; i < control->buttonCount; ++i) {
@@ -498,11 +472,7 @@ void CompetitionMenu_VS_MenuSetupCB(void)
     }
 }
 
-void CompetitionMenu_Rules_MenuSetupCB(void)
-{
-    if (API.CheckDLC(DLC_PLUS))
-        CompetitionMenu_ResetControllerAssignments();
-}
+void CompetitionMenu_Rules_MenuSetupCB(void) { CompetitionMenu_ResetControllerAssignments(); }
 
 void CompetitionMenu_StartMatch(void)
 {
@@ -538,7 +508,7 @@ void CompetitionMenu_StartMatch(void)
     globals->saveSlotID      = NO_SAVE_SLOT;
     globals->gameMode        = MODE_COMPETITION;
     globals->medalMods       = 0;
-    addendum->competitonMods = CompetitionMenu_GetCompMods();
+    addendumOpt->competitonMods = CompetitionMenu_GetCompMods();
 
     globals->playerID = ID_NONE;
     for (int32 p = 0; p < session->playerCount; ++p) globals->playerID |= session->playerID[p] << (8 * p);
@@ -553,8 +523,6 @@ void CompetitionMenu_ZoneButtonActionCB(void) { MenuSetup_StartTransition(Compet
 void CompetitionMenu_RulesButton_ActionCB(void)
 {
     EntityUIControl *control = CompetitionMenu->competitionControl;
-    if (!API.CheckDLC(DLC_PLUS))
-        control = CompetitionMenu->competitionControl_Legacy;
 
     EntityUIControl *rulesControl     = CompetitionMenu->compRulesControl;
     EntityCompetitionSession *session = CompetitionSession_GetSession();
@@ -788,7 +756,7 @@ void CompetitionMenu_Round_MenuSetupCB(void)
     }
 }
 
-void CompetitionMenu_GotoCompetition(void) { UIControl_MatchMenuTag(API.CheckDLC(DLC_PLUS) ? "Competition" : "Competition Legacy"); }
+void CompetitionMenu_GotoCompetition(void) { UIControl_MatchMenuTag("Competition"); }
 
 void CompetitionMenu_Results_ProcessInputCB(void)
 {
@@ -920,8 +888,6 @@ void CompetitionMenu_ExitComp_TransitionCB(void)
 {
     EntityUIControl *zoneControl = CompetitionMenu->compZoneControl;
     EntityUIControl *control     = CompetitionMenu->competitionControl;
-    if (!API.CheckDLC(DLC_PLUS))
-        control = CompetitionMenu->competitionControl_Legacy;
 
     UIControl_SetInactiveMenu(zoneControl);
     UIControl_SetActiveMenu(control);
@@ -936,10 +902,7 @@ void CompetitionMenu_ExitComp_YesCB(void) { UITransition_StartTransition(Competi
 
 bool32 CompetitionMenu_CompRules_BackPressCB(void)
 {
-    if (API.CheckDLC(DLC_PLUS))
-        UITransition_SetNewTag("Competition");
-    else
-        UITransition_SetNewTag("Competition Legacy");
+    UITransition_SetNewTag("Competition");
 
     return true;
 }

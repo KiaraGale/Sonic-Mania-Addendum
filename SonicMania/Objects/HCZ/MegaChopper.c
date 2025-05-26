@@ -59,6 +59,8 @@ void MegaChopper_StageLoad(void)
     MegaChopper->hitboxChop.bottom = 1;
 
     DEBUGMODE_ADD_OBJ(MegaChopper);
+
+    Zone_SetupHyperAttackList(MegaChopper->classID, true, true, true, true, true, true);
 }
 
 void MegaChopper_DebugSpawn(void)

@@ -106,8 +106,11 @@ bool32 SSZ3Cutscene_CutsceneIntro_EnterStageLeft(EntityCutsceneSeq *host)
         return true;
     }
 
-    leader->shield           = globals->restartShield;
-    sidekick->shield         = globals->restartShieldP2;
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        if (player->classID == Player->classID)
+            player->shield = globals->restartShield[p];
+    }
 
     return false;
 }
@@ -119,8 +122,8 @@ bool32 SSZ3Cutscene_CutsceneIntro_PlayerRunLeft(EntityCutsceneSeq *host)
             if (!player->sidekick)
                 player->stateInput = Player_Input_P1;
 
-            globals->restartShield   = 0;
-            globals->restartShieldP2 = 0;
+            for (int32 p = 0; p < 4; ++p)
+                globals->restartShield[p] = 0;
         }
 
         return true;
@@ -133,8 +136,6 @@ bool32 SSZ3Cutscene_CutsceneIntro_PlayerRunLeft(EntityCutsceneSeq *host)
 bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
 {
     RSDK_THIS(SSZ3Cutscene);
-    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     foreach_active(Ring, ring)
     {
@@ -186,8 +187,11 @@ bool32 SSZ3Cutscene_CutsceneOutro_SetupOutro(EntityCutsceneSeq *host)
         self->ruby       = ruby;
     }
 
-    globals->restartShield   = leader->shield;
-    globals->restartShieldP2 = sidekick->shield;
+    for (int32 p = 0; p < 4; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        if (player->classID == Player->classID)
+            globals->restartShield[p] = player->shield;
+    }
 
     return true;
 }
@@ -292,9 +296,11 @@ bool32 SSZ3Cutscene_CutsceneOutro_RubyWarp(EntityCutsceneSeq *host)
     RSDK_THIS(SSZ3Cutscene);
 
     // lmao
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player1);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     EntityPhantomRuby *ruby = self->ruby;
@@ -315,6 +321,10 @@ bool32 SSZ3Cutscene_CutsceneOutro_RubyWarp(EntityCutsceneSeq *host)
         player1->drawGroup = Zone->playerDrawGroup[1] + 1;
         if (player2->classID == Player->classID)
             player2->drawGroup = Zone->playerDrawGroup[1] + 1;
+        if (player3->classID == Player->classID)
+            player3->drawGroup = Zone->playerDrawGroup[1] + 1;
+        if (player4->classID == Player->classID)
+            player4->drawGroup = Zone->playerDrawGroup[1] + 1;
     }
 
     if (!host->values[0]) {
@@ -341,11 +351,13 @@ bool32 SSZ3Cutscene_CutsceneOutro_RubyWarp(EntityCutsceneSeq *host)
             }
 
             if (host->timer >= host->storedTimer + 52) {
-                EntityPlayer *players[2];
+                EntityPlayer *players[4];
                 players[0] = player1;
                 players[1] = player2;
+                players[2] = player3;
+                players[3] = player4;
 
-                for (int32 i = 0, angle = 0; angle < 0x80; ++i, angle += 0x40) {
+                for (int32 i = 0, angle = 0; angle < 0x80; ++i, angle += 0x20) {
                     EntityPlayer *player = players[i];
                     if (!player)
                         break;

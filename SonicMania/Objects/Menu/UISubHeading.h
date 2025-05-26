@@ -7,6 +7,7 @@
 struct ObjectUISubHeading {
     RSDK_OBJECT
     uint16 aniFrames;
+    int32 assignedControllers;
 };
 
 // Entity Class
@@ -51,11 +52,10 @@ void UISubHeading_Initialize(void);
 void UISubHeading_HandleUnlocks(void);
 void UISubHeading_SetupActions(void);
 void UISubHeading_HandleMenuReturn(int32 slot);
-int32 UISubHeading_GetMedalMods(void);
-#if MANIA_USE_PLUS
-int32 UISubHeading_GetAddendumMods(void);
-#endif
+int32 UISubHeading_GetMedalModsFromSecretsMenu(void);
+int32 UISubHeading_GetMedalModsFromSaveRAM(int32 slotID);
 void UISubHeading_SaveFileCB(bool32 success);
+void UISubHeading_SaveFileCB2(bool32 success);
 void UISubHeading_SecretsTransitionCB(void);
 void UISubHeading_LeaveSecretsMenu(void);
 

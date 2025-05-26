@@ -109,10 +109,20 @@ void MatryoshkaBom_StageLoad(void)
     if (RSDK.CheckSceneFolder("MMZ"))
         MatryoshkaBom->aniFrames = RSDK.LoadSpriteAnimation("MMZ/MatryoshkaBom.bin", SCOPE_STAGE);
 
-    MatryoshkaBom->hitboxHurt.left   = -12;
-    MatryoshkaBom->hitboxHurt.top    = -18;
-    MatryoshkaBom->hitboxHurt.right  = 12;
-    MatryoshkaBom->hitboxHurt.bottom = 18;
+    MatryoshkaBom->hitboxHurt.left   = -16;
+    MatryoshkaBom->hitboxHurt.top    = -14;
+    MatryoshkaBom->hitboxHurt.right  = 16;
+    MatryoshkaBom->hitboxHurt.bottom = 20;
+
+    MatryoshkaBom->hitboxHurt2.left = -12;
+    MatryoshkaBom->hitboxHurt2.top = -10;
+    MatryoshkaBom->hitboxHurt2.right = 12;
+    MatryoshkaBom->hitboxHurt2.bottom = 12;
+
+    MatryoshkaBom->hitboxHurt3.left = -8;
+    MatryoshkaBom->hitboxHurt3.top = -6;
+    MatryoshkaBom->hitboxHurt3.right = 8;
+    MatryoshkaBom->hitboxHurt3.bottom = 10;
 
     MatryoshkaBom->hitboxExplode.left   = -96;
     MatryoshkaBom->hitboxExplode.top    = -96;
@@ -171,17 +181,65 @@ void MatryoshkaBom_CheckPlayerCollisions(void)
                 }
                 else if (self->state != MatryoshkaBom_State_FuseLit) {
                     if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxExplode)) {
-                        self->timer = 144;
+                        self->timer = 144; 
+                        switch (self->size) {
+                        default: break;
+                        case MATRYOSHKA_SIZE_BIG:
+                            if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt)) {
+#if MANIA_USE_PLUS
+                                if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+#endif
+                                    Player_Hurt(player, self);
+                            }
+                            break;
+                        case MATRYOSHKA_SIZE_MED:
+                            if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt2)) {
+#if MANIA_USE_PLUS
+                                if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+#endif
+                                    Player_Hurt(player, self);
+                            }
+                            break;
+                        case MATRYOSHKA_SIZE_SMALL:
+                            if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt3)) {
+#if MANIA_USE_PLUS
+                                if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+#endif
+                                    Player_Hurt(player, self);
+                            }
+                            break;
+                        }
                         self->state = MatryoshkaBom_State_FuseLit;
                     }
                 }
             }
 
-            if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt)) {
+            switch (self->size) {
+                default: break;
+                case MATRYOSHKA_SIZE_BIG:
+                    if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt)) {
 #if MANIA_USE_PLUS
-                if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+                        if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
 #endif
-                    Player_Hurt(player, self);
+                            Player_Hurt(player, self);
+                    }
+                    break;
+                case MATRYOSHKA_SIZE_MED:
+                    if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt2)) {
+#if MANIA_USE_PLUS
+                        if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+#endif
+                            Player_Hurt(player, self);
+                    }
+                    break;
+                case MATRYOSHKA_SIZE_SMALL:
+                    if (Player_CheckCollisionTouch(player, self, &MatryoshkaBom->hitboxHurt3)) {
+#if MANIA_USE_PLUS
+                        if (!Player_CheckMightyUnspin(player, 0x300, 2, &player->uncurlTimer))
+#endif
+                            Player_Hurt(player, self);
+                    }
+                    break;
             }
         }
     }
@@ -452,8 +510,11 @@ void MatryoshkaBom_State_Shrapnel(void)
         foreach_active(Shield, shield)
         {
             if (self->planeFilter <= 0 || shield->collisionPlane == ((uint8)(self->planeFilter - 1) & 1)) {
-                if (Shield_CheckCollisionTouch(shield, self, &MatryoshkaBom->hitboxShrapnel))
-                    Shield_State_Reflect(shield, self);
+                foreach_active(Player, player)
+                {
+                    if (Shield_CheckCollisionTouch(shield, self, &MatryoshkaBom->hitboxShrapnel))
+                        Shield_State_Reflect(player, shield, self);
+                }
             }
         }
     }

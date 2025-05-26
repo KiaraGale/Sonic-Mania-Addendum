@@ -111,7 +111,7 @@ void UberCaterkiller_Create(void *data)
         for (int32 i = 1; i < UBERCATERKILLER_SEGMENT_COUNT; ++i) self->bodyAnimators[i] = &self->bodyAnimator;
         self->bodyAnimators[0] = &self->headAnimator;
 
-        self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+        self->health = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
         RSDK.SetSpriteAnimation(UberCaterkiller->aniFrames, 0, &self->headAnimator, true, 0);
         RSDK.SetSpriteAnimation(UberCaterkiller->aniFrames, 2, &self->bodyAnimator, true, 0);
         self->state = UberCaterkiller_State_SetupArena;

@@ -20,7 +20,7 @@ void BurningLog_Update(void)
         self->velocity.y += 0x3800;
         foreach_active(Player, player)
         {
-            if (self->velocity.y < 0x380000)
+            if (self->velocity.y < 0x10000)
                 Player_CheckCollisionPlatform(player, self, &BurningLog->hitboxPlatform);
 
             if (Player_CheckCollisionTouch(player, self, &BurningLog->hitboxFlame)) {

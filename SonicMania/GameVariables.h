@@ -62,7 +62,6 @@ typedef enum {
     MEDAL_P2MIGHTY    = 1 << 10,
     MEDAL_P2RAY       = 1 << 11,
     MEDAL_P2AMY       = 1 << 12,
-    MEDAL_SPINDASH    = 1 << 13,
 #endif
 } MedalMods;
 
@@ -73,7 +72,8 @@ typedef enum {
     COMP_ROUNDAMOUNT = 1 << 3,
     COMP_NORMALRUN   = 1 << 4,
     COMP_SUPERRUN    = 1 << 5,
-    COMP_MIRACLERUN  = 1 << 6,
+    COMP_HYPERRUN    = 1 << 6,
+    COMP_MIRACLERUN  = 1 << 7,
 } CompetitionRules;
 
 typedef enum { MEDIA_DEMO } CategoryIDS;
@@ -151,8 +151,8 @@ typedef enum {
     SLOT_BSS_MESSAGE = 11,
     SLOT_UFO_HUD     = 11,
     SLOT_ZONE        = MANIA_USE_PLUS ? 12 : 8,
-    // 13 = ???
-    // 14 = ???
+    SLOT_POWERUP1_3  = 13, // custom-added for Addendum
+    SLOT_POWERUP2_3  = 14, // custom-added for Addendum
     SLOT_CUTSCENESEQ         = 15,
     SLOT_PAUSEMENU           = 16,
     SLOT_GAMEOVER            = 16,
@@ -249,11 +249,10 @@ typedef struct {
     int32 noSave;
     int32 notifiedAutosave;
     int32 recallEntities;
-    int32 restartRings;
+    int32 restartRings[4];
     int32 restart1UP;
-    int32 restartHyperRing;
-    int32 restartShield;
-    int32 restartShieldP2;
+    int32 restartHyperRing[4];
+    int32 restartShield[4];
     int32 restartPos[8];
     int32 restartSlot[4];
     int32 restartDir[4];
@@ -292,6 +291,9 @@ typedef struct {
     int32 lastHasPlus;
     int32 hasPlusInitial;
     bool32 startSuper;
+    int32 storedRings[4];
+    int32 storedHyperRings[4];
+    int32 storedShields[4];
 #endif
 } GlobalVariables;
 
@@ -306,12 +308,103 @@ typedef struct {
     int32 saveRAM[0x4000];
     int32 saveSlotID;
     int32 noSaveSlot[0x400];
-    int32 addendumMods;
     int32 saveActID;
-    int32 competitonMods;
+    bool32 doHPZResults;
+    int32 carryOverValue[5];
+    int32 player2ID;
+    int32 player3ID;
+    int32 player4ID;
+    int32 playerCount;
+    bool32 secretMovesets;
 } AddendumVariables;
 
-extern AddendumVariables *addendum;
+extern AddendumVariables *addendumVar;
+
+typedef enum {
+    TIMELIMIT_ON                  = 0,
+    DEBUGMODE_OFF                 = 0,
+    SONICMOVESET_ADDENDUM         = 0,
+    TAILSMOVESET_ADDENDUM         = 0,
+    KNUXMOVESET_ADDENDUM          = 0,
+    MIGHTYMOVESET_ADDENDUM        = 0,
+    RAYMOVESET_ADDENDUM           = 0,
+    AMYMOVESET_ADDENDUM           = 0,
+    PEELOUTABILITY_SONICONLY      = 0,
+    SPINDASHTYPE_MANIA            = 0,
+    LIFESYSTEM_MANIA              = 0,
+    SECONDGEMS_NONE               = 0,
+    SHIELDTRANSFER_OFF            = 0,
+    ITEMBOXSHIELDS_DEFAULT        = 0,
+    SPRITESTYLE_MANIA             = 0,
+    EMERALDPALETTE_MANIA          = 0,
+    SUPERMUSIC_ON                 = 0,
+    VAPEMODE_OFF                  = 0,
+    COOPSTYLE_MANIA               = 0,
+    P2CAMERA_OFF                  = 0,
+    TIMELIMIT_OFF                 = 1,
+    DEBUGMODE_ON                  = 1,
+    SONICMOVESET_MANIA            = 1,
+    TAILSMOVESET_MANIA            = 1,
+    KNUXMOVESET_MANIA             = 1,
+    MIGHTYMOVESET_MANIA           = 1,
+    RAYMOVESET_MANIA              = 1,
+    AMYMOVESET_ORIGINS            = 1,
+    PEELOUTABILITY_ALLEXCEPTAMY   = 1,
+    SPINDASHTYPE_CD               = 1,
+    LIFESYSTEM_UNCAPPED           = 1,
+    SECONDGEMS_SUPEREMERALD       = 1,
+    SHIELDTRANSFER_ON             = 1,
+    ITEMBOXSHIELDS_ONLYBLUE       = 1,
+    SPRITESTYLE_CHAREDITSPLUS     = 1,
+    EMERALDPALETTE_S1             = 1,
+    SUPERMUSIC_OFF                = 1,
+    VAPEMODE_ON                   = 1,
+    COOPSTYLE_TOGETHER            = 1,
+    P2CAMERA_ON                   = 1,
+    SONICMOVESET_S3K              = 2,
+    PEELOUTABILITY_ALL            = 2,
+    SPINDASHTYPE_NONE             = 2,
+    LIFESYSTEM_INFINITE           = 2,
+    SECONDGEMS_TIMESTONE          = 2,
+    ITEMBOXSHIELDS_ONLYBUBBLE     = 2,
+    EMERALDPALETTE_CD             = 2,
+    COOPSTYLE_APART               = 2,
+    SONICMOVESET_CD               = 3,
+    PEELOUTABILITY_NONE           = 3,
+    ITEMBOXSHIELDS_ONLYFLAME      = 3,
+    EMERALDPALETTE_S2             = 3,
+    ITEMBOXSHIELDS_ONLYLIGHTNING  = 4,
+    EMERALDPALETTE_S3             = 4,
+    ITEMBOXSHIELDS_CYCLEELEMENTAL = 5,
+    ITEMBOXSHIELDS_CYCLEALL       = 6,
+} AddendumModEnums;
+
+typedef struct {
+    int32 optionsLoaded;
+    int32 optionsRAM[0x4000];
+    int8 timeLimit;
+    int8 debugMode;
+    int8 sonicMoveset;
+    int8 tailsMoveset;
+    int8 knuxMoveset;
+    int8 mightyMoveset;
+    int8 rayMoveset;
+    int8 amyMoveset;
+    int8 peeloutAbility;
+    int8 spindashType;
+    int8 lifeSystem;
+    int8 secondaryGems;
+    bool32 shieldTransfer;
+    int8 itemboxShields;
+    int8 spriteStyle;
+    int8 emeraldPalette;
+    bool32 superMusic;
+    bool32 vapeMode;
+    int8 coopStyle;
+    int32 competitonMods;
+} AddendumOptVar;
+
+extern AddendumOptVar *addendumOpt;
 
 // =========================
 // GAME HELPERS
@@ -324,9 +417,11 @@ extern AddendumVariables *addendum;
 #endif
 
 // used mainly for cutscenes
-#define MANIA_GET_PLAYER(p1, p2, cam)                                                                                                                \
+#define MANIA_GET_PLAYER(p1, p2, p3, p4, cam)                                                                                                        \
     EntityPlayer *p1  = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);                                                                                       \
     EntityPlayer *p2  = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);                                                                                       \
+    EntityPlayer *p3  = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);                                                                                       \
+    EntityPlayer *p4  = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);                                                                                       \
     EntityCamera *cam = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
 
 // "Base" Classes

@@ -28,6 +28,7 @@ void SaveGame_StageLoad(void)
 
 SaveRAM *SaveGame_GetSaveRAM(void) { return SaveGame->saveRAM; }
 AddendumData *Addendum_GetSaveRAM(void) { return SaveGame->addendumData; }
+AddendumOptions *Addendum_GetOptionsRAM(void) { return SaveGame->addendumMods; }
 
 #if MANIA_USE_PLUS
 int32 *SaveGame_GetDataPtr(int32 slot, bool32 encore)
@@ -54,13 +55,15 @@ int32 *SaveGame_GetDataPtr(int32 slot)
 int32 *Addendum_GetDataPtr(int32 slot, bool32 encore)
 {
     if (slot == NO_SAVE_SLOT)
-        return addendum->noSaveSlot;
+        return addendumVar->noSaveSlot;
 
     if (encore)
-        return &addendum->saveRAM[0x100 * (slot % 3 + 10)];
+        return &addendumVar->saveRAM[0x100 * (slot % 3 + 10)];
     else
-        return &addendum->saveRAM[0x100 * (slot % 8)];
+        return &addendumVar->saveRAM[0x100 * (slot % 8)];
 }
+
+int32 *Addendum_GetOptionsPtr(int32 slot) { return &addendumOpt->optionsRAM[0]; } // always set slot to 0
 #endif
 
 void SaveGame_LoadSaveData(void)
@@ -108,7 +111,7 @@ void SaveGame_LoadSaveData(void)
     }
 
     if (globals->recallEntities) {
-        if (SceneInfo->activeCategory < 3) {
+        if (SceneInfo->activeCategory < 3 && SceneInfo->activeCategory > 0) {
             for (int32 p = 0; p < 4; ++p) {
                 StarPost->playerPositions[p].x = globals->restartPos[(p * 2) + 0];
                 StarPost->playerPositions[p].y = globals->restartPos[(p * 2) + 1];
@@ -124,14 +127,19 @@ void SaveGame_LoadSaveData(void)
             SceneInfo->seconds      = globals->tempSeconds;
             SceneInfo->minutes      = globals->tempMinutes;
 
-            Player->savedScore        = globals->restartScore;
-            Player->rings             = globals->restartRings;
-            Player->ringExtraLife     = globals->restart1UP;
-            player1->shield           = globals->restartShield;
-            player1->hyperRing        = globals->restartHyperRing;
-            player2->shield           = globals->restartShieldP2;
-            globals->restartRings     = 0;
-            globals->restart1UP       = 100;
+            Player->savedScore      = globals->restartScore;
+            Player->ringExtraLife   = globals->restart1UP;
+            for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                player->rings     = globals->restartRings[p];
+                globals->restartRings[p] = 0;
+                player->hyperRing = globals->restartHyperRing[p];
+                globals->restartHyperRing[p] = 0;
+                player->shield    = globals->restartShield[p];
+                globals->restartShield[p] = 0;
+            }
+
+            globals->restart1UP = 100;
 
             LogHelpers_Print("RecallCollectedEntities");
 
@@ -189,19 +197,27 @@ void SaveGame_LoadSaveData(void)
 #if MANIA_USE_PLUS
 void Addendum_LoadSaveData(void)
 {
-    int32 slot = addendum->saveSlotID;
+    int32 slot = addendumVar->saveSlotID;
 
     if (slot == NO_SAVE_SLOT)
-        SaveGame->addendumData = (AddendumData *)addendum->noSaveSlot;
+        SaveGame->addendumData = (AddendumData *)addendumVar->noSaveSlot;
     else
         SaveGame->addendumData = (AddendumData *)Addendum_GetDataPtr(slot, globals->gameMode == MODE_ENCORE);
 
     LogHelpers_Print("dataPtr: %X", SaveGame->addendumData);
 }
+
+void Addendum_LoadOptionsData(void)
+{
+    SaveGame->addendumMods = (AddendumOptions *)Addendum_GetOptionsPtr(0);
+
+    LogHelpers_Print("dataPtr: %X", SaveGame->addendumMods);
+}
 #endif
 
 void SaveGame_LoadFile(void (*callback)(bool32 success))
 {
+    LogHelpers_Print("Got to SaveGame_LoadFile");
 #if MANIA_USE_PLUS
     if (!SaveGame->saveRAM || globals->saveLoaded == STATUS_CONTINUE) {
         if (callback)
@@ -234,22 +250,45 @@ void SaveGame_LoadFile(void (*callback)(bool32 success))
 #if MANIA_USE_PLUS
 void Addendum_LoadFile(void (*callback)(bool32 success))
 {
-    if (!SaveGame->addendumData || addendum->saveLoaded == STATUS_CONTINUE) {
+    LogHelpers_Print("Got to Addendum_LoadFile");
+    if (!SaveGame->addendumData || addendumVar->saveLoaded == STATUS_CONTINUE) {
+        LogHelpers_Print("AData not Loaded...");
         if (callback)
             callback(false);
         return;
     }
 
-    if (addendum->saveLoaded == STATUS_OK) {
+    if (addendumVar->saveLoaded == STATUS_OK) {
+        LogHelpers_Print("AData Loaded!");
         if (callback)
             callback(true);
         return;
     }
 
-    addendum->saveLoaded    = STATUS_CONTINUE;
-    SaveGame->loadEntityPtr = SceneInfo->entity;
-    SaveGame->loadCallback  = callback;
-    API_LoadUserFile("AddendumOptions.bin", addendum->saveRAM, sizeof(addendum->saveRAM), Addendum_LoadFile_CB);
+    addendumVar->saveLoaded  = STATUS_CONTINUE;
+    SaveGame->loadEntityPtr2 = SceneInfo->entity;
+    SaveGame->loadCallback2  = callback;
+    API_LoadUserFile("AddendumData.bin", addendumVar->saveRAM, sizeof(addendumVar->saveRAM), Addendum_LoadFile_CB);
+}
+
+void Addendum_LoadOptions(void (*callback)(bool32 success))
+{
+    if (!SaveGame->addendumMods || addendumOpt->optionsLoaded == STATUS_CONTINUE) {
+        if (callback)
+            callback(false);
+        return;
+    }
+
+    if (addendumOpt->optionsLoaded == STATUS_OK) {
+        if (callback)
+            callback(true);
+        return;
+    }
+
+    addendumOpt->optionsLoaded = STATUS_CONTINUE;
+    SaveGame->loadEntityPtr3   = SceneInfo->entity;
+    SaveGame->loadCallback3    = callback;
+    API_LoadUserFile("AddendumOptions.bin", addendumOpt->optionsRAM, sizeof(addendumOpt->optionsRAM), Addendum_LoadOptions_CB);
 }
 #endif
 
@@ -282,14 +321,26 @@ void SaveGame_SaveFile(void (*callback)(void))
 #if MANIA_USE_PLUS
 void Addendum_SaveFile(void (*callback)(bool32 success))
 {
-    if (API_GetNoSave() || !SaveGame->addendumData || addendum->saveLoaded != STATUS_OK) {
+    if (API_GetNoSave() || !SaveGame->addendumData || addendumVar->saveLoaded != STATUS_OK) {
         if (callback)
             callback(false);
     }
     else {
-        SaveGame->saveEntityPtr = SceneInfo->entity;
-        SaveGame->saveCallback  = callback;
-        API_SaveUserFile("AddendumOptions.bin", addendum->saveRAM, sizeof(addendum->saveRAM), SaveGame_SaveFile_CB, false);
+        SaveGame->saveEntityPtr2 = SceneInfo->entity;
+        SaveGame->saveCallback2  = callback;
+        API_SaveUserFile("AddendumData.bin", addendumVar->saveRAM, sizeof(addendumVar->saveRAM), Addendum_SaveFile_CB, false);
+    }
+}
+
+void Addendum_SaveOptions(void (*callback)(bool32 success))
+{
+    if (!SaveGame->addendumMods || addendumOpt->optionsLoaded != STATUS_OK) {
+        if (callback)
+            callback(false);
+    }
+    else {
+        SaveGame->saveCallback3 = callback;
+        API_SaveUserFile("AddendumOptions.bin", addendumOpt->optionsRAM, sizeof(addendumOpt->optionsRAM), Addendum_SaveOptions_CB, false);
     }
 }
 #endif
@@ -336,12 +387,25 @@ void Addendum_SaveLoadedCB(bool32 success)
                 Entity *store = SceneInfo->entity;
 
                 SceneInfo->entity = (Entity *)entity;
+                UISaveSlot_LoadSaveInfo();
+                UISaveSlot_HandleSaveIcons();
 
                 SceneInfo->entity = store;
             }
         }
 
         Addendum_PrintSaveProgress();
+    }
+}
+
+void Addendum_OptionsLoadedCB(bool32 success)
+{
+    LogHelpers_Print("OptionsLoadedCB(%d)", success);
+
+    if (success) {
+        foreach_all(LogoSetup, logoSetup) { SceneInfo->entity = (Entity *)logoSetup; }
+
+        Addendum_PrintOptionsProgress();
     }
 }
 #endif
@@ -359,7 +423,6 @@ void SaveGame_SaveGameState(void)
     }
 
     EntityPlayer *player1        = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *player2        = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     globals->restartMilliseconds = StarPost->storedMS;
     globals->restartSeconds      = StarPost->storedSeconds;
     globals->restartMinutes      = StarPost->storedMinutes;
@@ -379,11 +442,17 @@ void SaveGame_SaveGameState(void)
     globals->restartScore      = player1->score;
     saveRAM->score1UP          = player1->score1UP;
     globals->restartScore1UP   = player1->score1UP;
-    globals->restartRings      = player1->rings;
-    globals->restart1UP        = player1->ringExtraLife;
-    globals->restartHyperRing  = player1->hyperRing;
-    globals->restartShield     = player1->shield;
-    globals->restartShieldP2   = player2->shield;
+    globals->restart1UP          = player1->ringExtraLife;
+
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        globals->storedRings[p]      = player->rings;
+        LogHelpers_Print("storedRings[%d] set to %d", p, player->rings);
+        globals->storedHyperRings[p] = player->hyperRing;
+        LogHelpers_Print("storedHyperRings[%d] set to %d", p, player->hyperRing);
+        globals->storedShields[p]    = player->shield;
+        LogHelpers_Print("storedShields[%d] set to %d", p, player->shield);
+    }
 
     for (int32 i = RESERVE_ENTITY_COUNT; i < RESERVE_ENTITY_COUNT + SCENEENTITY_COUNT; ++i) {
         EntityItemBox *itemBox = RSDK_GET_ENTITY(i, ItemBox);
@@ -501,48 +570,55 @@ void SaveGame_SavePlayerState(void)
         saveRAM->playerID       = globals->playerID;
 #endif
     }
-
-    globals->restartRings      = player->rings;
     globals->restart1UP        = player->ringExtraLife;
-    globals->restartHyperRing  = player->hyperRing;
-    globals->restartShield     = player->shield;
-    globals->restartShieldP2   = sidekick->shield;
+
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        globals->storedRings[p]      = player->rings;
+        LogHelpers_Print("storedRings[%d] set to %d", p, player->rings);
+        globals->storedHyperRings[p] = player->hyperRing;
+        LogHelpers_Print("storedHyperRings[%d] set to %d", p, player->hyperRing);
+        globals->storedShields[p]    = player->shield;
+        LogHelpers_Print("storedShields[%d] set to %d", p, player->shield);
+    }
 }
 void SaveGame_LoadPlayerState(void)
 {
-    EntityPlayer *player    = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick  = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
     SceneInfo->milliseconds = globals->restartMilliseconds;
     SceneInfo->seconds      = globals->restartSeconds;
     SceneInfo->minutes      = globals->restartMinutes;
 
-    Player->rings         = globals->restartRings;
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        player->rings                = globals->storedRings[p];
+        globals->storedRings[p]      = 0;
+        player->hyperRing            = globals->storedHyperRings[p];
+        globals->storedHyperRings[p] = 0;
+        player->shield               = globals->storedShields[p];
+        globals->storedShields[p]    = 0;
+    }
     Player->ringExtraLife = globals->restart1UP;
 
-    globals->restartRings      = 0;
-    globals->restart1UP        = 100;
+    globals->restart1UP = 100;
 }
 void SaveGame_ResetPlayerState(void)
 {
-    EntityPlayer *player         = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick       = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-
     globals->restartMilliseconds = 0;
     globals->restartSeconds      = 0;
     globals->restartMinutes      = 0;
-    globals->restartRings        = 0;
     globals->restart1UP          = 0;
-    globals->restartShield       = 0;
-    globals->restartHyperRing    = 0;
-    globals->restartShieldP2     = 0;
 
     if (Player) {
-        Player->rings         = globals->restartRings;
         Player->ringExtraLife = globals->restart1UP;
-        player->shield        = globals->restartShield;
-        player->hyperRing     = globals->restartHyperRing;
-        sidekick->shield      = globals->restartShieldP2;
+        for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+            EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+            globals->storedRings[p]      = 0;
+            player->rings                = globals->storedRings[p];
+            globals->storedHyperRings[p] = 0;
+            player->hyperRing            = globals->storedHyperRings[p];
+            globals->storedShields[p]    = 0;
+            player->shield               = globals->storedShields[p];
+        }
     }
 }
 void SaveGame_LoadFile_CB(int32 status)
@@ -552,10 +628,12 @@ void SaveGame_LoadFile_CB(int32 status)
     if (status == STATUS_OK || status == STATUS_NOTFOUND) {
         success             = true;
         globals->saveLoaded = STATUS_OK;
+        LogHelpers_Print("Save Data Files Loaded!");
     }
     else {
         success             = false;
         globals->saveLoaded = STATUS_ERROR;
+        LogHelpers_Print("Save Data Files Failed to Load...");
     }
 #else
     if (status) {
@@ -585,24 +663,51 @@ void Addendum_LoadFile_CB(int32 status)
 {
     bool32 success = false;
     if (status == STATUS_OK || status == STATUS_NOTFOUND) {
-        success             = true;
-        addendum->saveLoaded = STATUS_OK;
+        success                 = true;
+        addendumVar->saveLoaded = STATUS_OK;
     }
     else {
-        success             = false;
-        addendum->saveLoaded = STATUS_ERROR;
+        success                 = false;
+        addendumVar->saveLoaded = STATUS_ERROR;
     }
 
-    if (SaveGame->loadCallback) {
+    if (SaveGame->loadCallback2) {
         Entity *store = SceneInfo->entity;
-        if (SaveGame->loadEntityPtr)
-            SceneInfo->entity = SaveGame->loadEntityPtr;
+        if (SaveGame->loadEntityPtr2)
+            SceneInfo->entity = SaveGame->loadEntityPtr2;
 
-        SaveGame->loadCallback(success);
+        SaveGame->loadCallback2(success);
         SceneInfo->entity = store;
 
-        SaveGame->loadCallback  = NULL;
-        SaveGame->loadEntityPtr = NULL;
+        SaveGame->loadCallback2  = NULL;
+        SaveGame->loadEntityPtr2 = NULL;
+    }
+}
+
+void Addendum_LoadOptions_CB(int32 status)
+{
+    bool32 success = false;
+    if (status == STATUS_OK || status == STATUS_NOTFOUND) {
+        success                    = true;
+        addendumOpt->optionsLoaded = STATUS_OK;
+        LogHelpers_Print("Addendum Options File Loaded!");
+    }
+    else {
+        success                    = false;
+        addendumOpt->optionsLoaded = STATUS_ERROR;
+        LogHelpers_Print("Addendum Options File Failed To Load...");
+    }
+
+    if (SaveGame->loadCallback3) {
+        Entity *store = SceneInfo->entity;
+        if (SaveGame->loadEntityPtr3)
+            SceneInfo->entity = SaveGame->loadEntityPtr3;
+
+        SaveGame->loadCallback3(success);
+        SceneInfo->entity = store;
+
+        SaveGame->loadCallback3 = NULL;
+        SaveGame->loadEntityPtr3 = NULL;
     }
 }
 #endif
@@ -626,12 +731,42 @@ void SaveGame_SaveFile_CB(int32 status)
     }
 }
 
+void Addendum_SaveFile_CB(int32 status)
+{
+    if (SaveGame->saveCallback2) {
+        Entity *store = SceneInfo->entity;
+        if (SaveGame->saveEntityPtr2)
+            SceneInfo->entity = SaveGame->saveEntityPtr2;
+
+        SaveGame->saveCallback2(status == STATUS_OK);
+
+        SceneInfo->entity = store;
+
+        SaveGame->saveCallback2  = NULL;
+        SaveGame->saveEntityPtr2 = NULL;
+    }
+}
+
+void Addendum_SaveOptions_CB(int32 status)
+{
+    if (SaveGame->saveCallback3) {
+        SaveGame->saveCallback3(status == STATUS_OK);
+        SaveGame->saveCallback3  = NULL;
+    }
+}
+
 bool32 SaveGame_AllChaosEmeralds(void)
 {
     SaveRAM *saveRAM = SaveGame_GetSaveRAM();
     return saveRAM->collectedEmeralds == 0b01111111;
 }
 #if MANIA_USE_PLUS
+bool32 Addendum_AllSuperEmeralds(void)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    return addendumData->collectedSuperEmeralds == 0b01111111;
+}
+
 bool32 Addendum_AllTimeStones(void)
 {
     AddendumData *addendumData = Addendum_GetSaveRAM();
@@ -645,6 +780,12 @@ bool32 SaveGame_GetEmerald(uint8 emeraldID)
     return (saveRAM->collectedEmeralds >> emeraldID) & 1;
 }
 #if MANIA_USE_PLUS
+bool32 Addendum_GetSuperEmerald(uint8 emeraldID)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    return (addendumData->collectedSuperEmeralds >> emeraldID) & 1;
+}
+
 bool32 Addendum_GetTimeStone(uint8 timeStoneID)
 {
     AddendumData *addendumData = Addendum_GetSaveRAM();
@@ -657,6 +798,12 @@ void SaveGame_SetEmerald(uint8 emeraldID)
     saveRAM->collectedEmeralds |= 1 << emeraldID;
 }
 #if MANIA_USE_PLUS
+void Addendum_SetSuperEmerald(uint8 emeraldID)
+{
+    AddendumData *addendumData = Addendum_GetSaveRAM();
+    addendumData->collectedSuperEmeralds |= 1 << emeraldID;
+}
+
 void Addendum_SetTimeStone(uint8 timeStoneID)
 {
     AddendumData *addendumData = Addendum_GetSaveRAM();

@@ -86,6 +86,8 @@ void Bomb_StageLoad(void)
     Bomb->sfxExplosion = RSDK.GetSfx("Stage/Explosion.wav");
 
     DEBUGMODE_ADD_OBJ(Bomb);
+
+    Zone_SetupHyperAttackList(Bomb->classID, true, true, true, true, true, true);
 }
 
 void Bomb_DebugSpawn(void)
@@ -260,8 +262,11 @@ void Bomb_State_Shrapnel(void)
         foreach_active(Shield, shield)
         {
             if (self->planeFilter <= 0 || shield->collisionPlane == ((self->planeFilter - 1) & 1)) {
-                if (Shield_CheckCollisionTouch(shield, self, &Bomb->hitboxShrapnel))
-                    Shield_State_Reflect(shield, self);
+                foreach_active(Player, player)
+                {
+                    if (Shield_CheckCollisionTouch(shield, self, &Bomb->hitboxShrapnel))
+                        Shield_State_Reflect(player, shield, self);
+                }
             }
         }
     }

@@ -129,6 +129,8 @@ void Clucker_StageLoad(void)
     Clucker->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
 
     DEBUGMODE_ADD_OBJ(Clucker);
+
+    Zone_SetupHyperAttackList(Clucker->classID, true, true, true, true, true, true);
 }
 
 void Clucker_DebugSpawn(void)
@@ -351,8 +353,11 @@ void Clucker_State_Egg(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Clucker->hitboxEgg))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Clucker->hitboxEgg))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
 
         if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0, false))

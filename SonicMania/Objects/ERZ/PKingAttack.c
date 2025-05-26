@@ -86,6 +86,8 @@ void PKingAttack_Create(void *data)
                 self->hitbox.bottom = 4;
                 break;
         }
+
+        PhantomKing->successfulAttacks = 0;
     }
 }
 
@@ -112,6 +114,7 @@ void PKingAttack_CheckPlayerCollisions(void)
                         Ring_LoseRings(player, MIN(player->rings, 8), player->collisionPlane);
                         player->rings -= MIN(player->rings, 8);
                         RSDK.PlaySfx(Player->sfxLoseRings, false, 255);
+                        PhantomKing->successfulAttacks++;
                     }
                     else {
                         RSDK.PlaySfx(PKingAttack->sfxPulse, false, 255);
@@ -237,8 +240,11 @@ void PKingAttack_State_OrbitLaunched(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 }
 

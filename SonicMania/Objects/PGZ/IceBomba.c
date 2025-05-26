@@ -110,6 +110,8 @@ void IceBomba_StageLoad(void)
     IceBomba->sfxFreeze    = RSDK.GetSfx("PSZ/Freeze.wav");
 
     DEBUGMODE_ADD_OBJ(IceBomba);
+
+    Zone_SetupHyperAttackList(IceBomba->classID, true, true, true, true, true, true);
 }
 
 void IceBomba_DebugDraw(void)

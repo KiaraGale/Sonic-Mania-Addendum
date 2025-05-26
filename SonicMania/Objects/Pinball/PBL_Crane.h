@@ -52,6 +52,17 @@ struct ObjectPBL_Crane {
     uint16 sfxCraneRise;
     uint16 sfxPrizeGood;
     uint16 sfxPrizeBad;
+    bool32 isActive;
+    uint8 touchDir;
+    int32 touchDown;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 actionPos;
+    Vector2 pausePos;
+    int32 pauseAlpha;
 };
 
 // Entity Class
@@ -110,6 +121,8 @@ void PBL_Crane_StateCrane_Rise(void);
 void PBL_Crane_StatePrize_Bounce(void);
 void PBL_Crane_StatePrize_Flash(void);
 void PBL_Crane_StatePrize_PrizeGet(void);
+
+void PBL_Crane_HandleTouchInput(void);
 
 #endif
 

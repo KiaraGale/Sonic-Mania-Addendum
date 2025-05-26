@@ -73,8 +73,6 @@ void HandLauncher_StageLoad(void)
     HandLauncher->active = ACTIVE_ALWAYS;
 
     HandLauncher->aniFrames = RSDK.LoadSpriteAnimation("HCZ/HandLauncher.bin", SCOPE_STAGE);
-
-    // only the cheat code was removed from HCZ/HandPulley, the actual code for dunkey mode still remains in-tact
     HandLauncher->sfxDunkey = RSDK.GetSfx("HCZ/Dunkey.wav");
 
     HandLauncher->hitboxRange.left   = -24;

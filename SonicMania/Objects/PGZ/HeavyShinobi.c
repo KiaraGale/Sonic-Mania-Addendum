@@ -158,7 +158,7 @@ void HeavyShinobi_StageLoad(void)
     RSDK.SetSpriteAnimation(-1, 0, &HeavyShinobi->fxTrailAnimator[3], true, 0);
 
     HeavyShinobi->activeShurikens    = 0;
-    HeavyShinobi->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+    HeavyShinobi->health             = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
     HeavyShinobi->invincibilityTimer = 0;
 
     HeavyShinobi->sfxHit       = RSDK.GetSfx("Stage/BossHit.wav");
@@ -309,6 +309,10 @@ void HeavyShinobi_Explode(void)
 void HeavyShinobi_State_Init(void)
 {
     RSDK_THIS(HeavyShinobi);
+    bool32 ultraWide = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &ultraWide);
+#endif
 
     if (++self->timer >= 2) {
         self->timer = 0;
@@ -320,6 +324,11 @@ void HeavyShinobi_State_Init(void)
 
         self->position.y = (ScreenInfo->position.y - 192) << 16;
         for (int32 i = 0; i < 16; ++i) HeavyShinobi->storePos[i] = self->position;
+
+        if (ultraWide) {
+            int32 extraWidth = (ScreenInfo->size.x - 424) / 2;
+            Zone->cameraBoundsR[0] -= extraWidth;
+        }
 
         self->active = ACTIVE_NORMAL;
         self->state  = HeavyShinobi_State_SetupArena;

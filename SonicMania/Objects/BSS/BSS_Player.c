@@ -173,6 +173,14 @@ void BSS_Player_StageLoad(void)
 void BSS_Player_Input_P1(void)
 {
     RSDK_THIS(BSS_Player);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        BSS_Player_HandleTouchInput();
+    }
 
     if (self->controllerID < PLAYER_COUNT) {
         RSDKControllerState *controller = &ControllerInfo[self->controllerID];
@@ -237,6 +245,70 @@ void BSS_Player_Input_P2(void)
     BSS_Player->jumpPressState &= 0xFFFF;
 
     self->jumpPress = BSS_Player->jumpPressState >> 15;
+}
+
+void BSS_Player_HandleTouchInput(void)
+{
+    RSDK_THIS(BSS_Player);
+
+    if (self->controllerID < PLAYER_COUNT) {
+        RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+
+        int32 tx = 0, ty = 0;
+        if (BSS_HUD_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+            tx -= 56;
+            ty -= 184;
+
+            switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+                case 0:
+                    ControllerInfo->keyRight.down |= true;
+                    controller->keyRight.down = true;
+                    break;
+
+                case 1:
+                    ControllerInfo->keyDown.down |= true;
+                    controller->keyDown.down = true;
+                    break;
+
+                case 2:
+                    ControllerInfo->keyLeft.down |= true;
+                    controller->keyLeft.down = true;
+                    break;
+
+                case 3:
+                    ControllerInfo->keyUp.down |= true;
+                    controller->keyUp.down = true;
+                    break;
+            }
+        }
+
+        // fixes a bug with button vs touch
+        bool32 touchedJump = false;
+        if (BSS_HUD_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+            ControllerInfo->keyA.down |= true;
+            controller->keyA.down = true;
+            touchedJump           = true;
+        }
+
+        bool32 touchedPause = false;
+        if (BSS_HUD_CheckTouchRect(ScreenInfo->center.x - 0x80, 0, ScreenInfo->center.x + 80, 0x40, NULL, NULL) >= 0) {
+            ControllerInfo->keyStart.down |= true;
+            controller->keyStart.down = true;
+            touchedPause              = true;
+        }
+
+        if (!BSS_Player->touchJump && touchedJump) {
+            ControllerInfo->keyA.press |= ControllerInfo->keyA.down;
+            controller->keyA.press |= controller->keyA.down;
+        }
+        BSS_Player->touchJump = controller->keyA.down;
+
+        if (!BSS_Player->touchPause && touchedPause) {
+            ControllerInfo->keyStart.press |= ControllerInfo->keyStart.down;
+            controller->keyStart.press |= controller->keyStart.down;
+        }
+        BSS_Player->touchPause = controller->keyStart.down;
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

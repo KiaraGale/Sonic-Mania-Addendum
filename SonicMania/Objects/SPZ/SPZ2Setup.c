@@ -80,7 +80,7 @@ void SPZ2Setup_Draw(void)
 {
     RSDK_THIS(SPZ2Setup);
 
-    RSDK.FillScreen(0xF0F0F0, self->fadeTimer, self->fadeTimer, self->fadeTimer);
+    RSDK.FillScreen(0xF0F0F0, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
 }
 
 void SPZ2Setup_Create(void *data)
@@ -100,6 +100,8 @@ void SPZ2Setup_StageLoad(void)
 
     SPZ2Setup->fgLow  = RSDK.GetTileLayer(Zone->fgLayer[0]);
     SPZ2Setup->fgHigh = RSDK.GetTileLayer(Zone->fgLayer[1]);
+
+    SPZ2Setup->skipBoss = false;
 
     // Sun Attack Deform
     for (int32 i = 0; i < 0x400; ++i) {

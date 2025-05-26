@@ -62,6 +62,8 @@ void Motobug_StageLoad(void)
     Motobug->hitboxBadnik.bottom = 14;
 
     DEBUGMODE_ADD_OBJ(Motobug);
+
+    Zone_SetupHyperAttackList(Motobug->classID, true, true, true, true, true, true);
 }
 
 void Motobug_DebugDraw(void)

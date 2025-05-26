@@ -31,6 +31,7 @@ struct ObjectEggPistonsMKII {
     uint16 sfxElectrify;
     uint16 sfxExplosion;
     uint16 sfxAlarm;
+    uint16 sfxShatter;
 };
 
 // Entity Class

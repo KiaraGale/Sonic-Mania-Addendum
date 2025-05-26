@@ -79,6 +79,8 @@ void Redz_StageLoad(void)
     Redz->sfxFlame = RSDK.GetSfx("Stage/Flame.wav");
 
     DEBUGMODE_ADD_OBJ(Redz);
+
+    Zone_SetupHyperAttackList(Redz->classID, true, true, true, true, true, true);
 }
 
 void Redz_DebugSpawn(void)

@@ -152,7 +152,7 @@ void Tornado_State_SetupMSZ1Intro(void)
     else {
         foreach_all(Player, player)
         {
-            player->stateInput = StateMachine_None;
+            player->stateInput = Player_Input_P1;
             player->up         = false;
             player->down       = false;
             player->left       = false;
@@ -161,7 +161,8 @@ void Tornado_State_SetupMSZ1Intro(void)
             player->jumpHold   = false;
             player->groundVel  = 0;
             player->velocity.x = 0;
-            player->velocity.y = 0;
+            player->velocity.y = -0x2000;
+            player->position.y += 0x120000;
         }
 
         self->state = Tornado_State_MSZ1Intro;
@@ -171,10 +172,33 @@ void Tornado_State_SetupMSZ1Intro(void)
 void Tornado_State_MSZ1Intro(void)
 {
     RSDK_THIS(Tornado);
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    RSDK.SetSpriteAnimation(player1->aniFrames, ANI_FLUME, &player1->animator, true, 0);
 
     Tornado_HandlePlayerCollisions();
 
-    if (++self->timer == 180) {
+    if (!self->timer) {
+        self->position.x = player1->position.x - 0x1400000;
+        self->position.y = player1->position.y + 0x400000;
+        self->offsetX    = 0xA0000;
+        self->showFlame  = true;
+        player1->position.y += 0x700000;
+    }
+
+    if (self->timer < 60) {
+        player1->velocity.y = -0x20000;
+        player1->state = Player_State_Air;
+    }
+    
+    if (self->timer >= 60 && self->timer < 179) {
+        if (self->position.x < player1->position.x)
+            self->position.x += 0x11765;
+    }
+
+    if (self->timer == 180)
+        self->showFlame = false;
+
+    if (self->timer == 360) {
         self->timer = 0;
         RSDK.PlaySfx(Tornado->sfxImpact, false, 255);
         self->knuxVel.x = -0x20000;
@@ -185,6 +209,8 @@ void Tornado_State_MSZ1Intro(void)
 
         foreach_active(Player, player) { player->stateInput = Player_Input_P1; }
     }
+
+    self->timer++;
 }
 
 void Tornado_State_KnuxKnockedOff(void)

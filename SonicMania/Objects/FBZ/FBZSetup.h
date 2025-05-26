@@ -33,6 +33,7 @@ struct ObjectFBZSetup {
     int32 scanlinePosY[0x400];
     uint16 aniTiles;
     uint16 backgroundOutside;
+    uint16 bgStorm;
     EntityFBZ1Outro *outro;
 };
 

@@ -240,6 +240,7 @@
     <ClInclude Include="Objects\Global\Spikes.h" />
     <ClInclude Include="Objects\Global\Spring.h" />
     <ClInclude Include="Objects\Global\StarPost.h" />
+    <ClInclude Include="Objects\Global\SuperFlicky.h" />
     <ClInclude Include="Objects\Global\SuperSparkle.h" />
     <ClInclude Include="Objects\Global\TimeAttackGate.h" />
     <ClInclude Include="Objects\Global\TitleCard.h" />
@@ -303,6 +304,7 @@
     <ClInclude Include="Objects\LRZ\Flamethrower.h" />
     <ClInclude Include="Objects\LRZ\HeavyKing.h" />
     <ClInclude Include="Objects\LRZ\HeavyRider.h" />
+    <ClInclude Include="Objects\LRZ\HPZCutscene.h" />
     <ClInclude Include="Objects\LRZ\HPZEmerald.h" />
     <ClInclude Include="Objects\LRZ\Iwamodoki.h" />
     <ClInclude Include="Objects\LRZ\KingAttack.h" />
@@ -338,6 +340,7 @@
     <ClInclude Include="Objects\LRZ\Turbine.h" />
     <ClInclude Include="Objects\LRZ\TurretSwitch.h" />
     <ClInclude Include="Objects\LRZ\WalkerLegs.h" />
+    <ClInclude Include="Objects\Menu\AddendumToggles.h" />
     <ClInclude Include="Objects\Menu\CompetitionMenu.h" />
     <ClInclude Include="Objects\Menu\DAControl.h" />
     <ClInclude Include="Objects\Menu\DASetup.h" />
@@ -1889,6 +1892,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Objects\Global\SuperFlicky.c">
+    <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Objects\Global\SuperSparkle.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -2207,6 +2216,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZCutscene.c">
+    <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Objects\LRZ\HPZEmerald.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -2413,6 +2428,12 @@
     </ClCompile>
     <ClCompile Include="Objects\LRZ\WalkerLegs.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Objects\Menu\AddendumToggles.c">
+    <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

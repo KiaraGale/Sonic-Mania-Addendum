@@ -85,6 +85,8 @@ void Caterkiller_StageLoad(void)
     Caterkiller->hitbox.bottom = 8;
 
     DEBUGMODE_ADD_OBJ(Caterkiller);
+
+    Zone_SetupHyperAttackList(Caterkiller->classID, true, true, true, true, true, true);
 }
 
 void Caterkiller_DebugSpawn(void)

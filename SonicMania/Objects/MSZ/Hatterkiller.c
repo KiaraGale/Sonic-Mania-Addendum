@@ -163,6 +163,8 @@ void Hatterkiller_StageLoad(void)
     Hatterkiller->sfxPowerup    = RSDK.GetSfx("Stage/PowerUp.wav");
 
     DEBUGMODE_ADD_OBJ(Hatterkiller);
+
+    Zone_SetupHyperAttackList(Hatterkiller->classID, true, true, true, true, true, true);
 }
 
 void Hatterkiller_DebugDraw(void)

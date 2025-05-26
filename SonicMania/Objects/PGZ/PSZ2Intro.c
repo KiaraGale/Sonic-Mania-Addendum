@@ -57,7 +57,7 @@ void PSZ2Intro_StageLoad(void)
 
 bool32 PSZ2Intro_Cutscene_HandleAct1Finish(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityFXFade *fxFade = PSZ2Intro->fxFade;
@@ -71,6 +71,10 @@ bool32 PSZ2Intro_Cutscene_HandleAct1Finish(EntityCutsceneSeq *host)
         player1->pushing            = false;
         if (player2->classID == Player->classID)
             player2->pushing = false;
+        if (player3->classID == Player->classID)
+            player3->pushing = false;
+        if (player4->classID == Player->classID)
+            player4->pushing = false;
     }
 
     if (host->values[0]) {
@@ -112,7 +116,7 @@ bool32 PSZ2Intro_Cutscene_ShowActClear(EntityCutsceneSeq *host)
 
 bool32 PSZ2Intro_Cutscene_RunToAct2(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -133,10 +137,22 @@ bool32 PSZ2Intro_Cutscene_RunToAct2(EntityCutsceneSeq *host)
         player1->down      = false;
 
         if (player2->classID == Player->classID) {
-            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player1->animator, true, 0);
+            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
             player2->state      = Player_State_Ground;
             player2->up         = false;
             player2->stateInput = Player_Input_P2_AI;
+        }
+        if (player3->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, true, 0);
+            player3->state      = Player_State_Ground;
+            player3->up         = false;
+            player3->stateInput = Player_Input_P2_AI;
+        }
+        if (player4->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, true, 0);
+            player4->state      = Player_State_Ground;
+            player4->up         = false;
+            player4->stateInput = Player_Input_P2_AI;
         }
     }
 
@@ -152,6 +168,8 @@ bool32 PSZ2Intro_Cutscene_RunToAct2(EntityCutsceneSeq *host)
         player1->right         = false;
         Zone->cameraBoundsL[0] = 1024;
         Zone->cameraBoundsL[1] = 1024;
+        Zone->cameraBoundsL[2] = 1024;
+        Zone->cameraBoundsL[3] = 1024;
         return true;
     }
     else {
@@ -164,7 +182,7 @@ bool32 PSZ2Intro_Cutscene_RunToAct2(EntityCutsceneSeq *host)
 
 bool32 PSZ2Intro_Cutscene_JogIntoPlace(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (ScreenInfo->position.x < Zone->cameraBoundsL[0]) {
@@ -174,6 +192,14 @@ bool32 PSZ2Intro_Cutscene_JogIntoPlace(EntityCutsceneSeq *host)
         if (player2->classID == Player->classID) {
             if (player2->groundVel < 0x20000)
                 player2->groundVel = 0x20000;
+        }
+        if (player3->classID == Player->classID) {
+            if (player3->groundVel < 0x20000)
+                player3->groundVel = 0x20000;
+        }
+        if (player4->classID == Player->classID) {
+            if (player4->groundVel < 0x20000)
+                player4->groundVel = 0x20000;
         }
     }
     else {

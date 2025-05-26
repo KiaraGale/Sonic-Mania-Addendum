@@ -53,7 +53,7 @@ void DERobot_Create(void *data)
                     self->shoulderFront = RSDK_GET_ENTITY(slotID + 4, DERobot);
                     self->arms[2]       = RSDK_GET_ENTITY(slotID + 5, DERobot);
                     self->arms[3]       = RSDK_GET_ENTITY(slotID + 6, DERobot);
-                    self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+                    self->health        = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                     self->state         = DERobot_State_SetupArena;
                     self->stateDraw     = DERobot_Draw_Simple;
                     RSDK.SetSpriteAnimation(DERobot->aniFrames, self->aniID, &self->mainAnimator, true, self->frameID);
@@ -96,6 +96,8 @@ void DERobot_Create(void *data)
                         RSDK.SetSpriteAnimation(DERobot->aniFrames, self->aniID, &self->altAnimator, true, 1);
                         self->stateDraw = DERobot_Draw_FrontLeg;
                     }
+                    
+                    self->state = DERobot_CheckPlayerCollisions_Leg;
 
                     if (self->frameID > 1)
                         self->drawFX = FX_ROTATE;
@@ -178,6 +180,9 @@ void DERobot_StageLoad(void)
 void DERobot_HandleScreenBounds(void)
 {
     RSDK_THIS(DERobot);
+    EntityPlayer* sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
+
     int32 x = (self->position.x >> 16) - ScreenInfo->center.x + 128;
     if (x > Zone->cameraBoundsL[0]) {
         Zone->cameraBoundsL[0]                         = x;
@@ -186,6 +191,22 @@ void DERobot_HandleScreenBounds(void)
         Zone->playerBoundsR[0]                         = Zone->cameraBoundsR[0] << 16;
         Zone->playerBoundActiveB[0]                    = 0;
         RSDK_GET_ENTITY(SLOT_CAMERA1, Camera)->boundsL = Zone->cameraBoundsL[0];
+    }
+
+    if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+        for (int32 i = 1; i < 4; ++i) {
+            EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+            if (player->classID == Player->classID) {
+                if (x > Zone->cameraBoundsL[i]) {
+                    Zone->cameraBoundsL[i]                         = x;
+                    Zone->cameraBoundsR[i]                         = ScreenInfo->size.x + 96 + x;
+                    Zone->playerBoundsL[i]                         = Zone->cameraBoundsL[i] << 16;
+                    Zone->playerBoundsR[i]                         = Zone->cameraBoundsR[i] << 16;
+                    Zone->playerBoundActiveB[i]                    = 0;
+                    RSDK_GET_ENTITY(60 + i, Camera)->boundsL = Zone->cameraBoundsL[i];
+                }
+            }
+        }
     }
 }
 
@@ -472,6 +493,56 @@ void DERobot_CheckPlayerCollisions_Hand(void)
     DERobot_HandleTerrainDestruction();
     self->position.x = storeX;
     self->position.y = storeY;
+}
+
+void DERobot_CheckPlayerCollisions_Leg(void)
+{
+    RSDK_THIS(DERobot);
+    EntityDERobot* body = RSDK_GET_ENTITY(772, DERobot); // a direct ref is prolly a bad idea but idk how else to do this-
+    int32 slotID = RSDK.GetEntitySlot(body);
+
+    EntityDERobot *kneeBack  = RSDK_GET_ENTITY(slotID - 7, DERobot);
+    EntityDERobot *legBack   = RSDK_GET_ENTITY(slotID - 6, DERobot);
+    EntityDERobot *footBack  = RSDK_GET_ENTITY(slotID - 5, DERobot);
+    EntityDERobot *kneeFront = RSDK_GET_ENTITY(slotID + 1, DERobot);
+    EntityDERobot *legFront  = RSDK_GET_ENTITY(slotID + 2, DERobot);
+    EntityDERobot* footFront = RSDK_GET_ENTITY(slotID + 3, DERobot);
+
+    int32 kneeBackSlot  = RSDK.GetEntitySlot(kneeBack);
+    int32 legBackSlot   = RSDK.GetEntitySlot(legBack);
+    int32 footBackSlot  = RSDK.GetEntitySlot(footBack);
+    int32 kneeFrontSlot = RSDK.GetEntitySlot(kneeFront);
+    int32 legFrontSlot  = RSDK.GetEntitySlot(legFront);
+    int32 footFrontSlot = RSDK.GetEntitySlot(footFront);
+
+    int32 legPart = RSDK.GetEntitySlot(self);
+
+    // i am SO evil
+    if (legPart == kneeBackSlot || kneeFrontSlot) {
+        DERobot->hitboxLeg.left = -13;
+        DERobot->hitboxLeg.top = -13;
+        DERobot->hitboxLeg.right = 13;
+        DERobot->hitboxLeg.bottom = 13;
+    }
+    else if (legPart == legBackSlot || legFrontSlot) {
+        DERobot->hitboxLeg.left   = -17;
+        DERobot->hitboxLeg.top    = -23;
+        DERobot->hitboxLeg.right  = 17;
+        DERobot->hitboxLeg.bottom = 23;
+    }
+    else if (legPart == footBackSlot || footFrontSlot) {
+        DERobot->hitboxLeg.left   = -13;
+        DERobot->hitboxLeg.top    = -41;
+        DERobot->hitboxLeg.right  = 13;
+        DERobot->hitboxLeg.bottom = 41;
+    }
+
+    foreach_active(Player, player)
+    {
+        if (Player_CheckCollisionTouch(player, self, &DERobot->hitboxLeg)) {
+            Player_Hurt(player, self);
+        }
+    }
 }
 
 bool32 DERobot_CheckRubyGrabbed(void)
@@ -790,7 +861,7 @@ void DERobot_State_BombLanded(void)
     if (self->mainAnimator.speed >= 0x80) {
         self->visible              = false;
         self->state                = DERobot_State_BombExplode;
-        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_BOSSPUFF), self->position.x, self->position.y - 0x80000);
+        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ITEMBOX), self->position.x, self->position.y - 0x80000);
         explosion->drawGroup       = Zone->objectDrawGroup[1];
         RSDK.PlaySfx(DERobot->sfxExplosion, false, 255);
     }
@@ -823,6 +894,7 @@ void DERobot_State_BombExplode(void)
 void DERobot_State_SetupArena(void)
 {
     RSDK_THIS(DERobot);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     if (++self->timer >= 8) {
         self->timer = 0;
@@ -841,6 +913,19 @@ void DERobot_State_SetupArena(void)
             self->position.y -= 0x1800000;
             self->active = ACTIVE_NORMAL;
             self->state  = DERobot_State_SetupBoss;
+
+            if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+                for (int32 i = 1; i < 4; ++i) {
+                    EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                    if (player->classID == Player->classID) {
+                        EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), player1->position.x, player1->position.y);
+                        player->position.x = player1->position.x;
+                        player->position.y = player1->position.y;
+                        player->camera->position.x = player1->camera->position.x;
+                        player->camera->position.y = player1->camera->position.y;
+                    }
+                }
+            }
         }
     }
 }

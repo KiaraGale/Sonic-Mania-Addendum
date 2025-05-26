@@ -116,6 +116,8 @@ void Scarab_StageLoad(void)
     Scarab->active = ACTIVE_ALWAYS;
 
     DEBUGMODE_ADD_OBJ(Scarab);
+
+    Zone_SetupHyperAttackList(Scarab->classID, true, true, true, true, true, true);
 }
 
 void Scarab_DebugSpawn(void)

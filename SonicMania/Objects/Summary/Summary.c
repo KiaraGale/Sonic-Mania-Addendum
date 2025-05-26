@@ -1,4 +1,4 @@
-// ---------------------------------------------------------------------
+﻿// ---------------------------------------------------------------------
 // RSDK Project: Sonic Mania
 // Object Description: Summary Object
 // Object Author: Christian Whitehead/Simon Thomley/Hunter Bridges
@@ -66,7 +66,7 @@ void Summary_State_Draw(void)
 {
     RSDK_THIS(Summary);
 
-    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void Summary_State_SetupText(void)
@@ -139,6 +139,15 @@ void Summary_State_FadeIn(void)
 void Summary_State_Wait(void)
 {
     RSDK_THIS(Summary);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count && !ControllerInfo[CONT_P1].keyStart.down)
+            ControllerInfo->keyStart.press = true;
+    }
 
     if (ControllerInfo->keyStart.press || (API_GetConfirmButtonFlip() ? ControllerInfo->keyB.press : ControllerInfo->keyA.press)) {
         RSDK.SetScene("Presentation", "Menu");

@@ -132,8 +132,8 @@ void StarPost_StageLoad(void)
                             sidekick->position.x -= TO_FIXED(16);
 
                         for (int32 i = 0; i < 0x10; ++i) {
-                            Player->leaderPositionBuffer[i].x = player->position.x;
-                            Player->leaderPositionBuffer[i].y = player->position.y;
+                            Player->leaderPositionBuffer[player->playerID][i].x = player->position.x;
+                            Player->leaderPositionBuffer[player->playerID][i].y = player->position.y;
                         }
                     }
                 }
@@ -178,8 +178,6 @@ void StarPost_ResetStarPosts(void)
 void StarPost_CheckBonusStageEntry(void)
 {
     RSDK_THIS(StarPost);
-    EntityPlayer *leader   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     self->starAngleY += 4;
     self->starAngleY &= 0x1FF;
@@ -236,6 +234,7 @@ void StarPost_CheckBonusStageEntry(void)
 void StarPost_CheckCollisions(void)
 {
     RSDK_THIS(StarPost);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     foreach_active(Player, player)
     {
@@ -253,10 +252,21 @@ void StarPost_CheckCollisions(void)
                     }
                 }
 
-                StarPost->postIDs[playerID]           = SceneInfo->entitySlot;
-                StarPost->playerPositions[playerID].x = self->position.x;
-                StarPost->playerPositions[playerID].y = self->position.y;
-                StarPost->playerDirections[playerID]  = self->direction;
+                if (addendumOptions->coopStyle == COOPSTYLE_TOGETHER) {
+                    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                        StarPost->postIDs[p]           = SceneInfo->entitySlot;
+                        StarPost->playerPositions[p].x = self->position.x;
+                        StarPost->playerPositions[p].y = self->position.y;
+                        StarPost->playerDirections[p]  = self->direction;
+                    }
+                }
+                else {
+                    StarPost->postIDs[playerID]           = SceneInfo->entitySlot;
+                    StarPost->playerPositions[playerID].x = self->position.x;
+                    StarPost->playerPositions[playerID].y = self->position.y;
+                    StarPost->playerDirections[playerID]  = self->direction;
+                }
+
                 if (globals->gameMode < MODE_TIMEATTACK) {
                     StarPost->storedMS      = SceneInfo->milliseconds;
                     StarPost->storedSeconds = SceneInfo->seconds;

@@ -1,0 +1,132 @@
+{
+  "Name": "Victory Detransform",
+  "Animation Speed": 1,
+  "Loop Index": 3,
+  "Rotation Flags": 0,
+  "Frames": [
+    {
+      "SheetID": 0,
+      "ID": 48,
+      "Duration": 3,
+      "Src": {
+        "x": 802,
+        "y": 611
+      },
+      "Size": {
+        "w": 25,
+        "h": 45
+      },
+      "Pivot": {
+        "x": -15,
+        "y": -25
+      },
+      "Hitboxes": {
+        "Outer Box": {
+          "Left": -10,
+          "Top": -20,
+          "Right": 10,
+          "Bottom": 20
+        },
+        "Inner Box": {
+          "Left": -9,
+          "Top": -20,
+          "Right": 9,
+          "Bottom": 20
+        }
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 48,
+      "Duration": 3,
+      "Src": {
+        "x": 828,
+        "y": 611
+      },
+      "Size": {
+        "w": 26,
+        "h": 45
+      },
+      "Pivot": {
+        "x": -16,
+        "y": -25
+      },
+      "Hitboxes": {
+        "Outer Box": {
+          "Left": -10,
+          "Top": -20,
+          "Right": 10,
+          "Bottom": 20
+        },
+        "Inner Box": {
+          "Left": -9,
+          "Top": -20,
+          "Right": 9,
+          "Bottom": 20
+        }
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 48,
+      "Duration": 3,
+      "Src": {
+        "x": 855,
+        "y": 611
+      },
+      "Size": {
+        "w": 26,
+        "h": 45
+      },
+      "Pivot": {
+        "x": -16,
+        "y": -25
+      },
+      "Hitboxes": {
+        "Outer Box": {
+          "Left": -10,
+          "Top": -20,
+          "Right": 10,
+          "Bottom": 20
+        },
+        "Inner Box": {
+          "Left": -9,
+          "Top": -20,
+          "Right": 9,
+          "Bottom": 20
+        }
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 48,
+      "Duration": 3,
+      "Src": {
+        "x": 882,
+        "y": 611
+      },
+      "Size": {
+        "w": 27,
+        "h": 45
+      },
+      "Pivot": {
+        "x": -17,
+        "y": -25
+      },
+      "Hitboxes": {
+        "Outer Box": {
+          "Left": -10,
+          "Top": -20,
+          "Right": 10,
+          "Bottom": 20
+        },
+        "Inner Box": {
+          "Left": -9,
+          "Top": -20,
+          "Right": 9,
+          "Bottom": 20
+        }
+      }
+    }
+  ]
+}

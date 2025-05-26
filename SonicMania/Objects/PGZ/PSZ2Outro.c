@@ -72,6 +72,8 @@ bool32 PSZ2Outro_Cutscene_SetupCameraMove(EntityCutsceneSeq *host)
     camera->boundsR += 512;
     Zone->playerBoundActiveR[0] = false;
     Zone->playerBoundActiveR[1] = false;
+    Zone->playerBoundActiveR[2] = false;
+    Zone->playerBoundActiveR[3] = false;
 
     FXRuby_SetupLayerDeformation();
     Camera_SetupLerp(CAMERA_LERP_SIN512, 0, eggman->position.x - 0x600000, camera->position.y, 2);
@@ -90,12 +92,10 @@ bool32 PSZ2Outro_Cutscene_HandleCameraMovement(EntityCutsceneSeq *host)
     EntityCamera *camera    = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
 
     if (host->timer == 180) {
-        globals->restartShield = leader->shield;
-        if (sidekick->classID == Player->classID)
-            globals->restartShieldP2 = sidekick->shield;
-
-        foreach_active(Shield, shield) {
-            destroyEntity(shield);
+        for (int32 p = 0; p < 4; ++p) {
+            EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+            if (player->classID == Player->classID)
+                globals->restartShield[p] = player->shield;
         }
 
         foreach_active(Player, player)
@@ -162,16 +162,18 @@ bool32 PSZ2Outro_Cutscene_WalkIntoPlace(EntityCutsceneSeq *host)
 bool32 PSZ2Outro_Cutscene_EnterRuby(EntityCutsceneSeq *host)
 {
     RSDK_THIS(PSZ2Outro);
-    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
 
     if (RSDK.GetEntityCount(PhantomRuby->classID, true) > 0) {
         foreach_active(PhantomRuby, ruby) { self->ruby = ruby; }
     }
 
     if (self->ruby && self->ruby->state == PhantomRuby_State_Oscillate) {
-        if (player2->classID == Player->classID) {
-            player2->state = Player_State_Static;
-            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, false, 0);
+        for (int32 p = 0; p < 4; ++p) {
+            EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+            if (player->classID == Player->classID) {
+                player->state = Player_State_Static;
+                RSDK.SetSpriteAnimation(player->aniFrames, ANI_SKID, &player->animator, false, 0);
+            }
         }
 
         return true;
@@ -201,8 +203,10 @@ bool32 PSZ2Outro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
 {
     RSDK_THIS(PSZ2Outro);
 
-    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);                                                                                       \
-    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);                                                                                       \
+    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
 
     EntityPhantomRuby *ruby = self->ruby;
     EntityFXRuby *fxRuby    = NULL;
@@ -217,6 +221,10 @@ bool32 PSZ2Outro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
         player1->drawGroup = Zone->playerDrawGroup[1] + 1;
         if (player2->classID == Player->classID)
             player2->drawGroup = Zone->playerDrawGroup[1] + 1;
+        if (player3->classID == Player->classID)
+            player3->drawGroup = Zone->playerDrawGroup[1] + 1;
+        if (player4->classID == Player->classID)
+            player4->drawGroup = Zone->playerDrawGroup[1] + 1;
     }
 
     if (!host->values[0]) {
@@ -243,8 +251,8 @@ bool32 PSZ2Outro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
             }
 
             if (host->timer >= host->storedTimer + 52) {
-                EntityPlayer *players[2] = {player1, player2};
-                for (int32 i = 0; i < 2; ++i) {
+                EntityPlayer *players[4] = { player1, player2, player3, player4 };
+                for (int32 i = 0; i < 4; ++i) {
                     EntityPlayer *player = players[i];
                     if (player->classID == Player->classID) {
                         RSDK.SetSpriteAnimation(player->aniFrames, ANI_FAN, &player->animator, false, 0);

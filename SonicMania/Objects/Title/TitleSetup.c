@@ -70,6 +70,9 @@ void TitleSetup_StageLoad(void)
     globals->optionsLoaded = false;
     memset(globals->optionsRAM, 0, sizeof(globals->optionsRAM));
 
+    addendumVar->saveLoaded = false;
+    memset(addendumVar->saveRAM, 0, sizeof(addendumVar->saveRAM));
+
 #if MANIA_USE_PLUS
     API.ClearUserDB(globals->replayTableID);
     API.ClearUserDB(globals->taTableID);
@@ -126,6 +129,16 @@ void TitleSetup_CheckCheatCode(void)
 
 bool32 TitleSetup_VideoSkipCB(void)
 {
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count && !ControllerInfo->keyStart.down)
+            ControllerInfo->keyStart.press = true;
+    }
+
     if (ControllerInfo->keyA.press || ControllerInfo->keyB.press || ControllerInfo->keyStart.press) {
         Music_Stop();
         return true;
@@ -289,10 +302,13 @@ void TitleSetup_State_SetupPlusLogo(void)
                 case TITLELOGO_PRESSSTART: titleLogo->position.y += 0x80000; break;
 
                 case TITLELOGO_PLUS:
+                    RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 0, &titleLogo->plusUnderlayAnimator, true, 0);
+                    RSDK.SetSpriteAnimation(TitleLogo->plusFrames, 1, &titleLogo->plusAnimator, true, 0);
                     titleLogo->active  = ACTIVE_NORMAL;
                     titleLogo->visible = true;
                     titleLogo->timer   = 2;
                     titleLogo->position.y -= 0x40000;
+                    titleLogo->drawSwapTimer = 0;
                     titleLogo->state = TitleLogo_State_HandleSetup;
                     break;
 
@@ -387,7 +403,7 @@ void TitleSetup_Draw_FadeBlack(void)
 {
     RSDK_THIS(TitleSetup);
 
-    RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(0x000000, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void TitleSetup_Draw_DrawRing(void)
@@ -405,7 +421,7 @@ void TitleSetup_Draw_Flash(void)
 {
     RSDK_THIS(TitleSetup);
 
-    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(0xF0F0F0, self->timer, self->timer - 128, self->timer - 256);
 }
 
 #if GAME_INCLUDE_EDITOR

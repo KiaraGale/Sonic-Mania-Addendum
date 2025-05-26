@@ -23,10 +23,8 @@ void PhantomHand_StaticUpdate(void) {}
 void PhantomHand_Draw(void)
 {
     RSDK_THIS(PhantomHand);
-
-    RSDK.CopyPalette(1, 128, 0, 128, 128);
-
     self->inkEffect = INK_ADD;
+    RSDK.SetActivePalette(1, 0, ScreenInfo->size.y);
     RSDK.DrawSprite(&self->handAnimator, NULL, false);
 
     if (self->state != PhantomHand_State_Disappear) {
@@ -38,6 +36,8 @@ void PhantomHand_Draw(void)
         self->alpha     = 0x100;
         RSDK.DrawSprite(&self->shineAnimator, NULL, false);
     }
+
+    RSDK.SetActivePalette(0, 0, ScreenInfo->size.y);
 }
 
 void PhantomHand_Create(void *data)
@@ -182,7 +182,7 @@ void PhantomHand_State_TryGrabPlayer(void)
         self->state = PhantomHand_State_Disappear;
     }
     else {
-        if ((self->direction && player1->position.x <= PhantomEgg->boundsM) || (self->direction && player1->position.x >= PhantomEgg->boundsM))
+        if ((self->direction && player1->position.x <= PhantomEgg->boundsM) || (!self->direction && player1->position.x >= PhantomEgg->boundsM))
             PhantomHand_CheckPlayerGrab(self->parent->position.x, player1->position.y);
         else
             PhantomHand_CheckPlayerGrab(player1->position.x, player1->position.y);
@@ -217,9 +217,6 @@ void PhantomHand_State_TryGrabPlayers(void)
                     playerPtr = player;
                 }
             }
-
-            if (playerPtr)
-                PhantomHand_CheckPlayerGrab(playerPtr->position.x, playerPtr->position.y);
         }
         else {
             foreach_active(Player, player)

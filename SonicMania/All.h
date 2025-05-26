@@ -3,6 +3,8 @@ typedef struct ObjectAcetone ObjectAcetone;
 typedef struct EntityAcetone EntityAcetone;
 typedef struct ObjectActClear ObjectActClear;
 typedef struct EntityActClear EntityActClear;
+typedef struct ObjectAddendumToggles ObjectAddendumToggles;
+typedef struct EntityAddendumToggles EntityAddendumToggles;
 typedef struct ObjectAIZEggRobo ObjectAIZEggRobo;
 typedef struct EntityAIZEggRobo EntityAIZEggRobo;
 typedef struct ObjectAIZEncoreTutorial ObjectAIZEncoreTutorial;
@@ -427,8 +429,14 @@ typedef struct ObjectHotaruHiWatt ObjectHotaruHiWatt;
 typedef struct EntityHotaruHiWatt EntityHotaruHiWatt;
 typedef struct ObjectHotaruMKII ObjectHotaruMKII;
 typedef struct EntityHotaruMKII EntityHotaruMKII;
+typedef struct ObjectHPZBeam ObjectHPZBeam;
+typedef struct EntityHPZBeam EntityHPZBeam;
 typedef struct ObjectHPZEmerald ObjectHPZEmerald;
 typedef struct EntityHPZEmerald EntityHPZEmerald;
+typedef struct ObjectHPZIntro ObjectHPZIntro;
+typedef struct EntityHPZIntro EntityHPZIntro;
+typedef struct ObjectHPZSetup ObjectHPZSetup;
+typedef struct EntityHPZSetup EntityHPZSetup;
 typedef struct ObjectHUD ObjectHUD;
 typedef struct EntityHUD EntityHUD;
 typedef struct ObjectIce ObjectIce;
@@ -589,6 +597,8 @@ typedef struct ObjectMonarchPlans ObjectMonarchPlans;
 typedef struct EntityMonarchPlans EntityMonarchPlans;
 typedef struct ObjectMonkeyDude ObjectMonkeyDude;
 typedef struct EntityMonkeyDude EntityMonkeyDude;
+typedef struct ObjectMosqui ObjectMosqui;
+typedef struct EntityMosqui EntityMosqui;
 typedef struct ObjectMotobug ObjectMotobug;
 typedef struct EntityMotobug EntityMotobug;
 typedef struct ObjectMSBomb ObjectMSBomb;
@@ -949,6 +959,8 @@ typedef struct ObjectSummary ObjectSummary;
 typedef struct EntitySummary EntitySummary;
 typedef struct ObjectSummaryEmerald ObjectSummaryEmerald;
 typedef struct EntitySummaryEmerald EntitySummaryEmerald;
+typedef struct ObjectSuperFlicky ObjectSuperFlicky;
+typedef struct EntitySuperFlicky EntitySuperFlicky;
 typedef struct ObjectSuperSparkle ObjectSuperSparkle;
 typedef struct EntitySuperSparkle EntitySuperSparkle;
 typedef struct ObjectSweep ObjectSweep;
@@ -1221,6 +1233,7 @@ typedef struct EntityZone EntityZone;
 // Include the actual code
 #include "PGZ/Acetone.h"
 #include "Global/ActClear.h"
+#include "Menu/AddendumToggles.h"
 #include "AIZ/AIZEggRobo.h"
 #include "AIZ/AIZEncoreTutorial.h"
 #include "AIZ/AIZKingClaw.h"
@@ -1433,7 +1446,10 @@ typedef struct EntityZone EntityZone;
 #include "SSZ/Hotaru.h"
 #include "SSZ/HotaruHiWatt.h"
 #include "SSZ/HotaruMKII.h"
+#include "LRZ/HPZBeam.h"
 #include "LRZ/HPZEmerald.h"
+#include "LRZ/HPZIntro.h"
+#include "LRZ/HPZSetup.h"
 #include "Global/HUD.h"
 #include "PGZ/Ice.h"
 #include "PGZ/IceBomba.h"
@@ -1514,6 +1530,7 @@ typedef struct EntityZone EntityZone;
 #include "TMZ/MonarchBG.h"
 #include "SSZ/MonarchPlans.h"
 #include "AIZ/MonkeyDude.h"
+#include "GHZ/Mosqui.h"
 #include "GHZ/Motobug.h"
 #include "SSZ/MSBomb.h"
 #include "SSZ/MSFactory.h"
@@ -1694,6 +1711,7 @@ typedef struct EntityZone EntityZone;
 #include "CPZ/StickyPlatform.h"
 #include "Summary/Summary.h"
 #include "Summary/SummaryEmerald.h"
+#include "Global/SuperFlicky.h"
 #include "Global/SuperSparkle.h"
 #include "AIZ/Sweep.h"
 #include "MSZ/SwingRope.h"

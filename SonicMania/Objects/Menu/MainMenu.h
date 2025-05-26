@@ -8,8 +8,15 @@
 struct ObjectMainMenu {
     RSDK_OBJECT
     EntityUIControl *menuControl;
+    EntityUIControl *addendumControl;
+    EntityUIControl *gameplayOptsControl;
+    EntityUIControl *styleOptsControl;
+    EntityUIControl *musicOptsControl;
+    EntityUIControl *multiplayerOptsControl;
     EntityUIButtonPrompt *confirmPrompt;
     EntityUIDiorama *diorama;
+    bool32 inAddendumMenu;
+    int32 addMenuLastButtonID;
 };
 
 // Entity Class
@@ -36,6 +43,15 @@ void MainMenu_Serialize(void);
 // Extra Entity Functions
 void MainMenu_Initialize(void);
 bool32 MainMenu_BackPressCB_ReturnToTitle(void);
+void MainMenu_AddendumMenu_MenuUpdateCB(void);
+void MainMenu_StartReturnToParentScreen(void);
+void MainMenu_AddendumMenu_SubMenuUpdateCB(void);
+void MainMenu_YPressCB_GoToAddendumOptions(void);
+bool32 MainMenu_AddendumSubMenu_ReturnToAddendumMenu(void);
+void MainMenu_HandleToAddendumTransitionCB(void);
+void MainMenu_HandleFromAddendumTransitionCB(void);
+void MainMenu_HandleToAddendumSubMenuTransitionCB(void);
+void MainMenu_HandleFromAddendumSubMenuTransitionCB(void);
 void MainMenu_ExitGame(void);
 void MainMenu_ExitButton_ActionCB(void);
 void MainMenu_StartExitGame(void);
@@ -48,8 +64,6 @@ void MainMenu_BuyPlusDialogCB(void);
 void MainMenu_HandleUnlocks(void);
 void MainMenu_SetupActions(void);
 void MainMenu_MenuSetupCB(void);
-void MainMenu_MenuButton_AddendumCB(void);
-void MainMenu_MenuButton_AddendumTransition(void);
 #endif
 
 #endif //! OBJ_MAINMENU_H

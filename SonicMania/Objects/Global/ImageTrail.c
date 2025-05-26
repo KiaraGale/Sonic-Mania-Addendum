@@ -32,13 +32,13 @@ void ImageTrail_LateUpdate(void)
 #endif
         else if (self->fadeoutTimer <= 0 && player->speedShoesTimer < 32) {
             self->baseAlpha = 8 * player->speedShoesTimer;
-            if (!self->baseAlpha) 
+            if (!self->baseAlpha && player->state != Player_State_RayGlide) 
                 destroyEntity(self);
         }
         else if (self->fadeoutTimer > 0) {
             self->fadeoutTimer--;
             self->baseAlpha = 16 * self->fadeoutTimer;
-            if (!self->baseAlpha) 
+            if (!self->baseAlpha && player->state != Player_State_RayGlide)
                 destroyEntity(self);
         }
     }
@@ -108,15 +108,8 @@ void ImageTrail_LateUpdate(void)
             self->currentTailScale = player->scale.x;
     }
 
-    // Check if we have enough speed to be visible
-    if (abs(player->velocity.x) >= TO_FIXED(1) || abs(player->velocity.y) >= TO_FIXED(1)) {
-        self->currentVisible     = player->visible;
-        self->currentTailVisible = player->visible;
-    }
-    else {
-        self->currentVisible     = false;
-        self->currentTailVisible = false;
-    }
+    self->currentVisible     = player->visible;
+    self->currentTailVisible = player->visible;
 }
 
 void ImageTrail_StaticUpdate(void) {}

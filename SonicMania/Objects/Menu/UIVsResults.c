@@ -104,10 +104,7 @@ void UIVsResults_SetupSprites(void)
 #endif
 
     int32 frame = self->characterID;
-#if MANIA_USE_PLUS
-    if (frame >= UICHARBUTTON_MIGHTY)
-        ++frame;
-#endif
+
     RSDK.SetSpriteAnimation(UIVsResults->aniFrames, 1, &self->playerAnimator, true, frame);
     RSDK.SetSpriteAnimation(UIVsResults->aniFrames, 2, &self->shadowAnimator, true, frame);
     RSDK.SetSpriteAnimation(UIVsResults->aniFrames, 18, &self->numbersAnimator, true, 0);

@@ -79,7 +79,7 @@ void Canista_StageLoad(void)
 {
     if (RSDK.CheckSceneFolder("SPZ1"))
         Canista->aniFrames = RSDK.LoadSpriteAnimation("SPZ1/Canista.bin", SCOPE_STAGE);
-    else if (RSDK.CheckSceneFolder("SPZ2"))
+    else if (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         Canista->aniFrames = RSDK.LoadSpriteAnimation("SPZ2/Canista.bin", SCOPE_STAGE);
 
     Canista->hitboxBadnik.left   = -14;
@@ -105,6 +105,8 @@ void Canista_StageLoad(void)
     DEBUGMODE_ADD_OBJ(Canista);
 
     Canista->sfxPon = RSDK.GetSfx("Stage/Pon.wav");
+
+    Zone_SetupHyperAttackList(Canista->classID, true, true, true, true, true, true);
 }
 
 void Canista_DebugSpawn(void)
@@ -368,8 +370,11 @@ void Canista_CheckPlayerProjectileCollisions(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Canista->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Canista->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
 
@@ -490,7 +495,7 @@ void Canista_EditorLoad(void)
 {
     if (RSDK.CheckSceneFolder("SPZ1"))
         Canista->aniFrames = RSDK.LoadSpriteAnimation("SPZ1/Canista.bin", SCOPE_STAGE);
-    else if (RSDK.CheckSceneFolder("SPZ2"))
+    else if (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         Canista->aniFrames = RSDK.LoadSpriteAnimation("SPZ2/Canista.bin", SCOPE_STAGE);
 
     Canista->hitboxRange.left   = -128;

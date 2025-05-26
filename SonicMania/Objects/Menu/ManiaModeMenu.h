@@ -54,7 +54,6 @@ void ManiaModeMenu_State_HandleTransition(void);
 void ManiaModeMenu_HandleUnlocks(void);
 void ManiaModeMenu_SetupActions(void);
 void ManiaModeMenu_HandleMenuReturn(void);
-
 #endif
 
 #endif //! OBJ_MANIAMODEMENU_H

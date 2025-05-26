@@ -55,7 +55,7 @@ void PathInverter_Create(void *data)
 
 void PathInverter_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("SPZ2"))
+    if (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         PathInverter->aniFrames = RSDK.LoadSpriteAnimation("SPZ2/PathInverter.bin", SCOPE_STAGE);
 }
 

@@ -36,10 +36,12 @@ void UIWidgets_StageLoad(void)
     UIWidgets->saveSelFrames = RSDK.LoadSpriteAnimation("UI/SaveSelect.bin", SCOPE_STAGE);
 #endif
     UIWidgets->fontFrames = RSDK.LoadSpriteAnimation("UI/SmallFont.bin", SCOPE_STAGE);
+    UIWidgets->dynTextFrames = RSDK.LoadSpriteAnimation("UI/Text.bin", SCOPE_STAGE);
 
     UIWidgets_ApplyLanguage();
     RSDK.SetSpriteAnimation(UIWidgets->uiFrames, 1, &UIWidgets->frameAnimator, true, 0);
     RSDK.SetSpriteAnimation(UIWidgets->uiFrames, 2, &UIWidgets->arrowsAnimator, true, 0);
+    RSDK.SetSpriteAnimation(UIWidgets->dynTextFrames, 0, &UIWidgets->dynTextAnimator, true, 0);
 
     UIWidgets->sfxBleep  = RSDK.GetSfx("Global/MenuBleep.wav");
     UIWidgets->sfxAccept = RSDK.GetSfx("Global/MenuAccept.wav");
@@ -83,6 +85,7 @@ void UIWidgets_ApplyLanguage(void)
         case LANGUAGE_KO: UIWidgets->textFrames = RSDK.LoadSpriteAnimation("UI/TextKO.bin", SCOPE_STAGE); break;
         case LANGUAGE_SC: UIWidgets->textFrames = RSDK.LoadSpriteAnimation("UI/TextSC.bin", SCOPE_STAGE); break;
         case LANGUAGE_TC: UIWidgets->textFrames = RSDK.LoadSpriteAnimation("UI/TextTC.bin", SCOPE_STAGE); break;
+        case LANGUAGE_EUS: UIWidgets->textFrames = RSDK.LoadSpriteAnimation("UI/TextEUS.bin", SCOPE_STAGE); break;
 #endif
         default: break;
     }

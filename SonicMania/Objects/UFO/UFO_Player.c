@@ -204,6 +204,13 @@ void UFO_Player_StageLoad(void)
 void UFO_Player_Input_P1(void)
 {
     RSDK_THIS(UFO_Player);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        UFO_Player_HandleTouchInput();
 
     if (self->controllerID < PLAYER_COUNT) {
         RSDKControllerState *controller = &ControllerInfo[self->controllerID];
@@ -679,6 +686,70 @@ void UFO_Player_State_UFOCaught_Released(void)
 
     if (self->timer == 16)
         UFO_Setup_Finish_Win();
+}
+
+void UFO_Player_HandleTouchInput(void)
+{
+    RSDK_THIS(UFO_Player);
+
+    if (self->controllerID < PLAYER_COUNT) {
+        RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+
+        int32 tx = 0, ty = 0;
+        if (UFO_HUD_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+            tx -= 56;
+            ty -= 184;
+
+            switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+                case 0:
+                    ControllerInfo->keyRight.down |= true;
+                    controller->keyRight.down = true;
+                    break;
+
+                case 1:
+                    ControllerInfo->keyDown.down |= true;
+                    controller->keyDown.down = true;
+                    break;
+
+                case 2:
+                    ControllerInfo->keyLeft.down |= true;
+                    controller->keyLeft.down = true;
+                    break;
+
+                case 3:
+                    ControllerInfo->keyUp.down |= true;
+                    controller->keyUp.down = true;
+                    break;
+            }
+        }
+
+        // fixes a bug with button vs touch
+        bool32 touchedJump = false;
+        if (UFO_HUD_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+            ControllerInfo->keyA.down |= true;
+            controller->keyA.down = true;
+            touchedJump           = true;
+        }
+
+        bool32 touchedPause = false;
+        if (UFO_HUD_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+            ControllerInfo->keyStart.down |= true;
+            controller->keyStart.down = true;
+            touchedPause              = true;
+        }
+
+        if (!UFO_Player->touchJump && touchedJump) {
+            ControllerInfo->keyA.press |= ControllerInfo->keyA.down;
+            controller->keyA.press |= controller->keyA.down;
+        }
+        UFO_Player->touchJump = controller->keyA.down;
+
+        if (!UFO_Player->touchPause && touchedPause) {
+            ControllerInfo->keyStart.press |= ControllerInfo->keyStart.down;
+            controller->keyStart.press |= controller->keyStart.down;
+        }
+        UFO_Player->touchPause = controller->keyStart.down;
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

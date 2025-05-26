@@ -9,6 +9,15 @@
 
 ObjectSpecialRing *SpecialRing;
 
+color hyperRingColors[6][6] = {
+    { 0x707000, 0xB4B400, 0xEAEB00, 0xFCFC6C, 0xFCFCB4, 0xFCFCFC },
+    { 0x7C5A7C, 0x9D729D, 0xBD89BD, 0xE8BAE8, 0xFCD8FC, 0xFCFCFC },
+    { 0x455C73, 0x577B9E, 0x6C8FB2, 0x8CB6DE, 0xB4D8FC, 0xFCFCFC },
+    { 0x29652A, 0x2C872C, 0x24B424, 0x48D848, 0x90FC90, 0xFCFCFC },
+    { 0x728A42, 0x8CB53B, 0xADD43A, 0xC4EC51, 0xD8FC6C, 0xFCFCFC },
+    { 0x8A7228, 0xB49024, 0xD8B424, 0xEDCA3B, 0xFCD86C, 0xFCFCFC }
+};
+
 void SpecialRing_Update(void)
 {
     RSDK_THIS(SpecialRing);
@@ -23,19 +32,59 @@ void SpecialRing_StaticUpdate(void) {}
 void SpecialRing_Draw(void)
 {
     RSDK_THIS(SpecialRing);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
+    SpecialRing->hyperTimer++;
+
+    if (SpecialRing->hyperTimer > 4) {
+        SpecialRing->hyperTimer = 0;
+        SpecialRing->hyperColorState++;
+    }
+
+    if (SpecialRing->hyperColorState > 5)
+        SpecialRing->hyperColorState = 0;
 
     if (self->state == SpecialRing_State_Flash) {
         self->direction = self->warpAnimator.frameID > 8;
+
+        if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            int32 hyperState = SpecialRing->hyperColorState;
+            for (int32 s = 0; s < 6; s++) {
+                SpecialRing->colorStorage[s] = RSDK.GetPaletteEntry(0, 42 + s);
+                RSDK.SetPaletteEntry(0, 42 + s, hyperRingColors[hyperState][s]);
+            }
+        }
+        else if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+            for (int32 s = 0; s < 6; s++) {
+                SpecialRing->colorStorage[s] = RSDK.GetPaletteEntry(0, 42 + s);
+                RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->silverRingColors[s]);
+            }
+        }
+
         RSDK.DrawSprite(&self->warpAnimator, NULL, false);
+
+        if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            for (int32 s = 0; s < 6; s++)
+                RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->colorStorage[s]);
+        }
+        else if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+            for (int32 s = 0; s < 6; s++)
+                RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->colorStorage[s]);
+        }
     }
     else {
         RSDK.Prepare3DScene(SpecialRing->sceneIndex);
-        if (self->enabled)
-            RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED, &self->matWorld, &self->matNormal,
-                                   0xF0F000);
+        if (self->enabled) {
+            if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+                int32 hyperState = SpecialRing->hyperColorState;
+                RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED, &self->matWorld, &self->matNormal, SpecialRing->hyperRingColors[hyperState]);
+            }
+            else if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE)
+                RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED, &self->matWorld, &self->matNormal, 0xF0F0F0);
+            else
+                RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_SOLIDCOLOR_SHADED_BLENDED, &self->matWorld, &self->matNormal, 0xF0F000);
+        }
         else
-            RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_WIREFRAME_SHADED, &self->matWorld, &self->matNormal,
-                                   0x609090);
+            RSDK.AddModelTo3DScene(SpecialRing->modelIndex, SpecialRing->sceneIndex, S3D_WIREFRAME_SHADED, &self->matWorld, &self->matNormal, 0x609090);
         RSDK.Draw3DScene(SpecialRing->sceneIndex);
     }
 }
@@ -99,19 +148,21 @@ void SpecialRing_StageLoad(void)
                     player->position.x = ring->position.x;
                     player->position.y = ring->position.y + TO_FIXED(16);
                     if (!p) {
-                        EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
                         if (globals->gameMode != MODE_COMPETITION) {
-                            player2->position.x = player->position.x;
-                            player2->position.y = player->position.y;
-                            player2->direction  = player->direction;
-                            if (player->direction)
-                                player2->position.x += TO_FIXED(16);
-                            else
-                                player2->position.x -= TO_FIXED(16);
+                            EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+                            player->position.x = player1->position.x;
+                            player->position.y = player1->position.y;
+                            player->direction  = player1->direction;
+                            if (player1->direction) {
+                                player->position.x += TO_FIXED(16 * p);
+                            }
+                            else {
+                                player->position.x -= TO_FIXED(16 * p);
+                            }
 
                             for (int32 f = 0; f < 0x10; ++f) {
-                                Player->leaderPositionBuffer[f].x = player->position.x;
-                                Player->leaderPositionBuffer[f].y = player->position.y;
+                                Player->leaderPositionBuffer[player->playerID][f].x = player->position.x;
+                                Player->leaderPositionBuffer[player->playerID][f].y = player->position.y;
                             }
                         }
                     }
@@ -124,7 +175,8 @@ void SpecialRing_StageLoad(void)
         }
     }
 
-    globals->specialRingID = 0;
+    if (SceneInfo->activeCategory != 9)
+        globals->specialRingID = 0;
 }
 
 void SpecialRing_DebugDraw(void)
@@ -143,6 +195,7 @@ void SpecialRing_DebugSpawn(void)
 void SpecialRing_State_Idle(void)
 {
     RSDK_THIS(SpecialRing);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     self->angleZ = (self->angleZ + 4) & 0x3FF;
     self->angleY = (self->angleY + 4) & 0x3FF;
@@ -174,26 +227,77 @@ void SpecialRing_State_Idle(void)
                     self->sparkleRadius = TO_FIXED(16);
                     self->state         = SpecialRing_State_Flash;
 
-#if GAME_VERSION != VER_100
-                    // rings spawned via debug mode give you 50 rings, always
-                    if (!SaveGame_AllChaosEmeralds() && self->id || !Addendum_AllTimeStones() && self->id) {
-#else
-                    // rings spawned via debug mode behave as regular special rings
-                    if (!SaveGame_AllChaosEmeralds()) {
-#endif
-                        player->visible        = false;
-                        player->active         = ACTIVE_NEVER;
-                        SceneInfo->timeEnabled = false;
+                    if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+                        if (!SaveGame_AllChaosEmeralds() && self->id || !Addendum_AllSuperEmeralds() && self->id) {
+                            player->visible        = false;
+                            player->active         = ACTIVE_NEVER;
+                            SceneInfo->timeEnabled = false;
+                        }
+                        else {
+                            if (addendumOptions->coopStyle == COOPSTYLE_TOGETHER) {
+                                for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                                    EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+                                    Player_GiveRings(player, 50, true);
+                                }
+                            }
+                            else
+                                Player_GiveRings(player, 50, true);
+                        }
+
+                        if (self->id > 0) {
+                            if (!SaveGame_AllChaosEmeralds() || !Addendum_AllSuperEmeralds())
+                                globals->specialRingID = self->id;
+
+                            SaveGame_SetCollectedSpecialRing(self->id);
+                        }
+                    }
+                    else if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+                        if (!SaveGame_AllChaosEmeralds() && self->id || !Addendum_AllTimeStones() && self->id) {
+                            player->visible        = false;
+                            player->active         = ACTIVE_NEVER;
+                            SceneInfo->timeEnabled = false;
+                        }
+                        else {
+                            if (addendumOptions->coopStyle == COOPSTYLE_TOGETHER) {
+                                for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                                    EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+                                    Player_GiveRings(player, 50, true);
+                                }
+                            }
+                            else
+                                Player_GiveRings(player, 50, true);
+                        }
+
+                        if (self->id > 0) {
+                            if (!SaveGame_AllChaosEmeralds() || !Addendum_AllTimeStones())
+                                globals->specialRingID = self->id;
+
+                            SaveGame_SetCollectedSpecialRing(self->id);
+                        }
                     }
                     else {
-                        Player_GiveRings(player, 50, true);
-                    }
+                        if (!SaveGame_AllChaosEmeralds() && self->id) {
+                            player->visible        = false;
+                            player->active         = ACTIVE_NEVER;
+                            SceneInfo->timeEnabled = false;
+                        }
+                        else {
+                            if (addendumOptions->coopStyle == COOPSTYLE_TOGETHER) {
+                                for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                                    EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+                                    Player_GiveRings(player, 50, true);
+                                }
+                            }
+                            else
+                                Player_GiveRings(player, 50, true);
+                        }
 
-                    if (self->id > 0) {
-                        if (!SaveGame_AllChaosEmeralds() || !Addendum_AllTimeStones())
-                            globals->specialRingID = self->id;
+                        if (self->id > 0) {
+                            if (!SaveGame_AllChaosEmeralds())
+                                globals->specialRingID = self->id;
 
-                        SaveGame_SetCollectedSpecialRing(self->id);
+                            SaveGame_SetCollectedSpecialRing(self->id);
+                        }
                     }
 
                     RSDK.PlaySfx(SpecialRing->sfxSpecialRing, false, 0xFE);
@@ -205,6 +309,7 @@ void SpecialRing_State_Idle(void)
 void SpecialRing_State_Flash(void)
 {
     RSDK_THIS(SpecialRing);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     RSDK.ProcessAnimation(&self->warpAnimator);
 
@@ -215,7 +320,7 @@ void SpecialRing_State_Flash(void)
             EntityRing *sparkle = CREATE_ENTITY(Ring, NULL, x, y);
 
             sparkle->state     = Ring_State_Sparkle;
-            sparkle->stateDraw = Ring_Draw_Sparkle;
+            sparkle->stateDraw = SpecialRing_Draw_Sparkles;
             sparkle->active    = ACTIVE_NORMAL;
             sparkle->visible   = false;
             sparkle->drawGroup = Zone->objectDrawGroup[0];
@@ -233,52 +338,139 @@ void SpecialRing_State_Flash(void)
         self->sparkleRadius -= TO_FIXED(8);
     }
 
-#if GAME_VERSION != VER_100
-    // rings spawned via debug mode give you 50 rings, always
-    if (SaveGame_AllChaosEmeralds() && Addendum_AllTimeStones() || !self->id) {
-#else
-    // rings spawned via debug mode behave as regular special rings
-    if (SaveGame_AllChaosEmeralds()) {
-#endif
-        destroyEntity(self);
+    if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        if (SaveGame_AllChaosEmeralds() && Addendum_AllSuperEmeralds() || !self->id) {
+            if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1)
+                destroyEntity(self);
+        }
+        else if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1) {
+            self->warpTimer = 0;
+            self->visible   = false;
+            self->state     = SpecialRing_State_Warp;
+        }
     }
-    else if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1) {
-        self->warpTimer = 0;
-        self->visible   = false;
-        self->state     = SpecialRing_State_Warp;
+    else if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+        if (SaveGame_AllChaosEmeralds() && Addendum_AllTimeStones() || !self->id) {
+            if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1)
+                destroyEntity(self);
+        }
+        else if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1) {
+            self->warpTimer = 0;
+            self->visible   = false;
+            self->state     = SpecialRing_State_Warp;
+        }
+    }
+    else {
+        if (SaveGame_AllChaosEmeralds() || !self->id) {
+            if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1)
+                destroyEntity(self);
+        }
+        else if (self->warpAnimator.frameID == self->warpAnimator.frameCount - 1) {
+            self->warpTimer = 0;
+            self->visible   = false;
+            self->state     = SpecialRing_State_Warp;
+        }
     }
 }
 void SpecialRing_State_Warp(void)
 {
     RSDK_THIS(SpecialRing);
+    SaveRAM *saveRAM                 = SaveGame_GetSaveRAM();
+    AddendumData *addendumData       = Addendum_GetSaveRAM();
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     if (++self->warpTimer == 30) {
         SaveGame_SaveGameState();
         RSDK.PlaySfx(SpecialRing->sfxSpecialWarp, false, 0xFE);
         destroyEntity(self);
 
-        SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
-        AddendumData *addendumData = Addendum_GetSaveRAM();
-        // this statement allows for easy compatibility with pre-Addendum files that already have all Chaos Emeralds
-        // this also fixes a bug that would make it so the nextSpecialStage variable would reset back to 0 when exiting the game
-        if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones != 0b01111111) {
-            switch (addendumData->collectedTimeStones) {
-                case 0b00000000: saveRAM->nextSpecialStage = 7; break;
-                case 0b00000001: saveRAM->nextSpecialStage = 8; break;
-                case 0b00000011: saveRAM->nextSpecialStage = 9; break;
-                case 0b00000111: saveRAM->nextSpecialStage = 10; break;
-                case 0b00001111: saveRAM->nextSpecialStage = 11; break;
-                case 0b00011111: saveRAM->nextSpecialStage = 12; break;
-                case 0b00111111: saveRAM->nextSpecialStage = 13; break;
+        if (saveRAM->collectedEmeralds == 0b00000000)
+            saveRAM->nextSpecialStage = 0;
+
+        if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            if (saveRAM->collectedEmeralds >= 0b01111111) {
+                addendumVar->doHPZResults = false;
+                saveRAM->storedStageID = SceneInfo->listPos;
+                RSDK.SetScene("Addendum", "Super Emerald Chamber");
+
+                Zone_StartFadeOut(8, 0xF0F0F0);
+                Music_Stop();
+            }
+            else {
+                saveRAM->storedStageID = SceneInfo->listPos;
+                RSDK.SetScene("Special Stage", "");
+                SceneInfo->listPos += saveRAM->nextSpecialStage;
+
+                Zone_StartFadeOut(8, 0xF0F0F0);
+                Music_Stop();
             }
         }
+        else if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+            // this statement allows for easy compatibility with pre-Addendum files that already have all Chaos Emeralds
+            if (saveRAM->collectedEmeralds == 0b01111111 && addendumData->collectedTimeStones != 0b01111111) {
+                switch (addendumData->collectedTimeStones) {
+                    case 0b00000000: saveRAM->nextSpecialStage = 7; break;
+                    case 0b00000001: saveRAM->nextSpecialStage = 8; break;
+                    case 0b00000011: saveRAM->nextSpecialStage = 9; break;
+                    case 0b00000111: saveRAM->nextSpecialStage = 10; break;
+                    case 0b00001111: saveRAM->nextSpecialStage = 11; break;
+                    case 0b00011111: saveRAM->nextSpecialStage = 12; break;
+                    case 0b00111111: saveRAM->nextSpecialStage = 13; break;
+                }
+            }
 
-        saveRAM->storedStageID = SceneInfo->listPos;
-        RSDK.SetScene("Special Stage", "");
-        SceneInfo->listPos += saveRAM->nextSpecialStage;
+            saveRAM->storedStageID = SceneInfo->listPos;
+            RSDK.SetScene("Special Stage", "");
+            SceneInfo->listPos += saveRAM->nextSpecialStage;
 
-        Zone_StartFadeOut(10, 0xF0F0F0);
-        Music_Stop();
+            Zone_StartFadeOut(8, 0xF0F0F0);
+            Music_Stop();
+        }
+        else {
+            saveRAM->storedStageID = SceneInfo->listPos;
+            RSDK.SetScene("Special Stage", "");
+            SceneInfo->listPos += saveRAM->nextSpecialStage;
+
+            Zone_StartFadeOut(8, 0xF0F0F0);
+            Music_Stop();
+        }
+    }
+}
+
+void SpecialRing_Draw_Sparkles(void)
+{
+    RSDK_THIS(Ring);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
+
+    if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        int32 hyperState = SpecialRing->hyperColorState;
+        for (int32 s = 0; s < 6; s++) {
+            SpecialRing->colorStorage[s] = RSDK.GetPaletteEntry(0, 42 + s);
+            RSDK.SetPaletteEntry(0, 42 + s, hyperRingColors[hyperState][s]);
+        }
+    }
+    else if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+        for (int32 s = 0; s < 6; s++) {
+            SpecialRing->colorStorage[s] = RSDK.GetPaletteEntry(0, 42 + s);
+            RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->silverRingColors[s]);
+        }
+    }
+
+    if (self->alpha == 0xE0) {
+        self->animator.frameID += 16;
+        self->inkEffect = INK_ADD;
+        RSDK.DrawSprite(&self->animator, NULL, false);
+
+        self->inkEffect = INK_NONE;
+        self->animator.frameID -= 16;
+    }
+    RSDK.DrawSprite(&self->animator, NULL, false);
+
+    if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        for (int32 s = 0; s < 6; s++) RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->colorStorage[s]);
+    }
+    else if (SaveGame_AllChaosEmeralds() && addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+        for (int32 s = 0; s < 6; s++) RSDK.SetPaletteEntry(0, 42 + s, SpecialRing->colorStorage[s]);
     }
 }
 

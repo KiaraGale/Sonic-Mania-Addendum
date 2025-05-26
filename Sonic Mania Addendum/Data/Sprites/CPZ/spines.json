@@ -1,0 +1,93 @@
+{
+  "Name": "Spines 1",
+  "Animation Speed": 1,
+  "Loop Index": 0,
+  "Rotation Flags": 0,
+  "Frames": [
+    {
+      "SheetID": 0,
+      "ID": 0,
+      "Duration": 4,
+      "Src": {
+        "x": 1,
+        "y": 233
+      },
+      "Size": {
+        "w": 26,
+        "h": 22
+      },
+      "Pivot": {
+        "x": -13,
+        "y": -24
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 0,
+      "Duration": 4,
+      "Src": {
+        "x": 28,
+        "y": 233
+      },
+      "Size": {
+        "w": 26,
+        "h": 22
+      },
+      "Pivot": {
+        "x": -13,
+        "y": -24
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 0,
+      "Duration": 4,
+      "Src": {
+        "x": 82,
+        "y": 233
+      },
+      "Size": {
+        "w": 26,
+        "h": 22
+      },
+      "Pivot": {
+        "x": -13,
+        "y": -24
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 0,
+      "Duration": 4,
+      "Src": {
+        "x": 55,
+        "y": 233
+      },
+      "Size": {
+        "w": 26,
+        "h": 22
+      },
+      "Pivot": {
+        "x": -13,
+        "y": -24
+      }
+    },
+    {
+      "SheetID": 0,
+      "ID": 0,
+      "Duration": 4,
+      "Src": {
+        "x": 109,
+        "y": 233
+      },
+      "Size": {
+        "w": 26,
+        "h": 22
+      },
+      "Pivot": {
+        "x": -13,
+        "y": -24
+      }
+    }
+  ]
+}

@@ -9,7 +9,15 @@
 
 ObjectTMZ2Setup *TMZ2Setup;
 
-void TMZ2Setup_Update(void) {}
+void TMZ2Setup_Update(void)
+{
+    if (!TMZ2Setup->hasSecretExitsAchievement) {
+        if (TMZ2Setup->secretExitsTaken == 4) {
+            API_UnlockAchievement(&achievementList[ACH_TMZ2]);
+            TMZ2Setup->hasSecretExitsAchievement = true;
+        }
+    }
+}
 
 void TMZ2Setup_LateUpdate(void) {}
 

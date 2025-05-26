@@ -10,7 +10,12 @@
 #if MANIA_USE_PLUS
 ObjectOptionsMenu *OptionsMenu;
 
-void OptionsMenu_Update(void) {}
+void OptionsMenu_Update(void)
+{
+    RSDK_THIS(OptionsMenu);
+    if (self->shouldFadeOut)
+        OptionsMenu_HandleScreenFade();
+}
 
 void OptionsMenu_LateUpdate(void) {}
 
@@ -18,7 +23,11 @@ void OptionsMenu_StaticUpdate(void) {}
 
 void OptionsMenu_Draw(void) {}
 
-void OptionsMenu_Create(void *data) {}
+void OptionsMenu_Create(void *data)
+{
+    RSDK_THIS(OptionsMenu);
+    self->shouldFadeOut = false;
+}
 
 void OptionsMenu_StageLoad(void) {}
 
@@ -38,10 +47,6 @@ void OptionsMenu_Initialize(void)
         RSDK.SetString(&tag, "Language");
         if (RSDK.CompareStrings(&tag, &control->tag, false))
             OptionsMenu->languageControl = control;
-
-        RSDK.SetString(&tag, "Language Old");
-        if (RSDK.CompareStrings(&tag, &control->tag, false))
-            OptionsMenu->languageControl_Legacy = control;
 
         RSDK.SetString(&tag, "Video");
         if (RSDK.CompareStrings(&tag, &control->tag, false))
@@ -92,14 +97,6 @@ void OptionsMenu_Initialize(void)
             OptionsMenu->dataOptionsControl = control;
     }
 
-    foreach_all(UIButtonPrompt, prompt)
-    {
-        EntityUIControl *controller = OptionsMenu->optionsControl;
-
-        if (UIControl_ContainsPos(controller, &prompt->position) && prompt->buttonID == 3)
-            OptionsMenu->helpPrompt = prompt;
-    }
-
     foreach_all(UIDiorama, diorama)
     {
         EntityUIControl *controller = OptionsMenu->videoControl;
@@ -143,7 +140,6 @@ void OptionsMenu_SetupActions(void)
 {
     EntityUIControl *optionsControl      = OptionsMenu->optionsControl;
     EntityUIControl *languageControl     = OptionsMenu->languageControl;
-    EntityUIControl *languageControl_Legacy = OptionsMenu->languageControl_Legacy;
     EntityUIControl *videoControl        = OptionsMenu->videoControl;
     EntityUIControl *controlsControl_Win = OptionsMenu->controlsControl_Windows;
     EntityUIControl *videoControl_Win    = OptionsMenu->videoControl_Windows;
@@ -176,9 +172,6 @@ void OptionsMenu_SetupActions(void)
         }
 
         if (UIControl_ContainsPos(languageControl, &button->position))
-            button->actionCB = OptionsMenu_LanguageButton_ActionCB;
-
-        if (UIControl_ContainsPos(languageControl_Legacy, &button->position))
             button->actionCB = OptionsMenu_LanguageButton_ActionCB;
 
         if (UIControl_ContainsPos(videoControl, &button->position) && button->listID == 3 && button->frameID == 0)
@@ -224,20 +217,11 @@ void OptionsMenu_SetupActions(void)
     videoControl_Win->menuUpdateCB = OptionsMenu_VideoControl_Win_MenuUpdateCB;
     videoControl_Win->yPressCB     = OptionsMenu_VideoControl_Win_YPressCB;
     videoControl_Win->backPressCB  = OptionsMenu_VideoControl_Win_BackPressCB;
-
-    if (sku_platform == PLATFORM_SWITCH || sku_platform == PLATFORM_DEV) {
-        optionsControl->yPressCB = OptionsMenu_ShowManual;
-    }
-    else {
-        EntityUIButtonPrompt *prompt = OptionsMenu->helpPrompt;
-        prompt->visible              = false;
-    }
 }
 
 void OptionsMenu_HandleMenuReturn(void)
 {
     EntityUIControl *languageControl     = OptionsMenu->languageControl;
-    EntityUIControl *languageControl_old = OptionsMenu->languageControl_Legacy;
     EntityUIControl *videoControl        = OptionsMenu->videoControl;
     EntityUIControl *soundControl        = OptionsMenu->soundControl;
 
@@ -255,9 +239,6 @@ void OptionsMenu_HandleMenuReturn(void)
 
     languageControl->startingID = Localization->language;
     languageControl->buttonID   = Localization->language;
-
-    languageControl_old->startingID = Localization->language;
-    languageControl_old->buttonID   = Localization->language;
 }
 void OptionsMenu_InitVideoOptionsMenu(void)
 {
@@ -325,9 +306,7 @@ void OptionsMenu_DlgRunnerCB_RevertVideoChanges(void)
     RSDK.UpdateWindow();
 
     Localization_GetString(&message, STR_VIDEOCHANGESAPPLIED);
-    // This is bugged! Using `OptionsMenu_ApplyChangesDlg_BackPress_NoCB` causes the settings to be reverted instead of saved!
-    // This should have called a modified version of `OptionsMenu_ApplyChangesDlg_Win_YesCB` which also transitions to the previous menu!
-    EntityUIDialog *dialog = UIDialog_CreateDialogYesNo(&message, OptionsMenu_ApplyChangesDlg_BackPress_NoCB, OptionsMenu_ApplyChangesDlg_NoCB, true, true);
+    EntityUIDialog *dialog = UIDialog_CreateDialogYesNo(&message, OptionsMenu_ApplyChangesDlg_YesCB, OptionsMenu_ApplyChangesDlg_NoCB, true, true);
     if (dialog)
         dialog->closeDelay = 15 * 60; // 15 seconds at 60 FPS
 }
@@ -386,6 +365,15 @@ void OptionsMenu_ApplyChangesDlg_Win_YesCB(void)
     RSDK.SetVideoSetting(VIDEOSETTING_CHANGED, false);
     RSDK.SetVideoSetting(VIDEOSETTING_WRITE, true);
     RSDK.SetVideoSetting(VIDEOSETTING_STORE, false);
+}
+
+void OptionsMenu_ApplyChangesDlg_YesCB(void)
+{
+    RSDK.SetVideoSetting(VIDEOSETTING_CHANGED, false);
+    RSDK.SetVideoSetting(VIDEOSETTING_WRITE, true);
+    RSDK.SetVideoSetting(VIDEOSETTING_STORE, false);
+
+    UITransition_StartTransition(UIControl_ReturnToParentMenu, 0);
 }
 
 void OptionsMenu_ApplyChangesDlg_BackPress_NoCB(void)
@@ -706,8 +694,16 @@ void OptionsMenu_UISlider_ChangedCB(void)
 
 void OptionsMenu_ShowManual(void)
 {
+    RSDK_THIS(OptionsMenu);
+    EntityUIControl *control = OptionsMenu->optionsControl;
+
     RSDK.PlaySfx(UIWidgets->sfxAccept, false, 0xFF);
-    API_LaunchManual();
+    self->shouldFadeOut = true;
+
+    if (++self->timer >= 180) {
+        RSDK.SetScene("Addendum", "Tutorial");
+        RSDK.LoadScene();
+    }
 }
 
 void OptionsMenu_EraseSaveDataCB(bool32 success)
@@ -868,6 +864,16 @@ void OptionsMenu_EraseAllButton_ActionCB(void)
 
     Localization_GetString(&message, STR_AREYOUSURESAVE);
     UIDialog_CreateDialogYesNo(&message, OptionsMenu_AreYouSureDlg_YesCB_EraseAllData, StateMachine_None, true, true);
+}
+
+void OptionsMenu_HandleScreenFade(void)
+{
+    RSDK_THIS(OptionsMenu);
+
+    if (self->fadeTimer < 256) {
+        RSDK.FillScreen(0x000000, self->timer, self->timer, self->timer);
+        self->timer += 8;
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -131,6 +131,13 @@ void OOZ2Outro_CheckSkip(void)
 void OOZ2Outro_State_BoardSub(void)
 {
     RSDK_THIS(OOZ2Outro);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        ControllerInfo->keyStart.press |= TouchInfo->count;
 
     OOZ2Outro_CheckSkip();
 
@@ -195,6 +202,13 @@ void OOZ2Outro_State_BoardSub(void)
 void OOZ2Outro_State_SubActivate(void)
 {
     RSDK_THIS(OOZ2Outro);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        ControllerInfo->keyStart.press |= TouchInfo->count;
 
     OOZ2Outro_CheckSkip();
 

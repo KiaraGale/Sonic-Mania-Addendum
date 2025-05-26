@@ -69,7 +69,11 @@ void Crabmeat_StageLoad(void)
     Crabmeat->hitboxProjectile.right  = 6;
     Crabmeat->hitboxProjectile.bottom = 6;
 
+    Crabmeat->sfxFireball = RSDK.GetSfx("Stage/Fireball.wav");
+
     DEBUGMODE_ADD_OBJ(Crabmeat);
+
+    Zone_SetupHyperAttackList(Crabmeat->classID, true, true, true, true, true, true);
 }
 
 void Crabmeat_DebugDraw(void)
@@ -94,6 +98,7 @@ void Crabmeat_CheckOffScreen(void)
         self->position.y = self->startPos.y;
         self->direction  = self->startDir;
         self->timer      = 0;
+        RSDK.StopSfx(Crabmeat->sfxFireball);
         Crabmeat_Create(NULL);
     }
 }
@@ -175,6 +180,7 @@ void Crabmeat_State_Shoot(void)
                 projectile             = CREATE_ENTITY(Crabmeat, INT_TO_VOID(true), self->position.x + 0x100000, self->position.y);
                 projectile->velocity.x = 0x10000;
                 projectile->velocity.y = -0x40000;
+
                 break;
         }
     }
@@ -206,8 +212,11 @@ void Crabmeat_State_Projectile(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Crabmeat->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Crabmeat->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
 }

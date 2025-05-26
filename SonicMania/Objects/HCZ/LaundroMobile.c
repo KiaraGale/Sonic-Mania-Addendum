@@ -77,7 +77,7 @@ void LaundroMobile_Create(void *data)
                     self->updateRange.x = 0x800000;
                     self->updateRange.y = 0x800000;
 
-                    LaundroMobile->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 + 6 : 5 + 8; // phase1 health + phase 2 health
+                    LaundroMobile->health             = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 + 6 : 5 + 8; // phase1 health + phase 2 health
                     LaundroMobile->invincibilityTimer = 0;
                     LaundroMobile->nextLoopPoint      = 0;
                     LaundroMobile->attackDir          = FLIP_NONE;
@@ -438,10 +438,39 @@ void LaundroMobile_HandleStageWrap(void)
                 camera->position.y -= offsetY;
                 camera->center.x -= offsetX >> 16;
                 camera->center.y -= offsetY >> 16;
-                if (Player->playerCount >= 2) {
+                if (addendumVar->playerCount >= 2) {
                     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+                    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+                    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
+                    EntityCamera *camera2 = RSDK_GET_ENTITY(SLOT_CAMERA2, Camera);
+                    EntityCamera *camera3 = RSDK_GET_ENTITY(SLOT_CAMERA3, Camera);
+                    EntityCamera *camera4 = RSDK_GET_ENTITY(SLOT_CAMERA4, Camera);
                     player2->position.x -= offsetX;
                     player2->position.y -= offsetY;
+                    if (player2->camera) {
+                        camera2->position.x -= offsetX;
+                        camera2->position.y -= offsetY;
+                        camera2->center.x -= offsetX >> 16;
+                        camera2->center.y -= offsetY >> 16;
+                    }
+
+                    player3->position.x -= offsetX;
+                    player3->position.y -= offsetY;
+                    if (player3->camera) {
+                        camera3->position.x -= offsetX;
+                        camera3->position.y -= offsetY;
+                        camera3->center.x -= offsetX >> 16;
+                        camera3->center.y -= offsetY >> 16;
+                    }
+
+                    player4->position.x -= offsetX;
+                    player4->position.y -= offsetY;
+                    if (player4->camera) {
+                        camera4->position.x -= offsetX;
+                        camera4->position.y -= offsetY;
+                        camera4->center.x -= offsetX >> 16;
+                        camera4->center.y -= offsetY >> 16;
+                    }
                 }
 
                 for (int32 i = 0; i < 0x1000; ++i) {
@@ -1283,20 +1312,12 @@ void LaundroMobile_StateOutro_StartCutscene(void)
         if (actClear->classID != ActClear->classID) {
             self->timer = 0;
 
-            EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-            player1->drawGroup    = Zone->playerDrawGroup[0];
-            player1->state        = Player_State_Ground;
-            player1->direction    = FLIP_NONE;
-            player1->stateInput   = StateMachine_None;
-            RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, true, 0);
-
-            EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
-            if (player2->classID == Player->classID) {
-                player2->drawGroup  = Zone->playerDrawGroup[0];
-                player2->state      = Player_State_Ground;
-                player2->direction  = FLIP_NONE;
-                player2->stateInput = StateMachine_None;
-                RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
+            for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                player->drawGroup    = Zone->playerDrawGroup[0];
+                player->state        = Player_State_Static;
+                player->direction    = FLIP_NONE;
+                player->stateInput   = StateMachine_None;
             }
 
             self->state = LaundroMobile_StateOutro_Rumble;
@@ -1311,12 +1332,27 @@ void LaundroMobile_StateOutro_Rumble(void)
 {
     RSDK_THIS(LaundroMobile);
 
-    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    foreach_active(BoundsMarker, boundsMarker)
+    {
+        if (boundsMarker->position.x > 27000)
+            boundsMarker->type = 2;
+    }
 
-    player1->timer = 0;
-    if (player2->classID == Player->classID)
-        player2->timer = 0;
+    foreach_active(EggPrison, eggPrison) eggPrison->notSolid = true;
+
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+        player->timer = 0;
+        switch (player->characterID) {
+        case ID_SONIC:
+        case ID_TAILS:
+        case ID_RAY: RSDK.SetSpriteAnimation(player->aniFrames, ANI_BALANCE_1, &player->animator, false, 0); break;
+
+        case ID_KNUCKLES:
+        case ID_MIGHTY:
+        case ID_AMY: RSDK.SetSpriteAnimation(player->aniFrames, ANI_BALANCE_2, &player->animator, false, 0); break;
+        }
+    }
 
     if (!(Zone->timer & 3)) {
         Camera_ShakeScreen(0, 0, 2);
@@ -1327,33 +1363,32 @@ void LaundroMobile_StateOutro_Rumble(void)
 
     if (++self->timer == 90) {
         self->timer = 0;
-        foreach_active(WaterGush, gush)
-        {
-            if (gush->position.x > self->position.x) {
-                gush->activated = true;
-                gush->inkEffect = INK_ALPHA;
-                gush->alpha     = 256;
-                gush->drawGroup = Zone->playerDrawGroup[0];
+
+        for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+            EntityPlayer* player = RSDK_GET_ENTITY(p, Player);
+            EntityWaterGush *gush = CREATE_ENTITY(WaterGush, INT_TO_VOID(true), player->position.x, player->position.y + 0x50000);
+            gush->active     = true;
+            gush->position.y = player->position.y + 0x50000;
+            gush->activated  = true;
+            gush->inkEffect  = INK_ALPHA;
+            gush->alpha      = 256;
+
+            for (int32 i = 0; i < 8; ++i) {
+                EntityDebris *debris = CREATE_ENTITY(Debris, Debris_State_Fall, player->position.x, player->position.y + 0x1000);
+
+                RSDK.SetSpriteAnimation(WaterGush->aniFrames, 4, &debris->animator, true, 0);
+                debris->position.x += 0x60000 * RSDK.Rand(-8, 8);
+                debris->position.y += 0x60000 * RSDK.Rand(-8, 8);
+                debris->velocity.x      = RSDK.Rand(-8, 8) << 16;
+                debris->velocity.y      = RSDK.Rand(-8, 8) << 16;
+                debris->velocity.x      = RSDK.Rand(-8, 9) << 16;
+                debris->velocity.y      = RSDK.Rand(-8, 5) << 15;
+                debris->direction       = RSDK.Rand(0, 4);
+                debris->drawFX          = FX_FLIP;
+                debris->drawGroup       = Zone->objectDrawGroup[1];
+                debris->gravityStrength = 0x3800;
             }
         }
-
-        for (int32 i = 0; i < 0x20; ++i) {
-            EntityDebris *debris = CREATE_ENTITY(Debris, Debris_State_Fall, 28336 << 16, 2784 << 16);
-
-            RSDK.SetSpriteAnimation(WaterGush->aniFrames, 4, &debris->animator, true, 0);
-            debris->position.x += 0x60000 * RSDK.Rand(-8, 8);
-            debris->position.y += 0x60000 * RSDK.Rand(-8, 8);
-            debris->velocity.x      = RSDK.Rand(-8, 8) << 16;
-            debris->velocity.y      = RSDK.Rand(-8, 8) << 16;
-            debris->velocity.x      = RSDK.Rand(-8, 9) << 15;
-            debris->velocity.y      = RSDK.Rand(-8, 5) << 16;
-            debris->direction       = RSDK.Rand(0, 4);
-            debris->drawFX          = FX_FLIP;
-            debris->drawGroup       = Zone->objectDrawGroup[1];
-            debris->gravityStrength = 0x3800;
-        }
-
-        RSDK.CopyTileLayer(Zone->fgLayer[1], 1763, 172, Zone->fgLayer[1], 1919, 172, 11, 4);
 
         RSDK.PlaySfx(LaundroMobile->sfxImpact, false, 255);
         RSDK.PlaySfx(WaterGush->sfxGush, false, 255);
@@ -1368,45 +1403,33 @@ void LaundroMobile_StateOutro_WaterGush(void)
 
     EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    EntityPlayer *player3 = RSDK_GET_ENTITY(SLOT_PLAYER3, Player);
+    EntityPlayer *player4 = RSDK_GET_ENTITY(SLOT_PLAYER4, Player);
 
     player1->timer = 0;
     if (player2->classID == Player->classID)
         player2->timer = 0;
+    if (player3->classID == Player->classID)
+        player3->timer = 0;
+    if (player4->classID == Player->classID)
+        player4->timer = 0;
+    
+    foreach_active(WaterGush, gush)
+    {
+        gush->position.y -= 0x4000;
+        
+        player1->position.y -= 0x4000 / addendumVar->playerCount;
+        if (player2->classID == Player->classID)
+            player2->position.y -= 0x4000 / addendumVar->playerCount;
+        if (player3->classID == Player->classID)
+            player3->position.y -= 0x4000 / addendumVar->playerCount;
+        if (player4->classID == Player->classID)
+            player4->position.y -= 0x4000 / addendumVar->playerCount;
 
-    if (++self->timer < 75) {
-        foreach_active(WaterGush, gush)
-        {
-            gush->position.y += 0x8000;
-            gush->alpha -= 2;
+        for (int32 p = 0; p < PLAYER_COUNT; ++p) Zone->playerBoundActiveT[p] = false;
 
-            if (gush->position.x > self->position.x) {
-                if (gush->position.x - gush->gushPos < player1->position.x) {
-                    player1->velocity.x = -0x30000;
-                    player1->groundVel  = -0x30000;
-                }
-
-                if (player2->classID == Player->classID && gush->position.x - gush->gushPos < player2->position.x) {
-                    player2->velocity.x = -0x30000;
-                    player2->groundVel  = -0x30000;
-                }
-            }
-        }
-    }
-    else {
-        foreach_active(WaterGush, gush)
-        {
-            gush->position.y += 0x8000;
-            gush->alpha -= 2;
-
-            if (gush->position.x > self->position.x && gush->alpha <= 0) {
-                destroyEntity(gush);
-
-                for (int32 p = 0; p < PLAYER_COUNT; ++p) Zone->playerBoundActiveR[p] = false;
-
-                self->timer = 0;
-                self->state = LaundroMobile_StateOutro_ExitHCZ;
-            }
-        }
+        self->timer = 0;
+        self->state = LaundroMobile_StateOutro_ExitHCZ;
     }
 }
 
@@ -1415,13 +1438,9 @@ void LaundroMobile_StateOutro_ExitHCZ(void)
     RSDK_THIS(LaundroMobile);
 
     if (++self->timer > 120) {
-        RSDK_GET_ENTITY(SLOT_PLAYER2, Player)->right = true;
-
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-        if (player1->classID == Player->classID)
-            player1->right = true;
 
-        if (player1->position.x > (Zone->cameraBoundsR[0] + 64) << 16) {
+        if (player1->position.y < (Zone->cameraBoundsT[0] - 64) << 16) {
             HCZSetup_StageFinish_EndAct2();
             destroyEntity(self);
         }
@@ -1799,13 +1818,16 @@ void LaundroMobile_State_Laundry(void)
     RSDK.ProcessAnimation(&self->propellerAnimator);
     RSDK.ProcessAnimation(&self->eggmanAnimator);
 
-    Zone->playerBoundActiveL[0] = true;
-    Zone->playerBoundActiveR[0] = true;
-    Zone->cameraBoundsL[0]      = ScreenInfo->position.x;
-    Zone->cameraBoundsR[0]      = ScreenInfo->center.x + (self->position.x >> 16);
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        Zone->playerBoundActiveL[p] = true;
+        Zone->playerBoundActiveR[p] = true;
+        Zone->cameraBoundsL[p]      = ScreenInfo->position.x;
+        Zone->cameraBoundsR[p]      = ScreenInfo->center.x + (self->position.x >> 16);
 
-    if (RSDK_GET_ENTITY(SLOT_PLAYER1, Player)->position.x > self->position.x - 0xC00000)
-        Zone->cameraBoundsT[0] = ScreenInfo->position.y;
+        if (player->position.x > self->position.x - 0xC00000)
+            Zone->cameraBoundsT[p] = ScreenInfo->position.y;
+    }
 
     if (!LaundroMobile->health && !LaundroMobile->invincibilityTimer) {
         Debris_CreateFromEntries_UseOffset(LaundroMobile->aniFrames, LaundroMobile->debrisInfo);

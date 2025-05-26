@@ -81,6 +81,8 @@ void TurboSpiker_StageLoad(void)
     TurboSpiker->sfxSplash = RSDK.GetSfx("Stage/Splash.wav");
 
     DEBUGMODE_ADD_OBJ(TurboSpiker);
+
+    Zone_SetupHyperAttackList(TurboSpiker->classID, true, true, true, true, true, true);
 }
 
 void TurboSpiker_DebugDraw(void)

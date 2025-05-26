@@ -65,6 +65,8 @@ void Bloominator_StageLoad(void)
     Bloominator->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
 
     DEBUGMODE_ADD_OBJ(Bloominator);
+
+    Zone_SetupHyperAttackList(Bloominator->classID, true, true, true, true, true, true);
 }
 
 void Bloominator_DebugDraw(void)
@@ -181,8 +183,11 @@ void Bloominator_State_Spikeball(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Bloominator->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Bloominator->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

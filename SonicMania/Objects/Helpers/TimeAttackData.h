@@ -4,7 +4,6 @@
 #include "Game.h"
 
 typedef enum {
-    CHAR_SONIC_AND_TAILS,
     CHAR_SONIC,
     CHAR_TAILS,
     CHAR_KNUX,

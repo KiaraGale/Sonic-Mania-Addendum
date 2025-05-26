@@ -94,7 +94,7 @@ void UICharButton_Create(void *data)
     self->updateRange.x = 0x800000;
     self->updateRange.y = 0x300000;
 
-    self->processButtonCB    = UIButton_ProcessButtonCB_Scroll;
+    self->processButtonCB    = UIButton_ProcessButtonCB_Scroll_UIChar;
     self->touchCB            = UIButton_ProcessTouchCB_Single;
     self->selectedCB         = UICharButton_SelectedCB;
     self->failCB             = StateMachine_None;

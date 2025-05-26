@@ -44,6 +44,7 @@ void PauseMenu_LateUpdate(void)
             self->drawGroup = DRAWGROUP_COUNT - 1;
             RSDK.SetEngineState(ENGINESTATE_FROZEN);
             RSDK.SetSpriteAnimation(UIWidgets->textFrames, 10, &self->animator, true, 3);
+            RSDK.SetSpriteAnimation(PauseMenu->aniFrames, 0, &self->emeraldAnimator, true, 0);
             PauseMenu_PauseSound();
 #if !MANIA_USE_PLUS
             PauseMenu_SetupTintTable();
@@ -109,7 +110,7 @@ void PauseMenu_Draw(void)
     RSDK_THIS(PauseMenu);
 
     if (self->paused)
-        RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer, self->fadeTimer);
+        RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
 
     if (RSDK.GetVideoSetting(VIDEOSETTING_SCREENCOUNT) <= 1) {
         StateMachine_Run(self->stateDraw);
@@ -396,6 +397,7 @@ uint8 PauseMenu_GetPlayerCount(void)
 {
     EntityMenuParam *param            = MenuParam_GetParam();
     EntityCompetitionSession *session = CompetitionSession_GetSession();
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     if (RSDK.CheckSceneFolder("Puyo")) {
         if (param->puyoSelection >= PUYO_SELECTION_VS_2P)
@@ -404,14 +406,18 @@ uint8 PauseMenu_GetPlayerCount(void)
     else if (globals->gameMode == MODE_COMPETITION) {
         return session->playerCount;
     }
+    else if (globals->gameMode == MODE_MANIA && addendumVar->playerCount > 1 && addendumOptions->coopStyle > COOPSTYLE_MANIA)
+        return addendumVar->playerCount;
     return 1;
 }
 
 void PauseMenu_ResumeButtonCB(void)
 {
     EntityPauseMenu *pauseMenu = RSDK_GET_ENTITY(SLOT_PAUSEMENU, PauseMenu);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
-    if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo"))
+    if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo") 
+        || (!(globals->gameMode == MODE_MANIA && Player->playerCount > 1 && addendumOptions->coopStyle > COOPSTYLE_MANIA)))
         pauseMenu->state = PauseMenu_State_Resume;
     else
         pauseMenu->state = PauseMenu_State_ResumeCompetition;
@@ -662,6 +668,7 @@ void PauseMenu_State_StartPauseCompetition(void)
 void PauseMenu_State_Paused(void)
 {
     RSDK_THIS(PauseMenu);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     self->tintAlpha           = 0xFF;
     self->headerPos.x         = 0;
@@ -672,7 +679,8 @@ void PauseMenu_State_Paused(void)
     EntityUIControl *manager = self->manager;
     if (Unknown_pausePress && !manager->dialogHasFocus) {
         EntityPauseMenu *pauseMenu = RSDK_GET_ENTITY(SLOT_PAUSEMENU, PauseMenu);
-        if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo"))
+        if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo") 
+            || (!(globals->gameMode == MODE_MANIA && Player->playerCount > 1 && addendumOptions->coopStyle > COOPSTYLE_MANIA)))
             pauseMenu->state = PauseMenu_State_Resume;
         else
             pauseMenu->state = PauseMenu_State_ResumeCompetition;
@@ -682,6 +690,7 @@ void PauseMenu_State_Paused(void)
 void PauseMenu_State_ForcedPause(void)
 {
     RSDK_THIS(PauseMenu);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
     String textBuffer;
 
     if (self->timer == 1) {
@@ -727,7 +736,8 @@ void PauseMenu_State_ForcedPause(void)
     ++self->timer;
     if (!UIDialog->activeDialog) {
         if (self->forcePaused) {
-            if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo")) {
+            if (globals->gameMode != MODE_COMPETITION || RSDK.CheckSceneFolder("Puyo") 
+                || (!(globals->gameMode == MODE_MANIA && Player->playerCount > 1 && addendumOptions->coopStyle > COOPSTYLE_MANIA))) {
                 RSDK.SetEngineState(ENGINESTATE_REGULAR);
                 PauseMenu_ClearButtons(RSDK_GET_ENTITY(SLOT_PAUSEMENU, PauseMenu));
                 PauseMenu_ResumeSound();
@@ -941,6 +951,7 @@ void PauseMenu_State_HandleFadeout(void)
 void PauseMenu_DrawPauseMenu(void)
 {
     RSDK_THIS(PauseMenu);
+    SaveRAM* saveRAM = SaveGame_GetSaveRAM();
 
     Vector2 drawPos;
     drawPos.x = self->position.x + TO_FIXED(100) + self->headerPos.x + -TO_FIXED(1) * ScreenInfo->center.x;
@@ -953,6 +964,14 @@ void PauseMenu_DrawPauseMenu(void)
 
     // "PAUSED" text
     RSDK.DrawSprite(&self->animator, &drawPos, false);
+
+    drawPos.x = self->position.x;
+    drawPos.y = TO_FIXED(15);
+    for (int32 e = 0; e < 7; ++e) {
+        self->emeraldAnimator.frameID = ((1 << e) & saveRAM->collectedEmeralds) ? e : 7;
+        drawPos.x += 0xC0000;
+    }
+    RSDK.DrawSprite(&self->emeraldAnimator, &drawPos, false);
 
     UIWidgets_DrawRightTriangle(self->yellowTrianglePos.x + TO_FIXED(ScreenInfo->center.x) + self->position.x,
                                 self->yellowTrianglePos.y + TO_FIXED(ScreenInfo->center.y) + self->position.y, -232, 0xF0, 0xD8, 0x08);

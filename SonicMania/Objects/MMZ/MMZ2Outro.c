@@ -51,6 +51,7 @@ void MMZ2Outro_StartCutscene(void)
 #endif
 
     RSDK.CopyPalette(0, 1, 1, 1, 0xFF);
+    RSDK.CopyPalette(0, 1, 4, 1, 0xFF);
 
     for (int32 i = 128; i < 256; ++i) RSDK.SetPaletteEntry(2, i, 0x000000);
     for (int32 i = 0; i < 256; ++i) RSDK.SetPaletteEntry(5, i, 0xFFFFFF);

@@ -81,15 +81,48 @@ void ERZOutro_StageLoad(void)
 void ERZOutro_SetEmeraldStates(void)
 {
     EntityPhantomRuby *ruby = ERZOutro->ruby;
-
-    if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
-        for (int32 e = 0; e < 14; ++e) {
-            EntityChaosEmerald *emerald = ERZStart->emeralds[e];
-            emerald->originPos.x        = ruby->startPos.x;
-            emerald->originPos.y        = ruby->startPos.y;
-            emerald->radius += 0x400;
-            emerald->state   = ChaosEmerald_State_Rotate;
-            emerald->visible = true;
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedSuperEmeralds == 0b01111111) {
+            for (int32 e = 0; e < 16; ++e) {
+                EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                emerald->originPos.x        = ruby->startPos.x;
+                emerald->originPos.y        = ruby->startPos.y;
+                emerald->radius += 0x400;
+                emerald->state   = ChaosEmerald_State_Rotate;
+                emerald->visible = true;
+            }
+        }
+        else {
+            for (int32 e = 0; e < 7; ++e) {
+                EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                emerald->originPos.x        = ruby->startPos.x;
+                emerald->originPos.y        = ruby->startPos.y;
+                emerald->radius += 0x400;
+                emerald->state   = ChaosEmerald_State_Rotate;
+                emerald->visible = true;
+            }
+        }
+    }
+    else if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
+            for (int32 e = 0; e < 14; ++e) {
+                EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                emerald->originPos.x        = ruby->startPos.x;
+                emerald->originPos.y        = ruby->startPos.y;
+                emerald->radius += 0x400;
+                emerald->state   = ChaosEmerald_State_Rotate;
+                emerald->visible = true;
+            }
+        }
+        else {
+            for (int32 e = 0; e < 7; ++e) {
+                EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                emerald->originPos.x        = ruby->startPos.x;
+                emerald->originPos.y        = ruby->startPos.y;
+                emerald->radius += 0x400;
+                emerald->state   = ChaosEmerald_State_Rotate;
+                emerald->visible = true;
+            }
         }
     }
     else {
@@ -137,6 +170,8 @@ bool32 ERZOutro_Cutscene_AttackEggman(EntityCutsceneSeq *host)
         eggman->state     = StateMachine_None;
         if (player1->characterID == ID_KNUCKLES)
             RSDK.SetSpriteAnimation(player1->aniFrames, ANI_GLIDE, &player1->animator, false, 6);
+        else if (player1->characterID == ID_MIGHTY)
+            RSDK.SetSpriteAnimation(player1->aniFrames, 57, &player1->animator, false, 1);
         else
             RSDK.SetSpriteAnimation(player1->aniFrames, ANI_RUN, &player1->animator, false, 0);
 
@@ -172,6 +207,8 @@ bool32 ERZOutro_Cutscene_AttackEggman(EntityCutsceneSeq *host)
     else if (host->timer < 120) {
         if (player1->characterID == ID_KNUCKLES)
             RSDK.SetSpriteAnimation(player1->aniFrames, ANI_GLIDE, &player1->animator, false, 6);
+        else if (player1->characterID == ID_MIGHTY)
+            RSDK.SetSpriteAnimation(player1->aniFrames, 57, &player1->animator, false, 1);
         else
             RSDK.SetSpriteAnimation(player1->aniFrames, ANI_RUN, &player1->animator, false, 0);
 
@@ -229,8 +266,10 @@ bool32 ERZOutro_Cutscene_AttackEggman(EntityCutsceneSeq *host)
 
 bool32 ERZOutro_Cutscene_AttackRecoil(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
 
     EntityKleptoMobile *eggman = ERZOutro->eggman;
     EntityFXRuby *fxRuby       = ERZOutro->fxRuby;
@@ -275,6 +314,13 @@ bool32 ERZOutro_Cutscene_AttackRecoil(EntityCutsceneSeq *host)
             ruby->visible  = true;
             ruby->startPos = eggman->rubyPos;
             ruby->position = eggman->rubyPos;
+
+            if (PhantomKing->successfulAttacks == 0) {
+                if (!PhantomKing->hasPerfectAchievement) {
+                    API_UnlockAchievement(&achievementList[ACH_ERZ]);
+                    PhantomKing->hasPerfectAchievement = true;
+                }
+            }
         }
     }
     else {
@@ -315,18 +361,64 @@ bool32 ERZOutro_Cutscene_LoseEmeralds(EntityCutsceneSeq *host)
 
     if (!host->timer) {
         int32 angle = 0;
-        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
-            for (int32 e = 0; e < 14; ++e) {
-                EntityChaosEmerald *emerald = ERZStart->emeralds[e];
-                emerald->angle              = angle;
-                emerald->radius             = 0;
-                emerald->scale.x            = 0x200;
-                emerald->scale.y            = 0x200;
-                emerald->groundVel          = 0x200;
-                emerald->state              = ChaosEmerald_State_Rotate;
-                emerald->visible            = true;
+        if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedSuperEmeralds == 0b01111111) {
+                for (int32 i = 0; i < 16; ++i) {
+                    EntityChaosEmerald *emerald = ERZStart->emeralds[i];
+                    emerald->angle              = angle;
+                    emerald->radius             = 0x1000;
+                    emerald->scale.x            = 0x200;
+                    emerald->scale.y            = 0x200;
+					emerald->groundVel          = 0x343;
+                    emerald->state              = ChaosEmerald_State_Rotate;
+                    emerald->visible            = true;
 
-                angle += 0x1249;
+                    angle += 0x1000;
+                }
+            }
+            else {
+                for (int32 e = 0; e < 7; ++e) {
+                    EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                    emerald->angle              = angle;
+                    emerald->radius             = 0;
+                    emerald->scale.x            = 0x200;
+                    emerald->scale.y            = 0x200;
+                    emerald->groundVel          = 0x200;
+                    emerald->state              = ChaosEmerald_State_Rotate;
+                    emerald->visible            = true;
+
+                    angle += 0x2492;
+                }
+            }
+        }
+        else if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111) {
+                for (int32 e = 0; e < 14; ++e) {
+                    EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                    emerald->angle              = angle;
+                    emerald->radius             = 0;
+                    emerald->scale.x            = 0x200;
+                    emerald->scale.y            = 0x200;
+                    emerald->groundVel          = 0x200;
+                    emerald->state              = ChaosEmerald_State_Rotate;
+                    emerald->visible            = true;
+
+                    angle += 0x1249;
+                }
+            }
+            else {
+                for (int32 e = 0; e < 7; ++e) {
+                    EntityChaosEmerald *emerald = ERZStart->emeralds[e];
+                    emerald->angle              = angle;
+                    emerald->radius             = 0;
+                    emerald->scale.x            = 0x200;
+                    emerald->scale.y            = 0x200;
+                    emerald->groundVel          = 0x200;
+                    emerald->state              = ChaosEmerald_State_Rotate;
+                    emerald->visible            = true;
+
+                    angle += 0x2492;
+                }
             }
         }
         else {
@@ -346,22 +438,55 @@ bool32 ERZOutro_Cutscene_LoseEmeralds(EntityCutsceneSeq *host)
     }
 
     if (host->timer >= 30) {
-        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
-            for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->radius = 0x2A00;
-        else
+        if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedSuperEmeralds == 0b01111111)
+                for (int32 e = 0; e < 16; ++e) ERZStart->emeralds[e]->radius = 0x2A00;
+            else
+                for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = 0x2000;
+        }
+        else if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
+                for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->radius = 0x2A00;
+            else
+                for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = 0x2000;
+        }
+        else {
             for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = 0x2000;
+        }
     }
     else {
-        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
-            for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 22;
-        else
+        if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedSuperEmeralds == 0b01111111)
+                for (int32 e = 0; e < 16; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 22;
+            else
+                for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 30;
+        }
+        else if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+            if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
+                for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 22;
+            else
+                for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 30;
+        }
+        else {
             for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->radius = (host->timer << 13) / 30;
+        }
     }
 
-    if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
-        for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
-    else
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedSuperEmeralds == 0b01111111)
+            for (int32 e = 0; e < 16; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
+        else
+            for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
+    }
+    else if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE) {
+        if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
+            for (int32 e = 0; e < 14; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
+        else
+            for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
+    }
+    else {
         for (int32 e = 0; e < 7; ++e) ERZStart->emeralds[e]->originPos = ruby->startPos;
+    }
 
     return host->timer == 90;
 }

@@ -97,21 +97,17 @@ void Acetone_CheckPlayerCollisions(void)
     {
         if (Player_CheckCollisionTouch(player, self, &self->hitbox)) {
             switch (player->characterID) {
-                // This actually wont work on sonic specifically, it uses the "old" sonic palette
-                // This palette starts at index 2, instead of index 64 like usual
-                // To fix this up to work as "intended", simply replace the "PLAYER_PALETTE_INDEX_SONIC_OLD"s with "PLAYER_PALETTE_INDEX_SONIC"
-                case ID_SONIC: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_SONIC_OLD, 0, PLAYER_PALETTE_INDEX_SONIC_OLD, 6); break;
+                case ID_SONIC: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_SONIC, 0, PLAYER_PALETTE_INDEX_SONIC_OLD, 6); break;
 
                 case ID_TAILS: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_TAILS, 0, PLAYER_PALETTE_INDEX_TAILS, PLAYER_PRIMARY_COLOR_COUNT); break;
 
-                case ID_KNUCKLES:
-                    RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_KNUX, 0, PLAYER_PALETTE_INDEX_KNUX, PLAYER_PRIMARY_COLOR_COUNT);
-                    break;
+                case ID_KNUCKLES: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_KNUX, 0, PLAYER_PALETTE_INDEX_KNUX, PLAYER_PRIMARY_COLOR_COUNT); break;
 
-                    // This is an unused object that was scrapped before plus was created, so there's no mighty/ray code
-                    // I've created a mock-up of what mighty/ray code could've looked like, had it been implemented:
-                    // case ID_MIGHTY: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_MIGHTY, 0, PLAYER_PALETTE_INDEX_MIGHTY, PLAYER_PRIMARY_COLOR_COUNT); break;
-                    // case ID_RAY: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_RAY, 0, PLAYER_PALETTE_INDEX_RAY, PLAYER_PRIMARY_COLOR_COUNT); break;
+                case ID_MIGHTY: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_MIGHTY, 0, PLAYER_PALETTE_INDEX_MIGHTY, PLAYER_PRIMARY_COLOR_COUNT); break;
+                
+                case ID_RAY: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_RAY, 0, PLAYER_PALETTE_INDEX_RAY, PLAYER_PRIMARY_COLOR_COUNT); break;
+
+                case ID_AMY: RSDK.CopyPalette(6, PLAYER_PALETTE_INDEX_AMY, 0, PLAYER_PALETTE_INDEX_AMY, PLAYER_PRIMARY_COLOR_COUNT); break;
             }
 
             Ink->playerColors[RSDK.GetEntitySlot(player)] = 0;

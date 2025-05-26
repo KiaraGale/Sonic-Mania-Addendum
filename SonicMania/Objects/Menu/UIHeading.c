@@ -66,6 +66,7 @@ void UIHeading_LoadSprites(void)
         case LANGUAGE_KO: UIHeading->textFrames = RSDK.LoadSpriteAnimation("UI/HeadingsKO.bin", SCOPE_STAGE); break;
         case LANGUAGE_SC: UIHeading->textFrames = RSDK.LoadSpriteAnimation("UI/HeadingsSC.bin", SCOPE_STAGE); break;
         case LANGUAGE_TC: UIHeading->textFrames = RSDK.LoadSpriteAnimation("UI/HeadingsTC.bin", SCOPE_STAGE); break;
+        case LANGUAGE_EUS: UIHeading->textFrames = RSDK.LoadSpriteAnimation("UI/HeadingsEUS.bin", SCOPE_STAGE); break;
 #endif
 
         default: break;
@@ -107,6 +108,7 @@ void UIHeading_EditorLoad(void)
     RSDK_ENUM_VAR("Zone Select", UIHEADING_ZONESEL);
     RSDK_ENUM_VAR("Replays", UIHEADING_REPLAYS);
     RSDK_ENUM_VAR("Encore Mode", UIHEADING_ENCOREMODE);
+    RSDK_ENUM_VAR("Addendum Options", UIHEADING_ADDENDUM);
 }
 #endif
 

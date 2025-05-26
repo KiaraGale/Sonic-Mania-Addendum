@@ -67,8 +67,8 @@ void WalkerLegs_StageLoad(void)
 
     WalkerLegs->hitbox.left   = -26;
     WalkerLegs->hitbox.right  = 27;
-    WalkerLegs->hitbox.top    = -40;
-    WalkerLegs->hitbox.bottom = -32;
+    WalkerLegs->hitbox.top    = -39;
+    WalkerLegs->hitbox.bottom = -31;
 
     WalkerLegs->sfxWalkerLegs  = RSDK.GetSfx("LRZ/WalkerLegs.wav");
     WalkerLegs->sfxWalkerLegs2 = RSDK.GetSfx("LRZ/WalkerLegs2.wav");

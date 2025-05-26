@@ -8,12 +8,10 @@
 struct ObjectCompetitionMenu {
     RSDK_OBJECT
     EntityUIControl *competitionControl;
-    EntityUIControl *competitionControl_Legacy;
     EntityUIControl *compRulesControl;
     EntityUIControl *compZoneControl;
     int32 unused;
     EntityUIButtonPrompt *startCompPrompt;
-    EntityUIButtonPrompt *startCompPrompt_Legacy;
     EntityUIControl *compRoundControl;
     EntityUIInfoLabel *resultsLabel_Round;
     EntityUIControl *compTotalControl;

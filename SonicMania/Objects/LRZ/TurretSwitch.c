@@ -71,6 +71,8 @@ void TurretSwitch_StageLoad(void)
     TurretSwitch->hitboxProjectile.bottom = 3;
 
     TurretSwitch->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
+
+    Zone_SetupHyperAttackList(TurretSwitch->classID, true, true, true, true, true, true);
 }
 
 void TurretSwitch_CheckPlayerCollisions(void)
@@ -180,8 +182,11 @@ void TurretSwitch_State_Projectile(void)
 
             foreach_active(Shield, shield)
             {
-                if (Shield_CheckCollisionTouch(shield, self, &TurretSwitch->hitboxProjectile))
-                    Shield_State_Reflect(shield, self);
+                foreach_active(Player, player)
+                {
+                    if (Shield_CheckCollisionTouch(shield, self, &TurretSwitch->hitboxProjectile))
+                        Shield_State_Reflect(player, shield, self);
+                }
             }
         }
     }

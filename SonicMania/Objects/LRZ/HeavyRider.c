@@ -14,6 +14,9 @@ void HeavyRider_Update(void)
     RSDK_THIS(HeavyRider);
 
     StateMachine_Run(self->state);
+
+    RSDK.SetPaletteEntry(0, 214, 0xB0D8D8);
+    RSDK.SetPaletteEntry(0, 215, 0xC8E8E0);
 }
 
 void HeavyRider_LateUpdate(void) {}
@@ -187,7 +190,7 @@ void HeavyRider_StageLoad(void)
     HeavyRider->hitboxFireball.right  = 14;
     HeavyRider->hitboxFireball.bottom = 46;
 
-    HeavyRider->health             = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+    HeavyRider->health             = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
     HeavyRider->invincibilityTimer = 0;
 
     HeavyRider->sfxHit       = RSDK.GetSfx("Stage/BossHit.wav");

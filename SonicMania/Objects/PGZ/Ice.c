@@ -452,6 +452,8 @@ void Ice_FreezePlayer(EntityPlayer *player)
         player->spindashCharge = 0;
 
         RSDK.PlaySfx(Ice->sfxFreeze, false, 255);
+
+        PSZ2Setup->beenFrozen = true;
     }
 }
 

@@ -58,6 +58,7 @@ struct EntityActClear {
     Animator actNumAnimator;
 #if MANIA_USE_PLUS
     Animator timeElementsAnimator;
+    int32 storedScore;
 #endif
 };
 

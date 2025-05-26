@@ -62,6 +62,8 @@ void PohBee_StageLoad(void)
     PohBee->hitbox.bottom = 16;
 
     DEBUGMODE_ADD_OBJ(PohBee);
+
+    Zone_SetupHyperAttackList(PohBee->classID, true, true, true, true, true, true);
 }
 
 void PohBee_DebugSpawn(void)

@@ -24,9 +24,12 @@ void ChaosEmerald_Draw(void)
 {
     RSDK_THIS(ChaosEmerald);
 
-    for (int32 c = 0; c < 96; ++c) {
-        ChaosEmerald->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
-        RSDK.SetPaletteEntry(0, c + 128, ChaosEmerald->powerColors[c]);
+    for (int32 c = 0; c < 96; ++c)
+        ChaosEmerald->colorStorage[c] = RSDK.GetPaletteEntry(0, 128 + c);
+
+    for (int32 c = 0; c < 36; ++c) {
+        RSDK.SetPaletteEntry(0, 128 + c, ChaosEmerald->powerColors[c + (Addendum_GetOptionsRAM()->emeraldPalette * 36)]);
+        RSDK.SetPaletteEntry(0, 176 + c, ChaosEmerald->powerColors[72 + c]);
     }
 
     RSDK.DrawSprite(&self->animator, NULL, false);
@@ -48,16 +51,15 @@ void ChaosEmerald_Create(void *data)
     self->updateRange.x = 0x800000;
     self->updateRange.y = 0x800000;
     self->state         = ChaosEmerald_State_None;
-    RSDK.SetSpriteAnimation(ChaosEmerald->aniFrames, 0, &self->animator, true, self->type);
+    if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+        RSDK.SetSpriteAnimation(ChaosEmerald->aniFrames, 1, &self->animator, true, self->type);
+    }
+    else {
+        RSDK.SetSpriteAnimation(ChaosEmerald->aniFrames, 0, &self->animator, true, self->type);
+    }
 }
 
-void ChaosEmerald_StageLoad(void)
-{
-    if (SaveGame_GetSaveRAM()->collectedEmeralds == 0b01111111 && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111)
-        ChaosEmerald->aniFrames = RSDK.LoadSpriteAnimation("Cutscene/Power.bin", SCOPE_STAGE);
-    else
-        ChaosEmerald->aniFrames = RSDK.LoadSpriteAnimation("Cutscene/Emeralds.bin", SCOPE_STAGE);
-}
+void ChaosEmerald_StageLoad(void) { ChaosEmerald->aniFrames = RSDK.LoadSpriteAnimation("Cutscene/Emeralds.bin", SCOPE_STAGE); }
 
 void ChaosEmerald_State_None(void)
 {

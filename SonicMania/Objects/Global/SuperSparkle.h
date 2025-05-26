@@ -13,9 +13,12 @@ struct ObjectSuperSparkle {
 // Entity Class
 struct EntitySuperSparkle {
     RSDK_ENTITY
+    StateMachine(state);
     EntityPlayer *player;
     int32 timer;
     bool32 canSpawnSparkle;
+    Animator sparkleAnimator;
+    Animator sparkleAddAnimator;
 };
 
 // Object Struct
@@ -35,5 +38,7 @@ void SuperSparkle_EditorLoad(void);
 void SuperSparkle_Serialize(void);
 
 // Extra Entity Functions
+void SuperSparkle_State_PlayerSuper(void);
+void SuperSparkle_State_PlayerHyper(void);
 
 #endif //! OBJ_SUPERSPARKLE_H

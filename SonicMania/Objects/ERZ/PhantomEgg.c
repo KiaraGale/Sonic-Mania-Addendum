@@ -56,7 +56,7 @@ void PhantomEgg_Create(void *data)
 
             self->drawFX = FX_FLIP;
             self->active = ACTIVE_NORMAL;
-            self->health = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 12 : 16;
+            self->health = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 12 : 1;
 
             RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 0, &self->coreAnimator, true, 0);
             RSDK.SetSpriteAnimation(PhantomEgg->aniFrames, 17, &self->eggmanAnimator, true, 0);
@@ -105,6 +105,7 @@ void PhantomEgg_StageLoad(void)
     PhantomEgg->sfxShock      = RSDK.GetSfx("TMZ3/Shock.wav");
     PhantomEgg->sfxSummon     = RSDK.GetSfx("TMZ3/Summon.wav");
     PhantomEgg->sfxMissile    = RSDK.GetSfx("TMZ3/Missile.wav");
+    PhantomEgg->sfxFlasherZap    = RSDK.GetSfx("TMZ1/FlasherZap.wav");
 }
 
 void PhantomEgg_HandleAnimations(void)
@@ -243,6 +244,7 @@ void PhantomEgg_HandleNextAttack(void)
         case PHANTOMEGG_ATTACK_SHOCK:
             self->timer = 0;
             self->state = PhantomEgg_State_Attack_CableShock;
+            RSDK.PlaySfx(PhantomEgg->sfxFlasherZap, false, 255);
             self->attackTimer++;
             break;
 
@@ -556,6 +558,7 @@ void PhantomEgg_State_DimArena(void)
     if (self->timer) {
         self->timer += 4;
         RSDK.SetLimitedFade(0, 1, 2, self->timer, 128, 256);
+        TMZ3Setup->lightsPaletteRotation = false;
 
         if (self->timer >= 384) {
             self->timer     = 0;
@@ -669,6 +672,7 @@ void PhantomEgg_State_IntroHover(void)
         self->state = PhantomEgg_State_BeginFight;
 
         RSDK.CopyPalette(1, 128, 0, 128, 128);
+        TMZ3Setup->lightsPaletteRotation = true;
     }
 }
 
@@ -840,8 +844,10 @@ void PhantomEgg_State_Attack_CableShock(void)
 
     PhantomEgg_HandleAnimations();
 
-    if (self->timer < 160 && !(self->timer & 0xF))
-        RSDK.PlaySfx(PhantomEgg->sfxShock, false, 255);
+    if (self->timer >= 60) {
+        if (self->timer < 160 && !(self->timer & 0xF))
+            RSDK.PlaySfx(PhantomEgg->sfxShock, false, 255);
+    }
 
     if (++self->timer == 30) {
         foreach_active(TMZCable, cable)
@@ -1071,6 +1077,7 @@ void PhantomEgg_State_Destroyed(void)
 void PhantomEgg_State_Exploding(void)
 {
     RSDK_THIS(PhantomEgg);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     self->targetPos.x += ((PhantomEgg->boundsM - self->targetPos.x) >> 5);
     self->targetPos.y += ((PhantomEgg->boundsB - self->targetPos.y - 0x400000) >> 5);
@@ -1087,6 +1094,12 @@ void PhantomEgg_State_Exploding(void)
 
         bool32 goodEnd = (CHECK_CHARACTER_ID(ID_SONIC, 1) || (CHECK_CHARACTER_ID(ID_KNUCKLES, 1) && CHECK_CHARACTER_ID(ID_KNUCKLES, 2)))
                          && SaveGame_AllChaosEmeralds();
+
+        // prevents a hardlock in ERZ to where Sonic would be unable to transform and die while having the emeralds converted but not all Super Emeralds obtained
+        if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            if (Addendum_GetSaveRAM()->emeraldsTransferred && Addendum_GetSaveRAM()->collectedSuperEmeralds != 0b01111111)
+                goodEnd = false;
+        }
 
 #if MANIA_USE_PLUS
         if (SceneInfo->filter & FILTER_ENCORE)
@@ -1187,24 +1200,46 @@ void PhantomEgg_State_StartGoodEnd(void)
     RSDK_THIS(PhantomEgg);
     SaveRAM *saveRAM           = SaveGame_GetSaveRAM();
     AddendumData *addendumData = Addendum_GetSaveRAM();
-    EntityPlayer *player1      = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
-    globals->restartShield   = 0;
-    globals->restartShieldP2 = 0;
+    for (int32 p = 0; p < 4; ++p)
+        globals->restartShield[p] = 0;
 
-    if (self->timer < 256 && !(Zone->timer % 3)) {
+    if (self->timer < 280 && !(Zone->timer % 3)) {
         RSDK.PlaySfx(PhantomEgg->sfxExplosion2, false, 255);
+    }
 
-        if (Zone->timer & 8) {
-            int32 x = self->position.x + RSDK.Rand(-0x800000, 0x800000);
-            int32 y = self->position.y + (RSDK.Rand(self->hitbox.top, self->hitbox.bottom + 64) << 16);
-            CREATE_ENTITY(Explosion, INT_TO_VOID((RSDK.Rand(0, 256) > 192) + EXPLOSION_BOSS), x, y)->drawGroup = Zone->objectDrawGroup[1];
-        }
+    if (Zone->timer & 6 && !(Zone->timer % 3)) {
+        int32 x = self->position.x + RSDK.Rand(-0xC00000, 0xC00000);
+        int32 y = self->position.y + (RSDK.Rand(self->hitbox.top, self->hitbox.bottom + 96) << 16);
+        CREATE_ENTITY(Explosion, INT_TO_VOID((RSDK.Rand(0, 256) > 192) + EXPLOSION_BOSS), x, y)->drawGroup = Zone->objectDrawGroup[0];
     }
 
     if (++self->timer == 120) {
         CREATE_ENTITY(FXRuby, NULL, self->position.x, self->position.y + 0x100000)->radiusSpeed = 3;
         PhantomRuby_PlaySfx(RUBYSFX_REDCUBE);
+        Camera_ShakeScreen(0, 4, 4);
+        player1->drawGroup = Zone->playerDrawGroup[1] + 1;
+        player1->state = Player_State_Static;
+        RSDK.SetSpriteAnimation(player1->aniFrames, ANI_SKID, &player1->animator, true, 0);
+
+        if (player2->classID == Player->classID) {
+            player2->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player2->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, true, 0);
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player3->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_SKID, &player3->animator, true, 0);
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player4->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_SKID, &player4->animator, true, 0);
+        }
     }
 
     if (self->timer == 320) {

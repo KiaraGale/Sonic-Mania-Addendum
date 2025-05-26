@@ -84,6 +84,8 @@ void Orbinaut_StageLoad(void)
     Orbinaut->hitboxOrb.bottom = 4;
 
     DEBUGMODE_ADD_OBJ(Orbinaut);
+
+    Zone_SetupHyperAttackList(Orbinaut->classID, true, true, true, true, true, true);
 }
 
 void Orbinaut_DebugSpawn(void)

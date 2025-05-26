@@ -248,8 +248,8 @@ void MegaOctus_StageLoad(void)
     MegaOctus->hitbox.bottom = 30;
 
     MegaOctus->spawnHarpoon = false;
-    MegaOctus->orbHealth[0] = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
-    MegaOctus->orbHealth[1] = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
+    MegaOctus->orbHealth[0] = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
+    MegaOctus->orbHealth[1] = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 3 : 4;
     MegaOctus->defeated     = false;
 
     MegaOctus->sfxBossHit     = RSDK.GetSfx("Stage/BossHit.wav");
@@ -460,7 +460,7 @@ void MegaOctus_State_SetupArena(void)
 
         OOZSetup->useSmogEffect = false;
         self->velocity.y        = -0x40000;
-        self->health            = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+        self->health            = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
         self->timer             = 60;
 
         EntityMegaOctus *arm = CREATE_ENTITY(MegaOctus, INT_TO_VOID(MEGAOCTUS_ARM), self->position.x + 0x800000, self->origin.y + 0x400000);
@@ -876,7 +876,7 @@ void MegaOctus_StateCannon_RiseUp(void)
 
     self->direction = RSDK_GET_ENTITY(SLOT_PLAYER1, Player)->position.x >= self->position.x;
     if (self->position.y <= self->targetPos) {
-        self->shotCount        = MANIA_USE_PLUS ? 2 : 3;
+        self->shotCount        = 3;
         self->timer            = 128;
         self->lastAttackHeight = 0x100;
         self->state            = MegaOctus_StateCannon_Idle;
@@ -1512,8 +1512,11 @@ void MegaOctus_State_Shot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
 }

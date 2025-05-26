@@ -26,34 +26,32 @@ void Zone_LateUpdate(void)
         StateMachine_Run(self->state);
 
         // Handle Time Overs
-        if (SceneInfo->minutes == 10
-#if MANIA_USE_PLUS
-            && !(globals->medalMods & MEDAL_NOTIMEOVER)
-#endif
-        ) {
-            SceneInfo->minutes      = 9;
-            SceneInfo->seconds      = 59;
-            SceneInfo->milliseconds = 99;
-            SceneInfo->timeEnabled  = false;
-            RSDK.PlaySfx(Player->sfxHurt, false, 0xFF);
+        if (!ERZStart) {
+            if (SceneInfo->minutes == 10 && Addendum_GetOptionsRAM()->timeLimit == TIMELIMIT_ON) {
+                SceneInfo->minutes      = 9;
+                SceneInfo->seconds      = 59;
+                SceneInfo->milliseconds = 99;
+                SceneInfo->timeEnabled  = false;
+                RSDK.PlaySfx(Player->sfxHurt, false, 0xFF);
 
-#if MANIA_USE_PLUS
-            EntityCompetitionSession *session = CompetitionSession_GetSession();
-#endif
+    #if MANIA_USE_PLUS
+                EntityCompetitionSession *session = CompetitionSession_GetSession();
+    #endif
 
-            foreach_active(Player, player)
-            {
-                bool32 canDie = true;
-#if MANIA_USE_PLUS
-                if (globals->gameMode == MODE_COMPETITION && (session->finishState[player->playerID]) == FINISHTYPE_PASSEDSIGNPOST)
-                    canDie = false;
-#endif
-                if (!player->sidekick && canDie)
-                    player->deathType = PLAYER_DEATH_DIE_USESFX;
+                foreach_active(Player, player)
+                {
+                    bool32 canDie = true;
+    #if MANIA_USE_PLUS
+                    if (globals->gameMode == MODE_COMPETITION && (session->finishState[player->playerID]) == FINISHTYPE_PASSEDSIGNPOST)
+                        canDie = false;
+    #endif
+                    if (!player->sidekick && canDie)
+                        player->deathType = PLAYER_DEATH_DIE_USESFX;
+                }
+
+                Zone->gotTimeOver = true;
+                StateMachine_Run(Zone->timeOverCallback);
             }
-
-            Zone->gotTimeOver = true;
-            StateMachine_Run(Zone->timeOverCallback);
         }
 
 #if MANIA_USE_PLUS
@@ -71,6 +69,13 @@ void Zone_LateUpdate(void)
                 EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
                 RSDK.SwapDrawListEntries(player->drawGroup, SLOT_PLAYER1, SLOT_PLAYER2, Player->playerCount);
             }
+        }
+    }
+
+    if (!Zone->hasShieldsAchievement) {
+        if (Zone->shieldTypeCollected == 0b1111) {
+            API_UnlockAchievement(&achievementList[ACH_FOURSHIELDS]);
+            Zone->hasShieldsAchievement = true;
         }
     }
 }
@@ -137,6 +142,8 @@ void Zone_Create(void *data)
 void Zone_StageLoad(void)
 {
 #if MANIA_USE_PLUS
+    AddendumData* addendumData = Addendum_GetSaveRAM();
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
     // Set the random seed to a "random" value
     Zone->randSeed = (uint32)time(NULL);
 
@@ -275,6 +282,17 @@ void Zone_StageLoad(void)
             RSDK.SetVideoSetting(VIDEOSETTING_SCREENCOUNT, session->playerCount);
         }
     }
+    else if (addendumOptions->coopStyle > COOPSTYLE_MANIA && addendumVar->playerCount > 1 && globals->gameMode == MODE_MANIA) {
+        Competition_ResetOptions();
+        if (addendumVar->playerCount == 2)
+            RSDK.SetScreenVertices(6, 12, 0, 0, 0);
+        else if (addendumVar->playerCount == 3)
+            RSDK.SetScreenVertices(0, 0, 6, 42, 48);
+        else
+            RSDK.SetScreenVertices(0, 0, 0, 0, 0);
+
+        RSDK.SetVideoSetting(VIDEOSETTING_SCREENCOUNT, addendumVar->playerCount);
+    }
     else {
 #if MANIA_USE_PLUS
         Competition_ResetOptions();
@@ -316,6 +334,13 @@ void Zone_StageLoad(void)
     }
 
     Zone->sfxFail = RSDK.GetSfx("Stage/Fail.wav");
+
+    // clear the hyper attack target list
+    for (int32 i = 0; i < 0x80; ++i) {
+        Zone->hyperAttackList[i].classID = 0;
+    }
+
+    Zone->shieldTypeCollected = 0b0000;
 }
 
 int32 Zone_GetZoneID(void)
@@ -324,7 +349,7 @@ int32 Zone_GetZoneID(void)
         return ZONE_GHZ;
     if (RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE"))
         return ZONE_CPZ;
-    if (RSDK.CheckSceneFolder("SPZ1") || RSDK.CheckSceneFolder("SPZ2"))
+    if (RSDK.CheckSceneFolder("SPZ1") || RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         return ZONE_SPZ;
     if (RSDK.CheckSceneFolder("FBZ"))
         return ZONE_FBZ;
@@ -394,7 +419,11 @@ void Zone_StoreEntities(int32 xOffset, int32 yOffset)
     EntityPlayer *player1    = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
     globals->restartLives[0] = player1->lives;
     globals->restartScore    = player1->score;
-    globals->restartShield   = player1->shield;
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        globals->restartShield[p] = player->shield;
+        globals->restartHyperRing[p] = player->hyperRing;
+    }
     globals->atlEntityCount  = count;
     globals->atlEnabled      = true;
 }
@@ -417,6 +446,7 @@ void Zone_ReloadStoredEntities(int32 xOffset, int32 yOffset, bool32 setATLBounds
             EntityPlayer *storedPlayer = (EntityPlayer *)storedEntity;
             EntityPlayer *player       = (EntityPlayer *)entity;
             player->shield             = storedPlayer->shield;
+            player->hyperRing          = storedPlayer->hyperRing;
 
             if (player->shield && player->superState != SUPERSTATE_SUPER && player->invincibleTimer <= 0) {
                 EntityShield *shield = RSDK_GET_ENTITY(Player->playerCount + RSDK.GetEntitySlot(player), Shield);
@@ -437,24 +467,25 @@ void Zone_ReloadStoredEntities(int32 xOffset, int32 yOffset, bool32 setATLBounds
     // if we're allowing the new boundary, update our camera to use ATL bounds instead of the default ones
     Zone->setATLBounds = setATLBounds;
     if (setATLBounds) {
-        EntityPlayer *player   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-        player->camera         = NULL;
-        EntityCamera *camera   = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
-        camera->position.x     = xOffset;
-        camera->position.y     = yOffset;
-        camera->state          = 0;
-        camera->target         = NULL;
-        camera->boundsL        = (xOffset >> 16) - ScreenInfo->center.x;
-        camera->boundsR        = (xOffset >> 16) + ScreenInfo->center.x;
-        camera->boundsT        = (yOffset >> 16) - ScreenInfo->size.y;
-        camera->boundsB        = yOffset >> 16;
-        Camera->centerBounds.x = TO_FIXED(8);
-        Camera->centerBounds.y = TO_FIXED(4);
+        for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+            EntityPlayer *player   = RSDK_GET_ENTITY(p, Player);
+            player->camera         = NULL;
+            EntityCamera *camera   = RSDK_GET_ENTITY(SLOT_CAMERA1 + p, Camera);
+            camera->position.x     = xOffset;
+            camera->position.y     = yOffset;
+            camera->state          = 0;
+            camera->target         = NULL;
+            camera->boundsL        = (xOffset >> 16) - ScreenInfo->center.x;
+            camera->boundsR        = (xOffset >> 16) + ScreenInfo->center.x;
+            camera->boundsT        = (yOffset >> 16) - ScreenInfo->size.y;
+            camera->boundsB        = yOffset >> 16;
+            Camera->centerBounds.x = TO_FIXED(8);
+            Camera->centerBounds.y = TO_FIXED(4);
+        }
     }
 
     Player->savedLives      = globals->restartLives[0];
     Player->savedScore      = globals->restartScore;
-    leader->shield          = globals->restartShield;
     globals->atlEntityCount = 0;
 }
 
@@ -563,9 +594,7 @@ void Zone_HandlePlayerBounds(void)
 {
     foreach_active(Player, player)
     {
-        int32 playerID = SLOT_PLAYER1;
-        if (!player->sidekick)
-            playerID = RSDK.GetEntitySlot(player);
+        int32 playerID = RSDK.GetEntitySlot(player);
 
         Hitbox *playerHitbox = Player_GetHitbox(player);
 
@@ -647,11 +676,10 @@ void Zone_HandlePlayerBounds(void)
 void Zone_ApplyWorldBounds(void)
 {
     if (Zone->setATLBounds) {
-        EntityCamera *camera = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
-
-        foreach_active(Player, player)
-        {
-            int32 camWorldL = camera->boundsL << 16;
+        for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        EntityCamera *camera = RSDK_GET_ENTITY(SLOT_CAMERA1 + p, Camera);
+        int32 camWorldL = camera->boundsL << 16;
             if (player->position.x - TO_FIXED(10) <= camWorldL) {
                 player->position.x = camWorldL + TO_FIXED(10);
                 if (player->onGround) {
@@ -690,7 +718,8 @@ void Zone_ApplyWorldBounds(void)
 bool32 Zone_IsZoneLastAct(void)
 {
     if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1)
-        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1)
+        || (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("PSZ2")) {
         return true;
     }
@@ -712,7 +741,8 @@ bool32 Zone_IsZoneLastAct(void)
 bool32 Zone_CheckLastActualAct(void)
 {
     if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1)
-        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+        || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1)
+        || (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1)) {
         return true;
     }
@@ -797,7 +827,7 @@ int32 Zone_GetListPos_ManiaMode(void)
 void Zone_Draw_Fade(void)
 {
     RSDK_THIS(Zone);
-    RSDK.FillScreen(self->fadeColor, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(self->fadeColor, self->timer, self->timer - 128, self->timer - 0x100);
 }
 
 void Zone_State_FadeOut(void)
@@ -829,10 +859,12 @@ void Zone_State_FadeOut(void)
             globals->restartSeconds      = SceneInfo->seconds;
             globals->restartMinutes      = SceneInfo->minutes;
 
-            EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-            RSDK.CopyEntity(&Zone->entityStorage[0], player, false);
-            if (player->camera)
-                RSDK.CopyEntity(&Zone->entityStorage[8], player->camera, false);
+            for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+                RSDK.CopyEntity(&Zone->entityStorage[p], player, false);
+                if (player->camera)
+                    RSDK.CopyEntity(&Zone->entityStorage[8 + p], player->camera, false);
+            }
         }
 #endif
 
@@ -882,12 +914,13 @@ void Zone_TitleCard_SupressCB(void)
     RSDK_THIS(Zone);
 
     SceneInfo->timeEnabled = true;
-    SaveGame_LoadPlayerState();
+    if (SceneInfo->activeCategory != 9)
+        SaveGame_LoadPlayerState();
     if (Music->activeTrack != Music->restartTrackID)
         Music_TransitionTrack(Music->restartTrackID, 0.04);
 
     EntityZone *zone = CREATE_ENTITY(Zone, NULL, 0, 0);
-    zone->screenID   = 0;
+    zone->screenID   = PLAYER_COUNT;
     zone->timer      = 640;
     zone->fadeSpeed  = 16;
     zone->fadeColor  = 0xF0F0F0;
@@ -898,15 +931,14 @@ void Zone_TitleCard_SupressCB(void)
 
     globals->suppressTitlecard = false;
     TitleCard->suppressCB      = StateMachine_None;
-    Player->rings              = 0;
+    for (int32 p = 0; p < 4; ++p)
+        globals->storedRings[p] = 0;
 
     destroyEntity(self);
 }
 
 void Zone_State_ReloadScene(void)
 {
-    EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-
     StarPost->storedMinutes    = SceneInfo->minutes;
     StarPost->storedSeconds    = SceneInfo->seconds;
     StarPost->storedMS         = SceneInfo->milliseconds;
@@ -914,7 +946,10 @@ void Zone_State_ReloadScene(void)
     globals->suppressTitlecard = true;
     TitleCard->suppressCB      = Zone_TitleCard_SupressCB;
     SaveGame_SavePlayerState();
-    Player->rings = player1->rings;
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+        EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
+        globals->storedRings[p] = player->rings;
+    }
 
     RSDK.LoadScene();
 }
@@ -983,7 +1018,7 @@ void Zone_HandlePlayerSwap(void)
         RSDK.CopyEntity(&Zone->entityStorage[12 + p], RSDK_GET_ENTITY((2 * Player->playerCount) + Zone->preSwapPlayerIDs[p], ImageTrail), false);
     }
 
-    for (int32 p = 0; p < Player->playerCount; ++p) {
+    for (int32 p = 0; p < addendumVar->playerCount; ++p) {
         EntityPlayer *player       = RSDK_GET_ENTITY(Zone->swappedPlayerIDs[p], Player);
         EntityPlayer *storedPlayer = (EntityPlayer *)&Zone->entityStorage[p];
 
@@ -1417,6 +1452,23 @@ void Zone_State_HandleSwapFadeIn(void)
 #if MANIA_USE_PLUS
         Zone->teleportActionActive = true;
 #endif
+    }
+}
+
+void Zone_SetupHyperAttackList(uint16 classID, bool32 hyperDashTarget, bool32 superFlickyTarget, bool32 hyperQuakeTarget, bool32 hyperSlamTarget, bool32 hyperLandTarget, bool32 hyperHammerTarget)
+{
+    for (int32 i = 0; i < 0x80; ++i) {
+        if (!Zone->hyperAttackList[i].classID) {
+            Zone->hyperAttackList[i].classID           = classID;
+            Zone->hyperAttackList[i].hyperDashTarget   = hyperDashTarget;
+            Zone->hyperAttackList[i].superFlickyTarget = superFlickyTarget;
+            Zone->hyperAttackList[i].hyperQuakeTarget  = hyperQuakeTarget;
+            Zone->hyperAttackList[i].hyperSlamTarget   = hyperSlamTarget;
+            Zone->hyperAttackList[i].hyperLandTarget   = hyperLandTarget;
+            Zone->hyperAttackList[i].hyperHammerTarget = hyperHammerTarget;
+            ++Zone->hyperListCount;
+            break;
+        }
     }
 }
 

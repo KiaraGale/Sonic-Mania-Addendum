@@ -85,10 +85,7 @@ void MSHologram_Create(void *data)
 
 void MSHologram_StageLoad(void)
 {
-    if (RSDK.CheckSceneFolder("SSZ1"))
-        MSHologram->aniFrames = RSDK.LoadSpriteAnimation("SSZ1/MSHologram.bin", SCOPE_STAGE);
-    else if (RSDK.CheckSceneFolder("SSZ2"))
-        MSHologram->aniFrames = RSDK.LoadSpriteAnimation("SSZ2/MSHologram.bin", SCOPE_STAGE);
+    MSHologram->aniFrames = RSDK.LoadSpriteAnimation("SSZ2/MSHologram.bin", SCOPE_STAGE);
 
     MSHologram->hitbox.left   = -12;
     MSHologram->hitbox.top    = -10;
@@ -135,13 +132,15 @@ void MSHologram_State_Explode(void)
         self->visible   = false;
         self->state     = MSHologram_State_Destroyed;
 
-        for (int32 i = 0; i < 16; ++i) {
-            int32 x               = self->position.x + RSDK.Rand(0x800000, 0xE00000);
-            int32 y               = self->position.y - RSDK.Rand(0x200000, 0x800000);
-            EntityAnimals *animal = CREATE_ENTITY(Animals, INT_TO_VOID(RSDK.Rand(1, 12)), x, y);
-            animal->updateRange.x = 0x1000000;
-            animal->updateRange.y = 0x1000000;
-            animal->behaviour     = ANIMAL_BEHAVE_FOLLOW;
+        if (RSDK.CheckSceneFolder("SSZ2") && Zone->actID == ACT_3) {
+            for (int32 i = 0; i < 16; ++i) {
+                int32 x               = self->position.x + RSDK.Rand(0x800000, 0xE00000);
+                int32 y               = self->position.y - RSDK.Rand(0x200000, 0x800000);
+                EntityAnimals *animal = CREATE_ENTITY(Animals, INT_TO_VOID(RSDK.Rand(1, 12)), x, y);
+                animal->updateRange.x = 0x1000000;
+                animal->updateRange.y = 0x1000000;
+                animal->behaviour     = ANIMAL_BEHAVE_FOLLOW;
+            }
         }
     }
 }
@@ -150,14 +149,21 @@ void MSHologram_State_Destroyed(void)
 {
     RSDK_THIS(MSHologram);
 
-    if (++self->timer == 384) {
-        foreach_active(Animals, animal)
-        {
-            if (animal->behaviour == ANIMAL_BEHAVE_FOLLOW)
-                animal->behaviour = ANIMAL_BEHAVE_FREE;
-        }
+    if (RSDK.CheckSceneFolder("SSZ2") && Zone->actID == ACT_3) {
+        if (++self->timer == 384) {
+            foreach_active(Animals, animal)
+            {
+                if (animal->behaviour == ANIMAL_BEHAVE_FOLLOW)
+                    animal->behaviour = ANIMAL_BEHAVE_FREE;
+            }
 
-        destroyEntity(self);
+            destroyEntity(self);
+        }
+    }
+    else {
+        if (++self->timer == 384) {
+            destroyEntity(self);
+        }
     }
 }
 

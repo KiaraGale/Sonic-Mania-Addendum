@@ -74,17 +74,16 @@ void CPZ1Intro_Particle_ChemDrop(EntityDebris *debris)
     RSDK.SetSpriteAnimation(CPZ1Intro->particleFrames, 1, &debris->animator, true, 0);
 }
 
-void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer *player1, EntityPlayer *player2, int32 targetY)
+void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer *player1, EntityPlayer *player2, EntityPlayer *player3, EntityPlayer *player4, int32 targetY)
 {
-    EntityPlayer *players[2];
+    EntityPlayer *players[4];
     players[0] = player1;
     players[1] = player2;
-
-    EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-    EntityPlayer *sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    players[2] = player3;
+    players[3] = player4;
 
     int32 id = 0;
-    for (int32 angle = 0; angle < 0x80; angle += 0x40) {
+    for (int32 angle = 0; angle < 0x80; angle += 0x20) {
         EntityPlayer *player = players[id++];
         if (!player)
             break;
@@ -100,8 +99,10 @@ void CPZ1Intro_HandleRubyHover(EntityCutsceneSeq *cutsceneSequence, EntityPlayer
 
 bool32 CPZ1Intro_CheckSonicAnimFinish(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 30;
@@ -109,8 +110,10 @@ bool32 CPZ1Intro_CheckSonicAnimFinish(void)
 
 bool32 CPZ1Intro_CheckTailsAnimFinish(int32 timer)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
 #if MANIA_USE_PLUS
@@ -133,8 +136,10 @@ bool32 CPZ1Intro_CheckTailsAnimFinish(int32 timer)
 
 bool32 CPZ1Intro_CheckKnuxAnimFinish(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
@@ -143,8 +148,10 @@ bool32 CPZ1Intro_CheckKnuxAnimFinish(void)
 #if MANIA_USE_PLUS
 bool32 CPZ1Intro_CheckMightyAnimFinish(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
@@ -152,8 +159,10 @@ bool32 CPZ1Intro_CheckMightyAnimFinish(void)
 
 bool32 CPZ1Intro_CheckRayAnimFinish(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
@@ -161,8 +170,10 @@ bool32 CPZ1Intro_CheckRayAnimFinish(void)
 
 bool32 CPZ1Intro_CheckAmyAnimFinish(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     return player1->animator.frameID == player1->animator.frameCount - 1 && player1->animator.timer == 4;
@@ -171,7 +182,7 @@ bool32 CPZ1Intro_CheckAmyAnimFinish(void)
 
 bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     EntityFXRuby *fxRuby = CPZ1Intro->fxRuby;
     if (!host->timer) {
@@ -184,11 +195,25 @@ bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
         player1->velocity.y = 0;
         player1->onGround   = false;
         if (player2->classID == Player->classID) {
-            player2->position.x -= 0x80000;
+            player2->position.x -= 0x60000;
             player2->velocity.x = 0;
             player2->velocity.y = 0;
             player2->onGround   = false;
             player2->stateInput = StateMachine_None;
+        }
+        if (player3->classID == Player->classID) {
+            player3->position.x -= 0x60000;
+            player3->velocity.x = 0;
+            player3->velocity.y = 0;
+            player3->onGround   = false;
+            player3->stateInput = StateMachine_None;
+        }
+        if (player4->classID == Player->classID) {
+            player4->position.x -= 0x60000;
+            player4->velocity.x = 0;
+            player4->velocity.y = 0;
+            player4->onGround   = false;
+            player4->stateInput = StateMachine_None;
         }
     }
 
@@ -211,26 +236,42 @@ bool32 CPZ1Intro_Cutscene_RubyWarp(EntityCutsceneSeq *host)
                 player1->state = Player_State_Air;
                 if (player2->classID == Player->classID)
                     player2->state = Player_State_Air;
+                if (player3->classID == Player->classID)
+                    player3->state = Player_State_Air;
+                if (player4->classID == Player->classID)
+                    player4->state = Player_State_Air;
                 fxRuby->active = ACTIVE_NEVER;
                 return true;
             }
         }
     }
 
-    CPZ1Intro_HandleRubyHover(host, player1, player2, host->activeEntity->position.y - 0x200000);
+    CPZ1Intro_HandleRubyHover(host, player1, player2, player3, player4, host->activeEntity->position.y - 0x200000);
 
     return false;
 }
 
 bool32 CPZ1Intro_Cutscene_PostWarpDrop(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(host);
     UNUSED(camera);
 
     if (player2->classID == Player->classID) {
-        if (player1->onGround && player2->onGround)
-            return true;
+        if (player3->classID == Player->classID) {
+            if (player4->classID == Player->classID) {
+                if (player1->onGround && player2->onGround && player3->onGround && player4->onGround)
+                    return true;
+            }
+            else {
+                if (player1->onGround && player2->onGround && player3->onGround)
+                    return true;
+            }
+        }
+        else {
+            if (player1->onGround && player2->onGround)
+                return true;
+        }
     }
     else {
         if (player1->onGround)
@@ -242,7 +283,7 @@ bool32 CPZ1Intro_Cutscene_PostWarpDrop(EntityCutsceneSeq *host)
 
 bool32 CPZ1Intro_Cutscene_Waiting(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -250,6 +291,14 @@ bool32 CPZ1Intro_Cutscene_Waiting(EntityCutsceneSeq *host)
         if (player2->classID == Player->classID) {
             player2->state = Player_State_Static;
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
+        }
+        if (player3->classID == Player->classID) {
+            player3->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, true, 0);
+        }
+        if (player4->classID == Player->classID) {
+            player4->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, true, 0);
         }
     }
 
@@ -265,7 +314,7 @@ bool32 CPZ1Intro_Cutscene_Waiting(EntityCutsceneSeq *host)
 
 bool32 CPZ1Intro_Cutscene_ChemicalDrop(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -290,8 +339,12 @@ bool32 CPZ1Intro_Cutscene_ChemicalDrop(EntityCutsceneSeq *host)
         ParticleHelpers_SetupFallingParticles(debris->position.x, playerY, CPZ1Intro_Particle_ChemDrop);
         destroyEntity(debris);
 
-        if (CHECK_CHARACTER_ID(ID_TAILS, 2))
+        if (player2->classID == Player->classID)
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, true, 0);
+        if (player3->classID == Player->classID)
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_SKID, &player3->animator, true, 0);
+        if (player4->classID == Player->classID)
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_SKID, &player4->animator, true, 0);
 
         return true;
     }
@@ -301,8 +354,9 @@ bool32 CPZ1Intro_Cutscene_ChemicalDrop(EntityCutsceneSeq *host)
 
 bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
+    int32 cpzAnimation = RSDK.Rand(1, 3);
 
     if (!host->timer) {
         switch (GET_CHARACTER_ID(1)) {
@@ -313,7 +367,8 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
                 RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
                 break;
 
-            case ID_TAILS: CPZ1Intro->playerAnimID = 1;
+            case ID_TAILS:
+                CPZ1Intro->playerAnimID = cpzAnimation;
 #if MANIA_USE_PLUS
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
@@ -330,7 +385,7 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
 
                 break;
             case ID_KNUCKLES:
-                CPZ1Intro->playerAnimID = 2;
+                CPZ1Intro->playerAnimID = 3;
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
                 RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
@@ -338,21 +393,21 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
 
 #if MANIA_USE_PLUS
             case ID_MIGHTY:
-                CPZ1Intro->playerAnimID = 3;
+                CPZ1Intro->playerAnimID = 4;
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
                 RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
                 break;
 
             case ID_RAY:
-                CPZ1Intro->playerAnimID = 4;
+                CPZ1Intro->playerAnimID = 5;
                 RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
                 break;
 
             case ID_AMY:
-                CPZ1Intro->playerAnimID = 5;
+                CPZ1Intro->playerAnimID = 6;
                 RSDK.SetSpriteAnimation(CPZ1Intro->playerFrames, CPZ1Intro->playerAnimID, &player1->animator, true, 0);
                 player1->state          = Player_State_Static;
                 player1->tileCollisions = TILECOLLISION_NONE;
@@ -366,15 +421,26 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
         player2->up    = true;
         player2->state = Player_State_LookUp;
     }
+    if (host->timer == 60 && player3->classID == Player->classID) {
+        RSDK.SetSpriteAnimation(player3->aniFrames, ANI_LOOK_UP, &player3->animator, true, 0);
+        player3->up    = true;
+        player3->state = Player_State_LookUp;
+    }
+    if (host->timer == 60 && player4->classID == Player->classID) {
+        RSDK.SetSpriteAnimation(player4->aniFrames, ANI_LOOK_UP, &player4->animator, true, 0);
+        player4->up    = true;
+        player4->state = Player_State_LookUp;
+    }
 
     switch (CPZ1Intro->playerAnimID) {
         case 0: return CPZ1Intro_CheckSonicAnimFinish();
         case 1: return CPZ1Intro_CheckTailsAnimFinish(host->timer);
-        case 2: return CPZ1Intro_CheckKnuxAnimFinish();
+        case 2: return CPZ1Intro_CheckTailsAnimFinish(host->timer);
+        case 3: return CPZ1Intro_CheckKnuxAnimFinish();
 #if MANIA_USE_PLUS
-        case 3: return CPZ1Intro_CheckMightyAnimFinish();
-        case 4: return CPZ1Intro_CheckRayAnimFinish();
-        case 5: return CPZ1Intro_CheckAmyAnimFinish();
+        case 4: return CPZ1Intro_CheckMightyAnimFinish();
+        case 5: return CPZ1Intro_CheckRayAnimFinish();
+        case 6: return CPZ1Intro_CheckAmyAnimFinish();
 #endif
         default: break;
     }
@@ -384,13 +450,17 @@ bool32 CPZ1Intro_Cutscene_PlayerChemicalReact(EntityCutsceneSeq *host)
 
 bool32 CPZ1Intro_Cutscene_ReadyStage(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, true, 0);
 
         if (player2->classID == Player->classID)
             player2->up = false;
+        if (player3->classID == Player->classID)
+            player3->up = false;
+        if (player4->classID == Player->classID)
+            player4->up = false;
     }
 
     if (host->timer == 30) {
@@ -406,6 +476,18 @@ bool32 CPZ1Intro_Cutscene_ReadyStage(EntityCutsceneSeq *host)
             player2->tileCollisions = TILECOLLISION_DOWN;
             player2->onGround       = true;
             player2->state          = Player_State_Ground;
+        }
+        if (player3->classID == Player->classID) {
+            player3->stateInput     = Player_Input_P2_AI;
+            player3->tileCollisions = TILECOLLISION_DOWN;
+            player3->onGround       = true;
+            player3->state          = Player_State_Ground;
+        }
+        if (player4->classID == Player->classID) {
+            player4->stateInput     = Player_Input_P2_AI;
+            player4->tileCollisions = TILECOLLISION_DOWN;
+            player4->onGround       = true;
+            player4->state          = Player_State_Ground;
         }
 
         foreach_all(TitleCard, titlecard)

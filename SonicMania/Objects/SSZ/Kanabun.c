@@ -69,6 +69,8 @@ void Kanabun_StageLoad(void)
     Kanabun->hitboxBadnik.bottom = 6;
 
     DEBUGMODE_ADD_OBJ(Kanabun);
+
+    Zone_SetupHyperAttackList(Kanabun->classID, true, true, true, true, true, true);
 }
 
 void Kanabun_DebugSpawn(void)

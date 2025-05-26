@@ -71,13 +71,13 @@ void GlobalVariables_InitCB(GlobalVariables *globals)
 // ADDENDUM VARIABLES
 // -------------------------
 
-AddendumVariables *addendum;
+AddendumVariables *addendumVar;
+AddendumOptVar *addendumOpt;
 
 #if MANIA_USE_PLUS
-void AddendumVariables_InitCB(AddendumVariables *addendum)
-{
-    memset(addendum, 0, sizeof(AddendumVariables));
-}
+void AddendumVariables_InitCB(AddendumVariables *addendumVar) { memset(addendumVar, 0, sizeof(AddendumVariables)); }
+
+void AddendumOptVar_InitCB(AddendumOptVar *addendumOpt) { memset(addendumOpt, 0, sizeof(AddendumOptVar)); }
 #endif
 
 void InitGameLogic(void);
@@ -154,17 +154,37 @@ void InitGameLogic(void)
 {
 #if RETRO_REV0U
     RSDK.RegisterGlobalVariables((void **)&globals, sizeof(GlobalVariables), (void(*)(void*))GlobalVariables_InitCB);
-    RSDK.RegisterGlobalVariables((void **)&addendum, sizeof(AddendumVariables), (void(*)(void*))AddendumVariables_InitCB);
+    RSDK.RegisterGlobalVariables((void **)&addendumVar, sizeof(AddendumVariables), (void(*)(void*))AddendumVariables_InitCB);
+    RSDK.RegisterGlobalVariables((void **)&addendumOpt, sizeof(AddendumOptVar), (void (*)(void *))AddendumOptVar_InitCB);
 #else
     RSDK.RegisterGlobalVariables((void **)&globals, sizeof(GlobalVariables));
-    RSDK.RegisterGlobalVariables((void **)&addendum, sizeof(AddendumVariables));
-#endif
-    Mod.RegisterAchievement("ACH_TIMESTONES", "Savior of the Planet", "Collected all Time Stones");
-    Mod.RegisterAchievement("ACH_INSTAREFLECT", "Return to Sender", "Reflected an enemy projectile with Insta-shield");
     globals->superMusicEnabled = true;
+    RSDK.RegisterGlobalVariables((void **)&addendumVar, sizeof(AddendumVariables));
+    RSDK.RegisterGlobalVariables((void **)&addendumOpt, sizeof(AddendumOptVar));
+#endif
+#if RETRO_USE_MOD_LOADER
+    Mod.RegisterAchievement("ACH_ERZ", "Perfect Daydream", "Clear Egg Reverie Zone without losing any rings to damage");
+    Mod.RegisterAchievement("ACH_GHZ2", "Fastest Thing Alive", "Clear Green Hill Act 1 in under a minute");
+    Mod.RegisterAchievement("ACH_CPZ2", "Quick-Time Staircase", "Scale a massive waterlogged pit from the bottom without water breathing abilities"); //
+    Mod.RegisterAchievement("ACH_SPZ2", "Flawless Pursuit", "Defeat Heavy Gunner while only striking blue missiles");
+    Mod.RegisterAchievement("ACH_FBZ2", "Pressure Point", "Defeat Big Squeeze right before the arena pistons crush you");
+    Mod.RegisterAchievement("ACH_PGZ2", "Ain't Got No Chill", "Avoid being frozen through all of Press Garden Act 2");
+    Mod.RegisterAchievement("ACH_SSZ2", "Plant Pouncer", "Destroy a Beanstalk Chomper using Mighty's Hammer Drop ability");
+    Mod.RegisterAchievement("ACH_HCZ2", "Counter Ready", "Defeat Dive Eggman while destroying all bombs with your own");
+    Mod.RegisterAchievement("ACH_MSZ2", "???", "???");
+    Mod.RegisterAchievement("ACH_OOZ2", "Suffocating Haze Race", "Clear Oil Ocean Act 2 without ever clearing the smog, without dying");
+    Mod.RegisterAchievement("ACH_LRZ2", "Not on the Menu", "Clear Lava Reef Act 1 or 2 without touching any lava");
+    Mod.RegisterAchievement("ACH_MMZ2", "Crushing Defeat", "Defeat the Egg Piston MKII boss without ever missing a cycle");
+    Mod.RegisterAchievement("ACH_TMZ2", "Phantom Pathfinder", "Clear Titanic Monarch Act 2 while getting all four secret exits");
+    Mod.RegisterAchievement("ACH_TIMESTONES", "Savior of the Planet", "Collect all Time Stones");
+    Mod.RegisterAchievement("ACH_SUPEREMERALDS", "Ascendant Seven", "Collect all Super Emeralds");
+    Mod.RegisterAchievement("ACH_INSTAREFLECT", "Return to Sender", "Reflect an enemy projectile with Insta-shield");
+    Mod.RegisterAchievement("ACH_FOURSHIELDS", "With Your Powers Combined", "Collect all four shield types in a single act");
+#endif
 
     RSDK_REGISTER_OBJECT(Acetone);
     RSDK_REGISTER_OBJECT(ActClear);
+    RSDK_REGISTER_OBJECT(AddendumToggles);
     RSDK_REGISTER_OBJECT(AIZEggRobo);
 #if MANIA_USE_PLUS
     RSDK_REGISTER_OBJECT(AIZEncoreTutorial);
@@ -409,7 +429,10 @@ void InitGameLogic(void)
     RSDK_REGISTER_OBJECT(Hotaru);
     RSDK_REGISTER_OBJECT(HotaruHiWatt);
     RSDK_REGISTER_OBJECT(HotaruMKII);
+    RSDK_REGISTER_OBJECT(HPZBeam);
     RSDK_REGISTER_OBJECT(HPZEmerald);
+    RSDK_REGISTER_OBJECT(HPZIntro);
+    RSDK_REGISTER_OBJECT(HPZSetup);
     RSDK_REGISTER_OBJECT(HUD);
     RSDK_REGISTER_OBJECT(Ice);
     RSDK_REGISTER_OBJECT(IceBomba);
@@ -500,6 +523,7 @@ void InitGameLogic(void)
     RSDK_REGISTER_OBJECT(MonarchPlans);
 #endif
     RSDK_REGISTER_OBJECT(MonkeyDude);
+    RSDK_REGISTER_OBJECT(Mosqui);
     RSDK_REGISTER_OBJECT(Motobug);
 #if MANIA_USE_PLUS
     RSDK_REGISTER_OBJECT(MSBomb);
@@ -879,10 +903,27 @@ void InitGameLogic(void)
 #if RETRO_USE_MOD_LOADER
 #include "PublicFunctions.c"
 
+void UpdateCallback(void *data)
+{
+    UNUSED(data);
+
+    if (!API.CheckDLC(DLC_PLUS)) {
+        if (!RSDK.CheckSceneFolder("Lock")) {
+            if (Music)
+                Music_Stop();
+            RSDK.SetScene("Presentation", "Non-Plus Lock Screen");
+            RSDK.LoadScene();
+        }
+    }
+}
+
 void InitModAPI(void)
 {
     // Init Public Functions
     InitPublicFunctions();
+
+    Mod.AddModCallback(MODCB_ONUPDATE, UpdateCallback);
+    Mod.AddModCallback(MODCB_ONUPDATE, SetupHPZResults);
 }
 
 bool32 LinkModLogic(EngineInfo *info, const char *id)

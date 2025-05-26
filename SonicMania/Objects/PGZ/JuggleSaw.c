@@ -116,6 +116,8 @@ void JuggleSaw_StageLoad(void)
     JuggleSaw->sfxExplode = RSDK.GetSfx("Stage/Explosion.wav"); // not actually used it seems
     JuggleSaw->sfxJuggle  = RSDK.GetSfx("PSZ/Juggle.wav");
     JuggleSaw->sfxThrow   = RSDK.GetSfx("PSZ/JuggleThrow.wav");
+
+    Zone_SetupHyperAttackList(JuggleSaw->classID, true, true, true, true, true, true);
 }
 
 void JuggleSaw_DebugSpawn(void)
@@ -416,8 +418,11 @@ void JuggleSaw_StateSaw_Handle(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &JuggleSaw->hitboxSaw))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &JuggleSaw->hitboxSaw))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else if (!self->friends[0] || self->friends[0]->classID != JuggleSaw->classID)

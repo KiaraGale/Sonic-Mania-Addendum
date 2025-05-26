@@ -420,8 +420,11 @@ void KingAttack_State_OrbitLaunched(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (!RSDK.CheckOnScreen(self, NULL))
@@ -541,8 +544,11 @@ void KingAttack_State_LargeBullet_TwinShot(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 }
 

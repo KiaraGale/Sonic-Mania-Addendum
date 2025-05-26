@@ -89,9 +89,11 @@ void RollerMKII_StageLoad(void)
     RollerMKII->sfxJump     = RSDK.GetSfx("Stage/Jump2.wav");
     RollerMKII->sfxDropDash = RSDK.GetSfx("Global/DropDash.wav");
     RollerMKII->sfxRelease  = RSDK.GetSfx("Global/Release.wav");
-    RollerMKII->sfxSkidding = RSDK.GetSfx("Global/Skidding.wav");
+    RollerMKII->sfxSkidding = RSDK.GetSfx("MSZ/RollerSkidding.wav");
 
     DEBUGMODE_ADD_OBJ(RollerMKII);
+
+    Zone_SetupHyperAttackList(RollerMKII->classID, true, true, true, true, true, true);
 }
 
 void RollerMKII_DebugSpawn(void)

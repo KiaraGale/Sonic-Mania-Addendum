@@ -21,6 +21,8 @@ struct ObjectPhantomKing {
     uint16 sfxExplosion;
     uint16 aniFrames;
     bool32 defeated;
+    int16 successfulAttacks;
+    bool32 hasPerfectAchievement;
 };
 
 // Entity Class

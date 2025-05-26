@@ -223,6 +223,7 @@
     <ClInclude Include="Objects\Global\Spikes.h" />
     <ClInclude Include="Objects\Global\Spring.h" />
     <ClInclude Include="Objects\Global\StarPost.h" />
+    <ClInclude Include="Objects\Global\SuperFlicky.h" />
     <ClInclude Include="Objects\Global\SuperSparkle.h" />
     <ClInclude Include="Objects\Global\TimeAttackGate.h" />
     <ClInclude Include="Objects\Global\TitleCard.h" />
@@ -278,6 +279,7 @@
     <ClInclude Include="Objects\LRZ\Flamethrower.h" />
     <ClInclude Include="Objects\LRZ\HeavyKing.h" />
     <ClInclude Include="Objects\LRZ\HeavyRider.h" />
+    <ClInclude Include="Objects\LRZ\HPZCutscene.h" />
     <ClInclude Include="Objects\LRZ\HPZEmerald.h" />
     <ClInclude Include="Objects\LRZ\Iwamodoki.h" />
     <ClInclude Include="Objects\LRZ\KingAttack.h" />
@@ -313,6 +315,7 @@
     <ClInclude Include="Objects\LRZ\Turbine.h" />
     <ClInclude Include="Objects\LRZ\TurretSwitch.h" />
     <ClInclude Include="Objects\LRZ\WalkerLegs.h" />
+    <ClInclude Include="Objects\Menu\AddendumToggles.h" />
     <ClInclude Include="Objects\Menu\CompetitionMenu.h" />
     <ClInclude Include="Objects\Menu\DAControl.h" />
     <ClInclude Include="Objects\Menu\DASetup.h" />
@@ -1034,6 +1037,7 @@
     </ClCompile>
     <ClCompile Include="Objects\Global\StarPost.c">
     </ClCompile>
+    <ClCompile Include="Objects\Global\SuperFlicky.c" />
     <ClCompile Include="Objects\Global\SuperSparkle.c">
     </ClCompile>
     <ClCompile Include="Objects\Global\TimeAttackGate.c">
@@ -1138,6 +1142,7 @@
     </ClCompile>
     <ClCompile Include="Objects\LRZ\HeavyRider.c">
     </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZCutscene.c" />
     <ClCompile Include="Objects\LRZ\HPZEmerald.c">
     </ClCompile>
     <ClCompile Include="Objects\LRZ\Iwamodoki.c">
@@ -1208,6 +1213,7 @@
     </ClCompile>
     <ClCompile Include="Objects\LRZ\WalkerLegs.c">
     </ClCompile>
+    <ClCompile Include="Objects\Menu\AddendumToggles.c" />
     <ClCompile Include="Objects\Menu\CompetitionMenu.c">
     </ClCompile>
     <ClCompile Include="Objects\Menu\DAControl.c">

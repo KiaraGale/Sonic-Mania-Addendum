@@ -193,6 +193,8 @@ void DrillerdroidO_StageLoad(void)
     DrillerdroidO->sfxJump      = RSDK.GetSfx("LRZ/DrillJump.wav");
     DrillerdroidO->sfxTargeting = RSDK.GetSfx("Stage/Targeting1.wav");
     DrillerdroidO->sfxSizzle    = RSDK.GetSfx("LRZ/Sizzle.wav");
+
+    Zone_SetupHyperAttackList(DrillerdroidO->classID, false, false, true, true, false, true);
 }
 
 void DrillerdroidO_CheckPlayerCollisions(void)

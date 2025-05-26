@@ -86,6 +86,8 @@ void Bumpalo_StageLoad(void)
     Bumpalo->sfxImpact = RSDK.GetSfx("Stage/Impact5.wav");
 
     DEBUGMODE_ADD_OBJ(Bumpalo);
+
+    Zone_SetupHyperAttackList(Bumpalo->classID, true, true, true, true, true, true);
 }
 
 void Bumpalo_DebugSpawn(void)

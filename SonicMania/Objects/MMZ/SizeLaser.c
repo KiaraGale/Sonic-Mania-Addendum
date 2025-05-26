@@ -210,6 +210,7 @@ void SizeLaser_StageLoad(void)
     SizeLaser->sfxGrow2   = RSDK.GetSfx("MMZ/Grow2.wav");
 
     Soundboard_LoadSfx("MMZ/SizeLaser.wav", true, SizeLaser_SfxCheck_SizeLaser, StateMachine_None);
+    Soundboard_LoadSfx("MMZ/SizeLaser2.wav", true, SizeLaser_SfxCheck_SizeLaser2, StateMachine_None);
 }
 
 bool32 SizeLaser_SfxCheck_SizeLaser(void)
@@ -218,7 +219,20 @@ bool32 SizeLaser_SfxCheck_SizeLaser(void)
 
     foreach_active(SizeLaser, entity)
     {
-        if (entity->onScreen)
+        if (!entity->type && entity->onScreen)
+            ++activeCount;
+    }
+
+    return activeCount > 0;
+}
+
+bool32 SizeLaser_SfxCheck_SizeLaser2(void)
+{
+    int32 activeCount = 0;
+
+    foreach_active(SizeLaser, entity)
+    {
+        if (entity->type && entity->onScreen)
             ++activeCount;
     }
 
@@ -259,7 +273,7 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 if (player->superState == SUPERSTATE_SUPER && player->miracleState)
                     player->aniFrames = SizeLaser->miracleKnuxFrames;
                 else
-                    player->aniFrames = SizeLaser->knuxFrames;
+                player->aniFrames = SizeLaser->knuxFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -326,7 +340,7 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
                 if (player->superState == SUPERSTATE_SUPER && player->miracleState)
                     player->aniFrames  = Player->miracleKnuxFrames;
                 else
-                    player->aniFrames  = Player->knuxFrames;
+                player->aniFrames  = Player->knuxFrames;
                 player->tailFrames = -1;
                 player->isChibi    = isChibi;
                 break;
@@ -343,7 +357,7 @@ void SizeLaser_SetPlayerSize(EntityPlayer *player, bool32 isChibi)
 
             case ID_RAY:
                 if (player->superState == SUPERSTATE_SUPER && player->miracleState)
-                    player->aniFrames = Player->rayFrames;
+                    player->aniFrames = Player->miracleRayFrames;
                 else
                     player->aniFrames  = Player->rayFrames;
                 player->tailFrames = -1;
@@ -480,9 +494,9 @@ void SizeLaser_PlayerState_ShrinkChibi(void)
 
             case ID_KNUCKLES:
                 if (self->superState == SUPERSTATE_SUPER && self->miracleState)
-                    self->aniFrames = SizeLaser->knuxFrames;
+                    self->aniFrames = SizeLaser->miracleKnuxFrames;
                 else
-                    self->aniFrames = SizeLaser->knuxFrames;
+                self->aniFrames = SizeLaser->knuxFrames;
                 self->tailFrames = -1;
                 break;
 
@@ -675,7 +689,7 @@ void SizeLaser_CheckPlayerCollisions(void)
                             if (player->superState == SUPERSTATE_SUPER && player->miracleState)
                                 player->aniFrames = Player->miracleKnuxFrames;
                             else
-                                player->aniFrames = Player->knuxFrames;
+                            player->aniFrames = Player->knuxFrames;
                             player->tailFrames = -1;
                             break;
 

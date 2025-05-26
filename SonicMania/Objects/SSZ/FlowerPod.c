@@ -66,6 +66,8 @@ void FlowerPod_StageLoad(void)
 
     FlowerPod->sfxExplosion = RSDK.GetSfx("Stage/Explosion2.wav");
     FlowerPod->sfxTwinkle   = RSDK.GetSfx("Global/Twinkle.wav");
+
+    Zone_SetupHyperAttackList(FlowerPod->classID, true, true, true, true, true, true);
 }
 
 void FlowerPod_SpawnSeeds(void)

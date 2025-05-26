@@ -503,13 +503,15 @@ void TitleCard_State_ShowingTitle(void)
         self->actionTimer++;
         if (self->actionTimer == 16) {
             if (Zone->setATLBounds) {
-                EntityCamera *camera   = RSDK_GET_ENTITY(SLOT_CAMERA1, Camera);
-                EntityPlayer *player   = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
-                player->camera         = camera;
-                camera->target         = (Entity *)player;
-                camera->state          = Camera_State_FollowXY;
-                Camera->centerBounds.x = TO_FIXED(2);
-                Camera->centerBounds.y = TO_FIXED(2);
+                for (int32 p = 0; p < addendumVar->playerCount; ++p) {
+                    EntityCamera *camera   = RSDK_GET_ENTITY(SLOT_CAMERA1 + p, Camera);
+                    EntityPlayer *player   = RSDK_GET_ENTITY(p, Player);
+                    player->camera         = camera;
+                    camera->target         = (Entity *)player;
+                    camera->state          = Camera_State_FollowXY;
+                    Camera->centerBounds.x = TO_FIXED(2);
+                    Camera->centerBounds.y = TO_FIXED(2);
+                }
             }
             Zone->setATLBounds = false;
         }
@@ -609,8 +611,10 @@ void TitleCard_State_SlideAway(void)
         self->zoneDecorVerts[3].x -= speed;
     }
 
-    if (self->actionTimer == 60 && globals->gameMode < MODE_TIMEATTACK) {
-        SceneInfo->timeEnabled = true;
+    if (!(RSDK.CheckSceneFolder("TMZ3"))) {
+        if (self->actionTimer == 60 && globals->gameMode < MODE_TIMEATTACK) {
+            SceneInfo->timeEnabled = true;
+        }
     }
 
     if (self->actionTimer > 80) {

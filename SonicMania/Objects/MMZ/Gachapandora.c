@@ -249,6 +249,8 @@ void Gachapandora_StageLoad(void)
     Gachapandora->sfxPon       = RSDK.GetSfx("Stage/Pon.wav");
     Gachapandora->sfxFireball  = RSDK.GetSfx("Stage/Fireball.wav");
     Gachapandora->sfxGiggle    = RSDK.GetSfx("MMZ/Giggle.wav");
+
+    Zone_SetupHyperAttackList(Gachapandora->classID, true, true, true, true, true, true);
 }
 
 void Gachapandora_CheckPlayerCollisions_Prize(void)
@@ -1800,8 +1802,11 @@ void Gachapandora_StateSpark_Detached(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &Gachapandora->hitboxSpark))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Gachapandora->hitboxSpark))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x40000, true)) {

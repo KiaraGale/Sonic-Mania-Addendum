@@ -53,10 +53,12 @@ void UIPicture_Create(void *data)
            self->drawGroup = 8;
         }
         else {
-            if (RSDK.CheckSceneFolder("Logos") || RSDK.CheckSceneFolder("LSelect") || RSDK.CheckSceneFolder("Summary") || RSDK.CheckSceneFolder("Lock"))
+           if (RSDK.CheckSceneFolder("Logos") || RSDK.CheckSceneFolder("LSelect") || RSDK.CheckSceneFolder("Summary")
+               || RSDK.CheckSceneFolder("Lock")) {
                 self->active = ACTIVE_NORMAL;
-            self->visible   = true;
-            self->drawGroup = 2;
+                self->visible   = true;
+                self->drawGroup = 2;
+           }
         }
     }
 }

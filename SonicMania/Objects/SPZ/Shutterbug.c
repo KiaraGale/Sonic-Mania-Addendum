@@ -93,6 +93,8 @@ void Shutterbug_StageLoad(void)
     DEBUGMODE_ADD_OBJ(Shutterbug);
 
     Shutterbug->snapSfx = RSDK.GetSfx("SPZ/ShBugSnap.wav");
+
+    Zone_SetupHyperAttackList(Shutterbug->classID, true, true, true, true, true, true);
 }
 
 void Shutterbug_DebugSpawn(void)

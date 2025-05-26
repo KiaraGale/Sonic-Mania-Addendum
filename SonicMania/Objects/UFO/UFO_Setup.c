@@ -40,7 +40,7 @@ void UFO_Setup_Draw(void)
 {
     RSDK_THIS(UFO_Setup);
 
-    RSDK.FillScreen(self->fadeColor, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(self->fadeColor, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void UFO_Setup_Create(void *data)
@@ -297,22 +297,36 @@ void UFO_Setup_PlaySphereSfx(void)
 }
 void UFO_Setup_Finish_Win(void)
 {
-    EntityUFO_Setup *setup = RSDK_GET_ENTITY(SLOT_UFO_SETUP, UFO_Setup);
+    EntityUFO_Setup *setup           = RSDK_GET_ENTITY(SLOT_UFO_SETUP, UFO_Setup);
+    SaveRAM *saveRAM                 = SaveGame_GetSaveRAM();
+    AddendumData *addendumData       = Addendum_GetSaveRAM();
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     if (UFO_Setup->specialStageID <= 6)
         SaveGame_SetEmerald(UFO_Setup->specialStageID);
-    else if (UFO_Setup->specialStageID > 6)
-        Addendum_SetTimeStone((UFO_Setup->specialStageID) - 7);
+    else if (UFO_Setup->specialStageID > 6) {
+        if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            Addendum_SetSuperEmerald(UFO_Setup->specialStageID - 7);
+            SpecialClear->storedSpecialStageID = saveRAM->nextSpecialStage;
+            SpecialClear->failedStage          = false;
+        }
+        else if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE)
+            Addendum_SetTimeStone(UFO_Setup->specialStageID - 7);
+    }
 
-    SaveRAM *saveRAM = SaveGame_GetSaveRAM();
-    AddendumData *addendumData = Addendum_GetSaveRAM();
     if (globals->saveSlotID != NO_SAVE_SLOT) {
         if (UFO_Setup->specialStageID <= 6) {
             GameProgress_GiveEmerald(saveRAM->nextSpecialStage);
         }
 
         if (UFO_Setup->specialStageID > 6) {
-            Addendum_GiveTimeStone((saveRAM->nextSpecialStage) - 7);
+            if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+                Addendum_GiveSuperEmerald(saveRAM->nextSpecialStage);
+                SpecialClear->storedSpecialStageID = saveRAM->nextSpecialStage;
+                SpecialClear->failedStage          = false;
+            }
+            if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE)
+                Addendum_GiveTimeStone(saveRAM->nextSpecialStage - 7);
         }
     }
 
@@ -342,6 +356,7 @@ void UFO_Setup_Finish_Fail(void)
 
     setup->visible = true;
     setup->state   = UFO_Setup_State_FinishFadeout;
+    SpecialClear->failedStage = true;
 
     RSDK.PlaySfx(UFO_Setup->sfxSSExit, false, 0xFF);
     Music_FadeOut(0.025);
@@ -394,28 +409,39 @@ void UFO_Setup_State_FinishFadeout(void)
             RSDK.LoadScene();
         }
         else {
-            for (int32 l = 0; l < LAYER_COUNT; ++l) {
-                TileLayer *layer = RSDK.GetTileLayer(l);
-                if (layer)
-                    layer->drawGroup[0] = DRAWGROUP_COUNT;
+            if (Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD && UFO_Setup->specialStageID > 6) {
+                addendumVar->doHPZResults      = true;
+                addendumVar->carryOverValue[0] = UFO_Setup->timedOut;
+                addendumVar->carryOverValue[1] = UFO_Setup->machLevel;
+                addendumVar->carryOverValue[2] = UFO_Setup->scoreBonus;
+                addendumVar->carryOverValue[3] = UFO_Setup->rings;
+                addendumVar->carryOverValue[4] = UFO_Setup->specialStageID;
+                RSDK.SetScene("Addendum", "Super Emerald Chamber");
+                RSDK.LoadScene();
             }
+            else {
+                for (int32 l = 0; l < LAYER_COUNT; ++l) {
+                    TileLayer *layer = RSDK.GetTileLayer(l);
+                    if (layer)
+                        layer->drawGroup[0] = DRAWGROUP_COUNT;
+                }
 
-            for (int32 l = 0; l < SCENEENTITY_COUNT; ++l) {
-                Entity *entity = RSDK_GET_ENTITY_GEN(l);
-                if (entity->classID != self->classID)
-                    destroyEntity(entity);
+                for (int32 l = 0; l < SCENEENTITY_COUNT; ++l) {
+                    Entity *entity = RSDK_GET_ENTITY_GEN(l);
+                    if (entity->classID != self->classID)
+                        destroyEntity(entity);
+                }
+
+                RSDK.ResetEntitySlot(0, UIBackground->classID, NULL);
+                RSDK.ResetEntitySlot(1, SpecialClear->classID, NULL);
+
+                RSDK.AddDrawListRef(DRAWGROUP_COUNT - 2, 1);
+
+    #if MANIA_USE_PLUS
+                if (globals->gameMode == MODE_ENCORE)
+                    UIBackground->activeColors = &UIBackground->bgColors[18];
+    #endif
             }
-
-            RSDK.ResetEntitySlot(0, UIBackground->classID, NULL);
-            RSDK.ResetEntitySlot(1, SpecialClear->classID, NULL);
-
-            RSDK.AddDrawListRef(DRAWGROUP_COUNT - 2, 1);
-
-#if MANIA_USE_PLUS
-            if (globals->gameMode == MODE_ENCORE)
-                UIBackground->activeColors = &UIBackground->bgColors[18];
-#endif
-
             self->visible = false;
             self->state   = StateMachine_None;
         }
@@ -451,6 +477,28 @@ void UFO_Setup_State_TimedOver(void)
 
     if (++self->timer >= 90)
         UFO_Setup_Finish_Fail();
+}
+
+void SetupHPZResults(void *data)
+{
+    UNUSED(data);
+
+    if (Zone) {
+        if (addendumVar->doHPZResults) {
+            if (Zone->timer == 2) {
+                addendumVar->doHPZResults = false;
+                foreach_active(Player, player)
+                {
+                    player->visible = false;
+                    player->active  = ACTIVE_NEVER;
+                }
+                RSDK.ResetEntitySlot(1, SpecialClear->classID, NULL);
+            }
+            else {
+                Music_FadeOut(1.0);
+            }
+        }
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

@@ -90,6 +90,8 @@ void Jellygnite_StageLoad(void)
     Jellygnite->sfxElectrify = RSDK.GetSfx("Stage/Electrify2.wav");
 
     DEBUGMODE_ADD_OBJ(Jellygnite);
+
+    Zone_SetupHyperAttackList(Jellygnite->classID, true, true, true, true, true, true);
 }
 
 void Jellygnite_DebugSpawn(void)

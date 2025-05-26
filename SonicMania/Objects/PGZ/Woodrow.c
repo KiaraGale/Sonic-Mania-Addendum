@@ -109,6 +109,8 @@ void Woodrow_StageLoad(void)
     Woodrow->sfxPeck      = RSDK.GetSfx("PSZ/Peck.wav");
 
     DEBUGMODE_ADD_OBJ(Woodrow);
+
+    Zone_SetupHyperAttackList(Woodrow->classID, true, true, true, true, true, true);
 }
 
 void Woodrow_DebugSpawn(void)

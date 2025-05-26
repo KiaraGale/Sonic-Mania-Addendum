@@ -69,7 +69,7 @@ void SPZ2Outro_StartCutscene(void)
 
 bool32 SPZ2Outro_Cutscene_SetupFBZTV(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     EntityTVFlyingBattery *tvFlyingBattery = SPZ2Outro->tvFlyingBattery;
     EntityWeatherTV *weatherTV             = SPZ2Outro->weatherTV;
@@ -115,15 +115,52 @@ bool32 SPZ2Outro_Cutscene_SetupFBZTV(EntityCutsceneSeq *host)
             player2->left       = false;
             player2->right      = false;
         }
+        if (player3->classID == Player->classID) {
+            player3->stateInput = StateMachine_None;
+            player3->jumpPress  = false;
+            player3->jumpHold   = false;
+            player3->up         = false;
+            player3->down       = false;
+            player3->left       = false;
+            player3->right      = false;
+        }
+        if (player4->classID == Player->classID) {
+            player4->stateInput = StateMachine_None;
+            player4->jumpPress  = false;
+            player4->jumpHold   = false;
+            player4->up         = false;
+            player4->down       = false;
+            player4->left       = false;
+            player4->right      = false;
+        }
     }
 
     if (player2->classID == Player->classID) {
         player2->stateInput = StateMachine_None;
         player2->jumpPress  = false;
         player2->jumpHold   = false;
+        player2->up         = false;
         player2->down       = false;
         player2->left       = false;
         player2->right      = false;
+    }
+    if (player3->classID == Player->classID) {
+        player3->stateInput = StateMachine_None;
+        player3->jumpPress  = false;
+        player3->jumpHold   = false;
+        player3->up         = false;
+        player3->down       = false;
+        player3->left       = false;
+        player3->right      = false;
+    }
+    if (player4->classID == Player->classID) {
+        player4->stateInput = StateMachine_None;
+        player4->jumpPress  = false;
+        player4->jumpHold   = false;
+        player4->up         = false;
+        player4->down       = false;
+        player4->left       = false;
+        player4->right      = false;
     }
 
     if (host->timer == 15) {
@@ -138,6 +175,18 @@ bool32 SPZ2Outro_Cutscene_SetupFBZTV(EntityCutsceneSeq *host)
             player2->up        = true;
             player2->direction = player2->position.x > weatherTV->position.x;
         }
+        if (player3->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_LOOK_UP, &player3->animator, true, 0);
+            player3->state     = Player_State_LookUp;
+            player3->up        = true;
+            player3->direction = player3->position.x > weatherTV->position.x;
+        }
+        if (player4->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_LOOK_UP, &player4->animator, true, 0);
+            player4->state     = Player_State_LookUp;
+            player4->up        = true;
+            player4->direction = player4->position.x > weatherTV->position.x;
+        }
     }
 
     if (host->timer == 120) {
@@ -149,6 +198,20 @@ bool32 SPZ2Outro_Cutscene_SetupFBZTV(EntityCutsceneSeq *host)
         else {
             Zone->playerBoundActiveR[1] = false;
         }
+        if (!player3->onGround || player3->state == Player_State_FlyToPlayer || player3->state == Player_State_ReturnToPlayer
+            || player3->state == Player_State_Static || player3->state == Player_State_HoldRespawn) {
+            SPZ2Outro->ignoreP3 = true;
+        }
+        else {
+            Zone->playerBoundActiveR[2] = false;
+        }
+        if (!player4->onGround || player4->state == Player_State_FlyToPlayer || player4->state == Player_State_ReturnToPlayer
+            || player4->state == Player_State_Static || player4->state == Player_State_HoldRespawn) {
+            SPZ2Outro->ignoreP4 = true;
+        }
+        else {
+            Zone->playerBoundActiveR[3] = false;
+        }
 
         return true;
     }
@@ -158,7 +221,7 @@ bool32 SPZ2Outro_Cutscene_SetupFBZTV(EntityCutsceneSeq *host)
 
 bool32 SPZ2Outro_Cutscene_ExitStageRight(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -175,12 +238,30 @@ bool32 SPZ2Outro_Cutscene_ExitStageRight(EntityCutsceneSeq *host)
                 player2->stateInput = Player_Input_P2_AI;
             }
         }
+        if (player3) {
+            if (player3->classID == Player->classID && !SPZ2Outro->ignoreP3) {
+                RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, true, 0);
+                player3->state      = Player_State_Ground;
+                player3->up         = false;
+                player3->stateInput = Player_Input_P2_AI;
+            }
+        }
+        if (player4) {
+            if (player4->classID == Player->classID && !SPZ2Outro->ignoreP4) {
+                RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, true, 0);
+                player4->state      = Player_State_Ground;
+                player4->up         = false;
+                player4->stateInput = Player_Input_P2_AI;
+            }
+        }
     }
 
     int32 posX = ((ScreenInfo->size.x + ScreenInfo->position.x) << 16) + 0x100000;
     if (player1->position.x > posX) {
         player1->right = false;
-        if (player2->classID != Player->classID || SPZ2Outro->ignoreP2 || player2->position.x > posX) {
+        if ((player2->classID != Player->classID || SPZ2Outro->ignoreP2 || player2->position.x > posX) 
+            && (player3->classID != Player->classID || SPZ2Outro->ignoreP3 || player3->position.x > posX)
+            && (player4->classID != Player->classID || SPZ2Outro->ignoreP4 || player4->position.x > posX)) {
             return true;
         }
     }
@@ -199,7 +280,7 @@ void SPZ2Outro_DrawHook_PrepareWeatherTV(void)
 // State where they are on da TV and jump onto FBZ
 bool32 SPZ2Outro_Cutscene_AsSeenOnTV(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
     EntityTVFlyingBattery *tvFlyingBattery = SPZ2Outro->tvFlyingBattery;
     EntityWeatherTV *weatherTV             = SPZ2Outro->weatherTV;
@@ -239,13 +320,48 @@ bool32 SPZ2Outro_Cutscene_AsSeenOnTV(EntityCutsceneSeq *host)
             player2->scale.y         = 0x100;
             player2->drawFX          = FX_SCALE | FX_FLIP;
         }
+        if (player3 && player3->classID == Player->classID && !SPZ2Outro->ignoreP3) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_RUN, &player3->animator, true, 0);
+            player3->drawGroup       = Zone->playerDrawGroup[0];
+            player3->state           = Player_State_Static;
+            player3->nextAirState    = StateMachine_None;
+            player3->nextGroundState = StateMachine_None;
+            player3->position.x      = player1->position.x - 0x200000;
+            player3->position.y      = player1->position.y;
+            player3->onGround        = false;
+            player3->stateInput      = StateMachine_None;
+            player3->right           = false;
+            player3->velocity.x      = 0x10000;
+            player3->velocity.y      = 0;
+            player3->scale.x         = 0x100;
+            player3->scale.y         = 0x100;
+            player3->drawFX          = FX_SCALE | FX_FLIP;
+        }
+        if (player4 && player4->classID == Player->classID && !SPZ2Outro->ignoreP3) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_RUN, &player4->animator, true, 0);
+            player4->drawGroup       = Zone->playerDrawGroup[0];
+            player4->state           = Player_State_Static;
+            player4->nextAirState    = StateMachine_None;
+            player4->nextGroundState = StateMachine_None;
+            player4->position.x      = player1->position.x - 0x300000;
+            player4->position.y      = player1->position.y;
+            player4->onGround        = false;
+            player4->stateInput      = StateMachine_None;
+            player4->right           = false;
+            player4->velocity.x      = 0x10000;
+            player4->velocity.y      = 0;
+            player4->scale.x         = 0x100;
+            player4->scale.y         = 0x100;
+            player4->drawFX          = FX_SCALE | FX_FLIP;
+        }
     }
 
-    EntityPlayer *players[2] = { player1, player2 };
+    EntityPlayer *players[4] = { player1, player2, player3, player4 };
 
     bool32 finished = true;
-    for (int32 p = 0; p < 2; ++p) {
-        if (p != 1 || (players[p]->classID == Player->classID && !SPZ2Outro->ignoreP2)) {
+    for (int32 p = 0; p < 4; ++p) {
+        if (p != 1 || (players[2]->classID == Player->classID && !SPZ2Outro->ignoreP2) || (players[3]->classID == Player->classID && !SPZ2Outro->ignoreP3) ||
+            (players[4]->classID == Player->classID && !SPZ2Outro->ignoreP4)) {
             EntityPlayer *player = players[p];
 
             if (player->position.x >= weatherTV->position.x && !player->velocity.y && player->animator.animationID == ANI_RUN) {
@@ -273,7 +389,7 @@ bool32 SPZ2Outro_Cutscene_AsSeenOnTV(EntityCutsceneSeq *host)
 
 bool32 SPZ2Outro_Cutscene_FBZFlyAway(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityTVFlyingBattery *tvFlyingBattery = SPZ2Outro->tvFlyingBattery;
@@ -292,6 +408,12 @@ bool32 SPZ2Outro_Cutscene_FBZFlyAway(EntityCutsceneSeq *host)
 
     if (player2->classID == Player->classID && !SPZ2Outro->ignoreP2 && player2->animator.animationID == ANI_CLING)
         player2->position.y = tvFlyingBattery->position.y - 0x80000;
+
+    if (player3->classID == Player->classID && !SPZ2Outro->ignoreP2 && player3->animator.animationID == ANI_CLING)
+        player3->position.y = tvFlyingBattery->position.y - 0x80000;
+
+    if (player4->classID == Player->classID && !SPZ2Outro->ignoreP2 && player4->animator.animationID == ANI_CLING)
+        player4->position.y = tvFlyingBattery->position.y - 0x80000;
 
     return false;
 }

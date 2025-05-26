@@ -51,6 +51,7 @@ struct ObjectPlatform {
     uint16 sfxClang;
     uint16 sfxPush;
     uint16 sfxClack;
+    uint16 sfxElevator;
     bool32 playingPushSfx;
     bool32 useClack;
 };

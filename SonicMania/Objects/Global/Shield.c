@@ -40,34 +40,32 @@ void Shield_Draw(void)
     RSDK_THIS(Shield);
 
     EntityPlayer *player = self->player;
-    if (player) {
-        if (player->isChibi) {
+    if (player->isChibi) {
+        self->drawFX |= FX_SCALE;
+        self->scale.x = 0x100;
+        self->scale.y = 0x100;
+    }
+    else {
+        if (player->drawFX & FX_SCALE)
             self->drawFX |= FX_SCALE;
-            self->scale.x = 0x100;
-            self->scale.y = 0x100;
-        }
-        else {
-            if (player->drawFX & FX_SCALE)
-                self->drawFX |= FX_SCALE;
-            else
-                self->drawFX &= ~FX_SCALE;
-            self->scale.x = player->scale.x;
-            self->scale.y = player->scale.y;
-        }
+        else
+            self->drawFX &= ~FX_SCALE;
+        self->scale.x = player->scale.x;
+        self->scale.y = player->scale.y;
+    }
 
-        self->position = player->position;
+    self->position = player->position;
 
-        Hitbox *playerHitbox = RSDK.GetHitbox(&player->animator, 0);
-        if (playerHitbox) {
-            if (player->direction & FLIP_X)
-                self->position.x += (playerHitbox->left << 15) - (playerHitbox->right << 15) - (playerHitbox->left << 16);
-            else
-                self->position.x += ((playerHitbox->right + 2 * playerHitbox->left) << 15) - (playerHitbox->left << 15);
-            if ((player->direction & FLIP_Y) || player->invertGravity)
-                self->position.y += (playerHitbox->top << 15) - (playerHitbox->bottom << 15) - (playerHitbox->top << 16);
-            else
-                self->position.y += ((playerHitbox->bottom + 2 * playerHitbox->top) << 15) - (playerHitbox->top << 15);
-        }
+    Hitbox *playerHitbox = RSDK.GetHitbox(&player->animator, 0);
+    if (playerHitbox) {
+        if (player->direction & FLIP_X)
+            self->position.x += (playerHitbox->left << 15) - (playerHitbox->right << 15) - (playerHitbox->left << 16);
+        else
+            self->position.x += ((playerHitbox->right + 2 * playerHitbox->left) << 15) - (playerHitbox->left << 15);
+        if ((player->direction & FLIP_Y) || player->invertGravity)
+            self->position.y += (playerHitbox->top << 15) - (playerHitbox->bottom << 15) - (playerHitbox->top << 16);
+        else
+            self->position.y += ((playerHitbox->bottom + 2 * playerHitbox->top) << 15) - (playerHitbox->top << 15);
     }
 
     if (self->type == SHIELD_BUBBLE && player->superState != SUPERSTATE_SUPER) {
@@ -76,21 +74,7 @@ void Shield_Draw(void)
         self->inkEffect = INK_BLEND;
     }
 
-    if (self->type == SHIELD_BLUE && player->characterID == ID_KNUCKLES) {
-        for (int32 c = 0; c < 6; ++c) {
-            Shield->colorStorage[c] = RSDK.GetPaletteEntry(0, 2 + c);
-            RSDK.SetPaletteEntry(0, 2 + c, Shield->shieldPalette_Knux[c]);
-        }
-
-        RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
-
-        for (int32 c = 0; c < 6; ++c) {
-            RSDK.SetPaletteEntry(0, 2 + c, Shield->colorStorage[c]);
-        }
-    }
-    else {
-        RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
-    }
+    RSDK.DrawSprite(&self->shieldAnimator, NULL, false);
 }
 
 void Shield_Create(void *data)
@@ -102,7 +86,7 @@ void Shield_Create(void *data)
 
     if (data) {
         EntityPlayer *player = (EntityPlayer *)data;
-        if (player->classID == Player->classID)
+        if (player->classID == Player->classID || DebugMode->classID)
             self->type = player->shield;
         self->player = player;
     }
@@ -261,20 +245,20 @@ void Shield_State_LightningSparks(void)
 void Shield_State_Insta(void)
 {
     RSDK_THIS(Shield);
+    EntityShield *p3instaShield = RSDK_GET_ENTITY(SLOT_CUTSCENESEQ, Shield);
+    EntityShield *p4instaShield = RSDK_GET_ENTITY(SLOT_PAUSEMENU, Shield);
 
     RSDK.ProcessAnimation(&self->shieldAnimator);
 
-    if (self->player)
+    if (self->player && self->player->invincibleTimer <= 0)
         self->player->invincibleTimer = 1;
 
     if (self->shieldAnimator.frameID == self->shieldAnimator.frameCount - 1)
         destroyEntity(self);
 }
 
-bool32 Shield_State_Reflect(EntityShield *shield, void *p)
+bool32 Shield_State_Reflect(EntityPlayer *player, EntityShield *shield, void *p)
 {
-    RSDK_THIS(Shield);
-    EntityPlayer *player = self->player;
     bool32 deflected = false;
 
     if (shield->state == Shield_State_Insta) {
@@ -284,18 +268,21 @@ bool32 Shield_State_Reflect(EntityShield *shield, void *p)
         int32 angle             = RSDK.ATan2(shield->position.x - projectile->position.x, shield->position.y - projectile->position.y);
         projectile->velocity.x  = -0x800 * RSDK.Cos256(angle);
         projectile->velocity.y  = -0x800 * RSDK.Sin256(angle);
-        projectile->interaction = false;
         if (!Player->hasReflectAchievement) {
             API_UnlockAchievement(&achievementList[ACH_INSTAREFLECT]);
             Player->hasReflectAchievement = true;
         }
 
-        if (player->superState == SUPERSTATE_SUPER) {
-            if (player->miracleState)
-                Player_GiveRings(player, 3, true);
-            else
-                Player_GiveRings(player, 2, true);
+        if (projectile->interaction) {
+            if (player->superState == SUPERSTATE_SUPER) {
+                if (player->miracleState)
+                    Player_GiveRings(player, 3, true);
+                else
+                    Player_GiveRings(player, 2, true);
+            }
         }
+
+        projectile->interaction = false;
 
         return true;
     }

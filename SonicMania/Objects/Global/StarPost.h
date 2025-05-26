@@ -3,6 +3,13 @@
 
 #include "Game.h"
 
+typedef enum {
+    STARPOSTSTYLE_S1,
+    STARPOSTSTYLE_S2,
+    STARPOSTSTYLE_S3,
+    STARPOSTSTYLE_MANIA,
+} StarPostStyle;
+
 // Object Class
 struct ObjectStarPost {
     RSDK_OBJECT

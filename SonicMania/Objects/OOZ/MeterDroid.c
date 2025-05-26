@@ -56,7 +56,7 @@ void MeterDroid_Create(void *data)
             self->active        = ACTIVE_BOUNDS;
             self->updateRange.x = 0x800000;
             self->updateRange.y = 0x800000;
-            self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+            self->health        = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
             self->drawGroup     = Zone->objectDrawGroup[0];
             self->state         = MeterDroid_State_Init;
 
@@ -75,10 +75,10 @@ void MeterDroid_StageLoad(void)
     MeterDroid->hitboxBoss.right  = 14;
     MeterDroid->hitboxBoss.bottom = 14;
 
-    MeterDroid->hitboxPropellor.left   = 14;
-    MeterDroid->hitboxPropellor.top    = -12;
-    MeterDroid->hitboxPropellor.right  = 32;
-    MeterDroid->hitboxPropellor.bottom = 12;
+    MeterDroid->hitboxPropellor.left =  -10;
+    MeterDroid->hitboxPropellor.top =    18;
+    MeterDroid->hitboxPropellor.right =  10;
+    MeterDroid->hitboxPropellor.bottom = 34;
 
     MeterDroid->hitboxWrench.left   = -14;
     MeterDroid->hitboxWrench.top    = -14;
@@ -329,7 +329,7 @@ void MeterDroid_State_Init(void)
         MeterDroid->boundsB = (Zone->cameraBoundsB[0] - 8) << 16;
 
         self->position.x += 0x800000;
-        self->visible   = true;
+        self->visible   = false;
         self->stateDraw = MeterDroid_Draw_Normal;
         self->state     = MeterDroid_State_StartFight;
     }
@@ -347,7 +347,9 @@ void MeterDroid_State_StartFight(void)
     if (self->timer) {
         if (++self->timer == 120) {
             self->timer = 0;
-            self->state = MeterDroid_State_Idle;
+            self->position.y -= 0x880000;
+            self->visible = true;
+            self->state = MeterDroid_State_DropIn;
         }
     }
     else {
@@ -360,6 +362,28 @@ void MeterDroid_State_StartFight(void)
     }
 }
 
+void MeterDroid_State_DropIn(void)
+{
+    RSDK_THIS(MeterDroid);
+
+    self->position.y += 0x12000;
+
+    RSDK.ProcessAnimation(&self->mainAnimator);
+    RSDK.ProcessAnimation(&self->propellorAnimator);
+
+    if (self->timer) {
+        if (++self->timer == 120) {
+            self->timer = 0;
+            self->state = MeterDroid_State_Idle;
+        }
+    }
+    else {
+        ++self->timer;
+    }
+
+    MeterDroid_CheckPlayerCollisions_NoWrench_UseFlip();
+}
+
 void MeterDroid_State_Idle(void)
 {
     RSDK_THIS(MeterDroid);
@@ -369,7 +393,7 @@ void MeterDroid_State_Idle(void)
     RSDK.ProcessAnimation(&self->mainAnimator);
     RSDK.ProcessAnimation(&self->propellorAnimator);
 
-    if (++self->timer == 90) {
+    if (++self->timer == 30) {
         self->timer = 0;
         self->state = MeterDroid_State_PickMoveDir;
     }

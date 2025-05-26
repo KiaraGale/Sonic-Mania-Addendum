@@ -134,8 +134,10 @@ bool32 MSZCutsceneST_Cutscene_HandleSignPostLand(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneST_Cutscene_AwaitActFinish(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     EntitySignPost *signPost  = MSZCutsceneST->signPost;
@@ -172,8 +174,10 @@ bool32 MSZCutsceneST_Cutscene_AwaitActFinish(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneST_Cutscene_EnterMystic(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     EntityTornado *tornado    = MSZCutsceneST->tornado;
@@ -219,8 +223,10 @@ bool32 MSZCutsceneST_Cutscene_EnterMystic(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneST_Cutscene_PrepareAmbush(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     EntityTornado *tornado      = MSZCutsceneST->tornado;
@@ -478,7 +484,7 @@ bool32 MSZCutsceneST_Cutscene_ShowBark(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneST_Cutscene_Mayday(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityTornado *tornado      = MSZCutsceneST->tornado;
@@ -542,6 +548,14 @@ bool32 MSZCutsceneST_Cutscene_Mayday(EntityCutsceneSeq *host)
             player2->state  = MSZSetup_PlayerState_PostCrashJumpIn;
             player2->active = ACTIVE_NORMAL;
         }
+        if (player3->classID == Player->classID) {
+            player3->state  = MSZSetup_PlayerState_PostCrashJumpIn;
+            player3->active = ACTIVE_NORMAL;
+        }
+        if (player4->classID == Player->classID) {
+            player4->state  = MSZSetup_PlayerState_PostCrashJumpIn;
+            player4->active = ACTIVE_NORMAL;
+        }
     }
 
     if (TornadoPath->moveVel.y > 0 && !(Zone->timer % 5))
@@ -592,7 +606,7 @@ bool32 MSZCutsceneST_Cutscene_SetPlayerMSZ2SpawnPos(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneST_Cutscene_PanCameraToPlayer(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         TornadoPath->camera = NULL;
@@ -614,7 +628,13 @@ bool32 MSZCutsceneST_Cutscene_PanCameraToPlayer(EntityCutsceneSeq *host)
 
         Zone->cameraBoundsL[0] = (player1->position.x >> 16) - 160;
         Zone->cameraBoundsB[0] = (player1->position.y >> 16) - 112;
-        if (player2->classID != Player->classID || player2->onGround)
+        Zone->cameraBoundsL[1] = (player1->position.x >> 16) - 160;
+        Zone->cameraBoundsB[1] = (player1->position.y >> 16) - 112;
+        Zone->cameraBoundsL[2] = (player1->position.x >> 16) - 160;
+        Zone->cameraBoundsB[2] = (player1->position.y >> 16) - 112;
+        Zone->cameraBoundsL[3] = (player1->position.x >> 16) - 160;
+        Zone->cameraBoundsB[3] = (player1->position.y >> 16) - 112;
+        if (player2->classID != Player->classID || player2->onGround && player3->classID != Player->classID || player3->onGround && player4->classID != Player->classID || player4->onGround)
             return true;
     }
 

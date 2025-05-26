@@ -50,7 +50,7 @@ void OOZ1Outro_Create(void *data)
     }
 }
 
-void OOZ1Outro_StageLoad(void) { OOZ1Outro->sfxDrop = RSDK.GetSfx("Stage/Drop.wav"); }
+void OOZ1Outro_StageLoad(void) { OOZ1Outro->sfxDrop = RSDK.GetSfx("TMZ1/HogDrop.wav"); }
 
 bool32 OOZ1Outro_Cutscene_FadeIn(EntityCutsceneSeq *host)
 {
@@ -124,6 +124,7 @@ bool32 OOZ1Outro_Cutscene_PostActClearSetup(EntityCutsceneSeq *host)
             player->interaction    = false;
             player->velocity.y     = -0x20000;
             player->stateInput     = StateMachine_None;
+            RSDK.PlaySfx(OOZ1Outro->sfxDrop, false, 255);
             RSDK.SetSpriteAnimation(player->aniFrames, ANI_HURT, &player->animator, false, 0);
         }
 

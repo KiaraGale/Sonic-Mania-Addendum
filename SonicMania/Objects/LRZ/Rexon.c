@@ -128,6 +128,8 @@ void Rexon_StageLoad(void)
     Rexon->sfxExplosion = RSDK.GetSfx("Stage/Explosion2.wav");
 
     DEBUGMODE_ADD_OBJ(Rexon);
+
+    Zone_SetupHyperAttackList(Rexon->classID, true, true, true, true, true, true);
 }
 
 void Rexon_DebugSpawn(void)
@@ -389,8 +391,11 @@ void Rexon_State_Projectile(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &Rexon->hitboxProjectile))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &Rexon->hitboxProjectile))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, Rexon->hitboxProjectile.bottom << 13, 4)

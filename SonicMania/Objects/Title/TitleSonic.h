@@ -14,6 +14,7 @@ struct EntityTitleSonic {
     RSDK_ENTITY
     Animator animatorSonic;
     Animator animatorFinger;
+    bool32 transcendence;
 };
 
 // Object Struct

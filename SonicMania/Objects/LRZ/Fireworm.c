@@ -90,6 +90,8 @@ void Fireworm_StageLoad(void)
     Fireworm->hitboxRange.bottom = 128;
 
     DEBUGMODE_ADD_OBJ(Fireworm);
+
+    Zone_SetupHyperAttackList(Fireworm->classID, true, true, true, true, true, true);
 }
 
 void Fireworm_DebugSpawn(void)

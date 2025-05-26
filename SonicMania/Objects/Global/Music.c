@@ -14,6 +14,10 @@ void Music_Update(void)
     RSDK_THIS(Music);
 
     StateMachine_Run(self->state);
+
+    Music_HandleSuperMusic();
+
+    globals->vapeMode = Addendum_GetOptionsRAM()->vapeMode;
 }
 
 void Music_LateUpdate(void) {}
@@ -41,6 +45,10 @@ void Music_Create(void *data)
                 else
                     destroyEntity(self);
             }
+#if MANIA_USE_PLUS
+            if (globals->vapeMode)
+                RSDK.SetChannelAttributes(Music->channelID, 1.0, 0.0, 0.75);
+#endif
         }
     }
 }
@@ -57,10 +65,10 @@ void Music_StageLoad(void)
     Music_SetMusicTrack("ActClear.ogg", TRACK_ACTCLEAR, false);
     Music_SetMusicTrack("Drowning.ogg", TRACK_DROWNING, false);
     Music_SetMusicTrack("GameOver.ogg", TRACK_GAMEOVER, false);
-    Music_SetMusicTrack("Super.ogg", TRACK_SUPER, 165375);
+    Music_HandleSuperMusic();
     Music_SetMusicTrack("HBHMischief.ogg", TRACK_HBHMISCHIEF, 381405);
     // Slot 12 (slot 11 in pre-plus): "no load"
-    Music_SetMusicTrack("1up.ogg", TRACK_1UP, false);
+    // Music_SetMusicTrack("1up.ogg", TRACK_1UP, false);
 
 #if GAME_VERSION != VER_100
     if (globals->suppressAutoMusic) {
@@ -87,6 +95,8 @@ void Music_StageLoad(void)
     if (sku_platform == PLATFORM_DEV)
         RSDK.AddViewableVariable("Vape Mode", &globals->vapeMode, VIEWVAR_BOOL, false, true);
 #endif
+    globals->superMusicEnabled = !Addendum_GetOptionsRAM()->superMusic;
+    globals->vapeMode = Addendum_GetOptionsRAM()->vapeMode;
 }
 
 void Music_SetMusicTrack(const char *path, uint8 track, uint32 loopPoint)
@@ -120,7 +130,7 @@ void Music_State_PlayOnLoad(void)
         switch (Music->activeTrack) {
             case TRACK_INVINCIBLE:
             case TRACK_SNEAKERS:
-            case TRACK_1UP: Music_TransitionTrack(self->trackID, 0.025); break;
+            // case TRACK_1UP: Music_TransitionTrack(self->trackID, 0.025); break;
             case TRACK_SUPER: Music_PlayAutoMusicQueuedTrack(Music->activeTrack); break;
             default: break;
         }
@@ -180,10 +190,12 @@ void Music_PlayJingle(uint8 trackID)
             entity->restartTrack  = true;
             break;
 
+        /*
         case TRACK_1UP:
             entity->timer         = 224;
             entity->trackPriority = TRACK_PRIORITY_1UP;
             break;
+        */
 
         default: break;
     }
@@ -336,6 +348,9 @@ void Music_PlayAutoMusicQueuedTrack(uint8 trackID)
     trackID &= 0xF;
     Music->nextTrack = TRACK_STAGE;
 
+    if (globals->vapeMode)
+        RSDK.SetChannelAttributes(Music->channelID, 1.0, 0.0, 0.75);
+
     // remove any existing vers of this on the stack
     for (int32 slot = SLOT_MUSICSTACK_START; slot < SLOT_MUSICSTACK_END; ++slot) {
         EntityMusic *music = RSDK_GET_ENTITY(slot, Music);
@@ -379,10 +394,12 @@ void Music_PlayAutoMusicQueuedTrack(uint8 trackID)
             entity->restartTrack  = true;
             break;
 
+        /*
         case TRACK_1UP:
             entity->timer         = 224;
             entity->trackPriority = TRACK_PRIORITY_1UP;
             break;
+        */
 
         default: break;
     }
@@ -624,9 +641,12 @@ void Music_TransitionTrack(uint8 trackID, float fadeSpeed)
         music            = RSDK_GET_ENTITY(SLOT_MUSIC, Music);
     }
 #endif
-
     if (music && (music->classID != Music->classID || music->state != Music_State_PlayOnFade)) {
         RSDK.ResetEntity(music, Music->classID, NULL);
+#if MANIA_USE_PLUS
+        if (globals->vapeMode)
+            RSDK.SetChannelAttributes(Music->channelID, music->volume, 0.0, 0.75);
+#endif
         music->state     = Music_State_PlayOnFade;
         music->volume    = 1.0;
         music->fadeSpeed = fadeSpeed;
@@ -638,6 +658,10 @@ void Music_FadeOut(float fadeSpeed)
     if (Music->activeTrack != TRACK_DROWNING) {
         EntityMusic *music = RSDK_GET_ENTITY(SLOT_MUSIC, Music);
         RSDK.ResetEntity(music, Music->classID, NULL);
+#if MANIA_USE_PLUS
+        if (globals->vapeMode)
+            RSDK.SetChannelAttributes(Music->channelID, 1.0, 0.0, 0.75);
+#endif
         music->state     = Music_State_StopOnFade;
         music->volume    = 1.0;
         music->fadeSpeed = fadeSpeed;
@@ -653,7 +677,7 @@ void Music_State_Jingle(void)
         self->trackStartPos = 0;
         if (self->volume < 1.0) {
             self->volume += self->fadeSpeed;
-            RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, 1.0);
+            RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, globals->vapeMode ? 0.75 : 1.0);
             if (self->volume >= 1.0)
                 self->volume = 1.0;
         }
@@ -672,7 +696,7 @@ void Music_State_JingleFade(void)
         self->volume -= self->fadeSpeed;
 
         if (Music->activeTrack == self->trackID)
-            RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, 1.0);
+            RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, globals->vapeMode ? 0.75 : 1.0);
 
         if (self->volume <= -0.5)
             Music_FinishJingle(self);
@@ -689,7 +713,7 @@ void Music_State_FadeTrackIn(void)
         Music->trackStartPos = 0;
         self->volume += self->fadeSpeed;
 
-        RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, 1.0);
+        RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, globals->vapeMode ? 0.75 : 1.0);
         if (self->volume >= 1.0) {
             self->volume = 1.0;
             destroyEntity(self);
@@ -709,7 +733,7 @@ void Music_State_StopOnFade(void)
     RSDK_THIS(Music);
 
     self->volume -= self->fadeSpeed;
-    RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, 1.0);
+    RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, globals->vapeMode ? 0.75 : 1.0);
 
     if (self->volume < -0.5) {
         Music_Stop();
@@ -722,7 +746,7 @@ void Music_State_PlayOnFade(void)
     RSDK_THIS(Music);
 
     self->volume -= self->fadeSpeed;
-    RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, 1.0);
+    RSDK.SetChannelAttributes(Music->channelID, self->volume, 0.0, globals->vapeMode ? 0.75 : 1.0);
 
     if (self->volume < -0.5) {
 #if MANIA_USE_PLUS
@@ -817,6 +841,31 @@ void Music_State_1UPJingle(void)
 }
 #endif
 
+void Music_HandleSuperMusic(void)
+{
+    RSDK_THIS(Music);
+
+    SaveRAM* saveRAM = SaveGame_GetSaveRAM();
+    AddendumData* addendumData = Addendum_GetSaveRAM();
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
+
+    if (ERZStart) { // yes, this is technically Super music
+        if (ERZStart->eggman && ERZStart->king) {
+            if (ERZStart->eggman->health <= 2 && ERZStart->king->health <= 2)
+                Music_SetMusicTrack("EggReveriePinch.ogg", TRACK_ERZBOSS, 226800);
+            else
+                Music_SetMusicTrack("EggReverie.ogg", TRACK_ERZBOSS, 176400);
+        }
+    }
+    else {
+        Music_SetMusicTrack("Super.ogg", TRACK_SUPER, 165375);
+        if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE && addendumData->collectedTimeStones >= 0b01111111)
+            Music_SetMusicTrack("Miracle.ogg", TRACK_SUPER, 1);
+        if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD && addendumData->collectedSuperEmeralds >= 0b01111111)
+            Music_SetMusicTrack("Hyper.ogg", TRACK_SUPER, 1);
+    }
+}
+
 #if GAME_INCLUDE_EDITOR
 void Music_EditorDraw(void)
 {
@@ -842,6 +891,8 @@ void Music_EditorLoad(void)
     RSDK_ENUM_VAR("Drowning", TRACK_DROWNING);
     RSDK_ENUM_VAR("Game Over", TRACK_GAMEOVER);
     RSDK_ENUM_VAR("Super Sonic", TRACK_SUPER);
+    RSDK_ENUM_VAR("Miracle Sonic", TRACK_MIRACLE);
+    RSDK_ENUM_VAR("Hyper Sonic", TRACK_HYPER);
 #if MANIA_USE_PLUS
     RSDK_ENUM_VAR("HBH Mischief", TRACK_HBHMISCHIEF);
     RSDK_ENUM_VAR("Sound Test", TRACK_SOUNDTEST);
@@ -849,7 +900,7 @@ void Music_EditorLoad(void)
     RSDK_ENUM_VAR("Sound Test", TRACK_SOUNDTEST);
     RSDK_ENUM_VAR("HBH Mischief", TRACK_HBHMISCHIEF);
 #endif
-    RSDK_ENUM_VAR("1UP", TRACK_1UP);
+    // RSDK_ENUM_VAR("1UP", TRACK_1UP);
 }
 #endif
 

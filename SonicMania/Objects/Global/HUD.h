@@ -24,9 +24,9 @@ struct ObjectHUD {
     uint16 aniFrames;
 #if GAME_VERSION != VER_100
     uint16 superButtonFrames;
+    uint16 bossFrames;
 #endif
 #if MANIA_USE_PLUS
-    uint16 bossFrames;
     uint16 sfxClick;
     uint16 sfxStarpost;
     bool32 showTAPrompt;
@@ -35,6 +35,28 @@ struct ObjectHUD {
     int32 swapCooldown;
     int32 stockFlashTimers[PLAYER_COUNT + 1];
 #endif
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha[PLAYER_COUNT];
+    Vector2 actionPos;
+    int32 jumpAlpha[PLAYER_COUNT];
+#if GAME_VERSION != VER_100
+    Vector2 superPos;
+    int32 superAlpha[PLAYER_COUNT];
+#endif
+#if MANIA_USE_PLUS
+    Vector2 swapPos;
+    int32 swapAlpha[PLAYER_COUNT];
+#endif
+    Vector2 pausePos;
+    int32 pauseAlpha[PLAYER_COUNT];
+#if MANIA_USE_PLUS
+    Vector2 auxPos;
+    int32 auxAlpha[PLAYER_COUNT];
+#endif
+    int32 colorStorage[6];
 };
 
 // Entity Class
@@ -51,9 +73,6 @@ struct EntityHUD {
 #endif
     Vector2 inputPos;
     Vector2 itemPos;
-    Vector2 bossBarPos;
-    Vector2 bossIconPos;
-    Vector2 bossNamePos;
     int32 targetPos;
 #if GAME_VERSION != VER_100
     int32 actionPromptPos;
@@ -92,33 +111,16 @@ struct EntityHUD {
 #endif
     Animator readyUpIconAnimator;
     Animator readyUpButtonAnimator;
-    Animator inputDpadAnimator; // input viewer crap
-    Animator inputABCAnimator;
-    Animator inputXYZAnimator;
-    Animator inputBumperAnimator;
-    Animator inputUpAnimator;
-    Animator inputDownAnimator;
-    Animator inputLeftAnimator;
-    Animator inputRightAnimator;
-    Animator inputAAnimator;
-    Animator inputBAnimator;
-    Animator inputCAnimator;
-    Animator inputXAnimator;
-    Animator inputYAnimator;
-    Animator inputZAnimator;
-    Animator inputLBumperAnimator;
-    Animator inputRBumperAnimator;
-    Animator itemBox1Animator; // invincibility/super/miracle
-    Animator itemBox2Animator; // speed shoes
-    Animator itemBox3Animator; // shield
+    Animator inputAnimator;
+    Animator itemBoxAnimator1; // invincibility/super
+    Animator itemBoxAnimator2; // speed shoes
+    Animator itemBoxAnimator3; // shields
 #if MANIA_USE_PLUS
-    Animator bossIconAnimator;
-    Animator bossBarAnimator;
-    String bossNameString;
     int32 timer;
     bool32 invincibilityActive;
     bool32 speedShoesActive;
     bool32 shieldActive;
+    int32 flashTimer;
 #endif
 };
 
@@ -143,8 +145,10 @@ void HUD_DrawNumbersBase10(Vector2 *drawPos, int32 value, int32 digitCount);
 void HUD_DrawNumbersBase16(Vector2 *drawPos, int32 value);
 void HUD_DrawNumbersHyperRing(Vector2 *drawPos, int32 value);
 
+#if GAME_VERSION != VER_100
 void HUD_GetButtonFrame(Animator *animator, int32 buttonID);
 void HUD_GetActionButtonFrames(void);
+#endif
 
 void HUD_State_MoveIn(void);
 void HUD_State_MoveOut(void);
@@ -158,5 +162,11 @@ int32 HUD_CharacterIndexFromID(int32 characterID);
 
 void HUD_DrawInputViewer(Vector2 *drawPos, EntityPlayer *player, int32 drawType);
 void HUD_DrawItemsHUD(Vector2 *drawPos, EntityPlayer *player, int32 drawType);
+
+void HUD_DrawTouchControls(void);
+void HUD_DrawMobileHUD(void);
+
+int32 HUD_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
+void HUD_HandleHyperFlash(EntityPlayer *player);
 
 #endif //! OBJ_HUD_H

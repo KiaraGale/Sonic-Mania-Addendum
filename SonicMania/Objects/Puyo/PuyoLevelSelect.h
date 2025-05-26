@@ -9,6 +9,7 @@ struct ObjectPuyoLevelSelect {
     uint16 aniFrames;
     uint16 sfxMenuBleep;
     uint16 sfxMenuAccept;
+    int32 touchFlags;
 };
 
 // Entity Class
@@ -46,5 +47,6 @@ void PuyoLevelSelect_Serialize(void);
 // Extra Entity Functions
 void PuyoLevelSelect_DrawSprites(void);
 void PuyoLevelSelect_HandleMenuMovement(void);
+void PuyoLevelSelect_HandleTouchInput(void);
 
 #endif //! OBJ_PUYOLEVELSELECT_H

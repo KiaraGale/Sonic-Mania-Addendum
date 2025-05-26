@@ -90,6 +90,8 @@ void Spiny_StageLoad(void)
     DEBUGMODE_ADD_OBJ(Spiny);
 
     Spiny->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
+
+    Zone_SetupHyperAttackList(Spiny->classID, true, true, true, true, true, true);
 }
 
 void Spiny_DebugSpawn(void)
@@ -300,8 +302,11 @@ void Spiny_State_Shot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Spiny->hitboxShot))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Spiny->hitboxShot))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

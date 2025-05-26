@@ -86,6 +86,8 @@ void Batbot_StageLoad(void)
     Batbot->directionTable[4] = FLIP_X;
 
     DEBUGMODE_ADD_OBJ(Batbot);
+
+    Zone_SetupHyperAttackList(Batbot->classID, true, true, true, true, true, true);
 }
 
 void Batbot_DebugSpawn(void)

@@ -49,6 +49,7 @@ struct ObjectPhantomEgg {
     uint16 sfxShock;
     uint16 sfxSummon;
     uint16 sfxMissile;
+    uint16 sfxFlasherZap;
     uint16 aniFrames;
     bool32 disableSuperForm;
 };

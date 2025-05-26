@@ -109,6 +109,8 @@ void Tubinaut_StageLoad(void)
 
     Tubinaut->sfxPowerdown = RSDK.GetSfx("Stage/PowerDown.wav");
     Tubinaut->sfxRepel     = RSDK.GetSfx("Stage/Repel.wav");
+
+    Zone_SetupHyperAttackList(Tubinaut->classID, true, true, true, true, true, true);
 }
 
 void Tubinaut_DebugSpawn(void)

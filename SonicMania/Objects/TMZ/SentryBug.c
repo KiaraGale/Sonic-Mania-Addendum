@@ -117,6 +117,8 @@ void SentryBug_StageLoad(void)
     SentryBug->sfxSwarm = RSDK.GetSfx("TMZ1/CyberSwarm.wav");
 
     DEBUGMODE_ADD_OBJ(SentryBug);
+
+    Zone_SetupHyperAttackList(SentryBug->classID, true, true, true, true, true, true);
 }
 
 void SentryBug_DebugSpawn(void)

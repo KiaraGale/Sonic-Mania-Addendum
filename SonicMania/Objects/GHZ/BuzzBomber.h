@@ -9,6 +9,7 @@ struct ObjectBuzzBomber {
     Hitbox hitboxBadnik;
     Hitbox hitboxProjectile;
     uint16 aniFrames;
+    uint16 sfxShot;
 };
 
 // Entity Class

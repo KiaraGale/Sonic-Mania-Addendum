@@ -25,6 +25,24 @@ void PBL_Setup_LateUpdate(void) {}
 void PBL_Setup_StaticUpdate(void)
 {
     RSDK_THIS_GEN();
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        bool32 touchedPause = false;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+            ControllerInfo->keyStart.down |= true;
+            touchedPause = true;
+        }
+
+        if (!PBL_Setup->touchPause && touchedPause) {
+            ControllerInfo->keyStart.press |= ControllerInfo->keyStart.down;
+        }
+
+        PBL_Setup->touchPause = ControllerInfo->keyStart.down;
+    }
 
     ++PBL_Setup->timer;
     PBL_Setup->timer &= 0x7FFF;
@@ -58,7 +76,7 @@ void PBL_Setup_Draw(void)
 {
     RSDK_THIS(PBL_Setup);
 
-    RSDK.FillScreen(self->color, self->timer, self->timer, self->timer);
+    RSDK.FillScreen(self->color, self->timer, self->timer - 128, self->timer - 256);
 }
 
 void PBL_Setup_Create(void *data)
@@ -236,12 +254,22 @@ void PBL_Setup_GiveScore(int32 score)
 
 void PBL_Setup_GiveLife(void)
 {
-    SaveRAM *saveRAM = SaveGame_GetSaveRAM();
+    SaveRAM *saveRAM                 = SaveGame_GetSaveRAM();
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     if (globals->gameMode != MODE_TIMEATTACK && globals->gameMode != MODE_ENCORE) {
-        saveRAM->lives++;
-
-        RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
+        if (addendumOptions->lifeSystem != LIFESYSTEM_INFINITE) {
+            if (addendumOptions->lifeSystem == LIFESYSTEM_MANIA) {
+                if (saveRAM->lives < 99) {
+                    saveRAM->lives++;
+                    RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
+                }
+            }
+            else {
+                saveRAM->lives++;
+                RSDK.PlaySfx(Player->sfx1up, false, 0xFF);
+            }
+        }
     }
 }
 

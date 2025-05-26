@@ -15,6 +15,11 @@ void CreditsSetup_LateUpdate(void) {}
 
 void CreditsSetup_StaticUpdate(void)
 {
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
     if (CreditsSetup->started) {
         CreditsSetup->scrollPos += 0x1000;
 
@@ -87,6 +92,25 @@ void CreditsSetup_StaticUpdate(void)
         CreditsSetup->creditsPos  = 0;
         CreditsSetup_LoadCreditsStrings();
         CreditsSetup->started = true;
+    }
+
+    if (touchControls) {
+        if (CreditsSetup->started && !CreditsSetup->skipped) {
+            if (TouchInfo->count) {
+                CreditsSetup->skipped = true;
+
+                EntityFXFade *fade = CreditsSetup->fxFade;
+
+                fade->state    = FXFade_State_FadeOut;
+                fade->speedIn  = 8;
+                fade->wait     = 64;
+                fade->speedOut = 8;
+                fade->timer    = 0;
+                fade->oneWay   = false;
+
+                Music_FadeOut(0.0125f);
+            }
+        }
     }
 }
 

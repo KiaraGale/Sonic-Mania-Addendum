@@ -71,7 +71,7 @@ void SpikeLog_State_Main(void)
                 if (player->characterID == ID_MIGHTY) {
                     int32 anim = player->animator.animationID;
                     if (anim == ANI_JUMP || anim == ANI_SPINDASH || anim == ANI_HAMMERDROP) {
-                        if (!player->invincibleTimer && player->blinkTimer <= 0) {
+                        if (!player->invincibleTimer || !player->superInvulnTimer && player->blinkTimer <= 0) {
                             if (abs(player->velocity.x) < 0x10000 || !player->groundedStore) {
                                 player->velocity.y       = -0x48000;
                                 player->onGround         = false;

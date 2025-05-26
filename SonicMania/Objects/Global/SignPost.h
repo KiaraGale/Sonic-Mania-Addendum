@@ -35,6 +35,7 @@ struct ObjectSignPost {
     uint16 sfxBubbleBounce;
     uint16 sfxSlide;
     uint8 maxPlayerCount;
+    int32 colorStorage[54];
 };
 
 // Entity Class

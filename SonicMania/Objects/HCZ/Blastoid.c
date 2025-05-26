@@ -71,6 +71,8 @@ void Blastoid_StageLoad(void)
     Blastoid->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
 
     DEBUGMODE_ADD_OBJ(Blastoid);
+
+    Zone_SetupHyperAttackList(Blastoid->classID, true, true, true, true, true, true);
 }
 
 void Blastoid_DebugSpawn(void)
@@ -203,8 +205,11 @@ void Blastoid_State_Projectile(void)
 
             foreach_active(Shield, shield)
             {
-                if (Shield_CheckCollisionTouch(shield, self, &Blastoid->hitboxProjectile))
-                    Shield_State_Reflect(shield, self);
+                foreach_active(Player, player)
+                {
+                    if (Shield_CheckCollisionTouch(shield, self, &Blastoid->hitboxProjectile))
+                        Shield_State_Reflect(player, shield, self);
+                }
             }
         }
     }

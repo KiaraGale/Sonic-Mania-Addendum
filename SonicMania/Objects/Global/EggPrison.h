@@ -37,6 +37,7 @@ struct EntityEggPrison {
     Animator propellerAnimator;
     Animator panelAnimator;
     Animator buttonAnimator;
+    bool32 spawnedByDebugMode;
 };
 
 // Object Struct
@@ -56,6 +57,9 @@ void EggPrison_EditorLoad(void);
 void EggPrison_Serialize(void);
 
 // Extra Entity Functions
+void EggPrison_DebugSpawn(void);
+void EggPrison_DebugDraw(void);
+
 void EggPrison_HandleMovement(void);
 
 void EggPrison_State_Init(void);

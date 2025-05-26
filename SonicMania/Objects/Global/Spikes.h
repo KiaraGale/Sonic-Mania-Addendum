@@ -20,6 +20,11 @@ typedef enum {
     SPIKES_MOVE_HIDDEN_FOREVER,
 } SpikeMoveTypes;
 
+typedef enum {
+    SPIKESTYLE_MANIA,
+    SPIKESTYLE_S1,
+} SpikeStyle;
+
 // Object Class
 struct ObjectSpikes {
     RSDK_OBJECT

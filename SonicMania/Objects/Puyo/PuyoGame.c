@@ -13,6 +13,17 @@ ObjectPuyoGame *PuyoGame;
 void PuyoGame_Update(void)
 {
     RSDK_THIS(PuyoGame);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (PuyoGame_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+            if (!ControllerInfo->keyStart.down)
+                ControllerInfo->keyStart.press = true;
+        }
+    }
 
     if (!self->started) {
         PuyoGame_SetupStartingEntities();
@@ -317,6 +328,16 @@ void PuyoGame_State_HandleRound(void)
 void PuyoGame_State_ShowRoundResults(void)
 {
     RSDK_THIS(PuyoGame);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count)
+            ControllerInfo[CONT_P1].keyA.down = true;
+    }
+
     EntityMenuParam *param = MenuParam_GetParam();
 
     if (self->timer >= 60) {
@@ -343,6 +364,15 @@ void PuyoGame_State_ShowRoundResults(void)
 void PuyoGame_State_ShowMatchResults(void)
 {
     RSDK_THIS(PuyoGame);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls) {
+        if (TouchInfo->count)
+            ControllerInfo[CONT_P1].keyA.down = true;
+    }
 
     EntityMenuParam *param = MenuParam_GetParam();
 
@@ -387,6 +417,32 @@ void PuyoGame_State_FadeToMenu(void)
         RSDK.SetScene("Presentation", "Menu");
         RSDK.LoadScene();
     }
+}
+
+int32 PuyoGame_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy)
+{
+    if (fx)
+        *fx = 0;
+    if (fy)
+        *fy = 0;
+
+    for (int32 t = 0; t < TouchInfo->count; ++t) {
+        int32 tx = (int32)(TouchInfo->x[t] * ScreenInfo->size.x);
+        int32 ty = (int32)(TouchInfo->y[t] * ScreenInfo->size.y);
+
+        if (TouchInfo->down[t]) {
+            if (tx >= x1 && ty >= y1 && tx <= x2 && ty <= y2) {
+                if (fx)
+                    *fx = tx;
+                if (fy)
+                    *fy = ty;
+
+                return t;
+            }
+        }
+    }
+
+    return -1;
 }
 
 #if GAME_INCLUDE_EDITOR

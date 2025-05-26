@@ -17,6 +17,7 @@ typedef enum {
     UIHEADING_ZONESEL,
     UIHEADING_REPLAYS,
     UIHEADING_ENCOREMODE,
+    UIHEADING_ADDENDUM,
 } UIHeadingIDs;
 
 // Object Class

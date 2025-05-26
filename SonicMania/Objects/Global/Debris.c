@@ -46,29 +46,33 @@ void Debris_Draw(void)
 {
     RSDK_THIS(Debris);
 
+    if (SceneInfo->activeCategory == 9)
+        RSDK.SetActivePalette(6, 0, ScreenInfo->size.y);
+
     RSDK.DrawSprite(&self->animator, NULL, false);
+
+    if (SceneInfo->activeCategory == 9)
+        RSDK.SetActivePalette(0, 0, ScreenInfo->size.y);
 
     for (int32 p = 0; p < 4; ++p) {
         EntityPlayer *player = RSDK_GET_ENTITY(p, Player);
 
         for (int32 c = 0; c < 96; ++c) {
-            Debris->colorStorage[c] = RSDK.GetPaletteEntry(0, c + 128);
-            RSDK.SetPaletteEntry(0, c + 128, Debris->powerColors[c]);
-        }
-
-        for (int32 c = 0; c < 96; ++c) {
+            Debris->colorStorage[c]     = RSDK.GetPaletteEntry(0, c + 128);
             Debris->colorStorage_HCZ[c] = RSDK.GetPaletteEntry(1, c + 128);
-            RSDK.SetPaletteEntry(1, c + 128, Debris->powerColors[c]);
+            Debris->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, c + 128);
         }
 
-        for (int32 c = 0; c < 96; ++c) {
-            Debris->colorStorage_CPZ[c] = RSDK.GetPaletteEntry(2, c + 128);
-            RSDK.SetPaletteEntry(2, c + 128, Debris->powerColors[c]);
+        for (int32 c = 0; c < 36; ++c) {
+            RSDK.SetPaletteEntry(0, 128 + c, Debris->powerColors[c + (Addendum_GetOptionsRAM()->emeraldPalette * 36)]);
+            RSDK.SetPaletteEntry(1, 128 + c, Debris->powerColors[c + (Addendum_GetOptionsRAM()->emeraldPalette * 36)]);
+            RSDK.SetPaletteEntry(2, 128 + c, Debris->powerColors[c + (Addendum_GetOptionsRAM()->emeraldPalette * 36)]);
+            RSDK.SetPaletteEntry(0, 176 + c, Debris->powerColors[72 + c]);
+            RSDK.SetPaletteEntry(1, 176 + c, Debris->powerColors[72 + c]);
+            RSDK.SetPaletteEntry(2, 176 + c, Debris->powerColors[72 + c]);
         }
 
         RSDK.DrawSprite(&self->emeraldsAnimator, NULL, false);
-        RSDK.DrawSprite(&self->stonesAnimator, NULL, false);
-        RSDK.DrawSprite(&self->powerAnimator, NULL, false);
 
         for (int32 c = 0; c < 96; ++c) {
             RSDK.SetPaletteEntry(0, c + 128, Debris->colorStorage[c]);
@@ -96,8 +100,6 @@ void Debris_Create(void *data)
 void Debris_StageLoad(void)
 {
     Debris->emeraldFrames = RSDK.LoadSpriteAnimation("Cutscene/Emeralds.bin", SCOPE_STAGE);
-    Debris->stoneFrames   = RSDK.LoadSpriteAnimation("Cutscene/Stones.bin", SCOPE_STAGE);
-    Debris->powerFrames   = RSDK.LoadSpriteAnimation("Cutscene/Power.bin", SCOPE_STAGE);
 }
 
 void Debris_CreateFromEntries(int32 aniFrames, int32 *entries, int32 animationID)
@@ -201,12 +203,19 @@ void Debris_State_Rotate(void)
     RSDK_THIS(Debris);
 
     self->angle += self->groundVel;
-    self->position.x = self->radius * RSDK.Cos256(self->angle >> 8) + self->originPos.x;
+    self->position.x = self->radius * RSDK.Cos256(self->angle >> 8) + self->originPos.x + Zone->autoScrollSpeed;
     self->position.y = self->radius * RSDK.Sin256(self->angle >> 8) + self->originPos.y;
     self->radius -= 976;
 
     if (self->radius <= 0)
         destroyEntity(self);
+}
+
+void Debris_State_Oscillate(void)
+{
+    RSDK_THIS(Debris);
+
+    self->position.y = BadnikHelpers_Oscillate(self->originPos.y, 2, 10);
 }
 
 #if GAME_INCLUDE_EDITOR

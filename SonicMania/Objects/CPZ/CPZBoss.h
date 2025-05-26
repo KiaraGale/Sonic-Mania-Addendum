@@ -30,6 +30,8 @@ struct EntityCPZBoss {
     Animator panelAnimator;
     Animator enterAnimator;
     Animator characterAnimator;
+    Animator superAnimator;
+    bool32 shouldAnimateSuper;
 };
 
 // Object Struct
@@ -70,5 +72,6 @@ void CPZBoss_State_HandleMatchFinish_PlayerLose(void);
 void CPZBoss_State_EggmanFall(void);
 void CPZBoss_State_PlayerExit(void);
 void CPZBoss_State_Destroyed(void);
+void CPZBoss_DetermineSuperAnim(void);
 
 #endif //! OBJ_CPZBOSS_H

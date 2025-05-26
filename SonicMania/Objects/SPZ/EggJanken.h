@@ -26,6 +26,7 @@ struct ObjectEggJanken {
     uint16 sfxImpact4;
     uint16 sfxImpact3;
     uint16 sfxExplosion;
+    uint16 sfxFlail;
 };
 
 // Entity Class

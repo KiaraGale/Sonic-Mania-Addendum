@@ -103,8 +103,11 @@ void Projectile_CheckPlayerCollisions(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 }
 

@@ -21,10 +21,14 @@ void EggJanken_Update(void)
     if (self->invincibilityTimer) {
         self->invincibilityTimer--;
         if (!(self->invincibilityTimer & 1)) {
-            if (self->invincibilityTimer & 2)
+            if (self->invincibilityTimer & 2) {
                 RSDK.SetPaletteEntry(0, 128, 0xFFFFFF);
-            else
+                RSDK.SetPaletteEntry(0, 32, 0xFFFFFF);
+            }
+            else {
                 RSDK.SetPaletteEntry(0, 128, 0x000000);
+                RSDK.SetPaletteEntry(0, 32, 0x282028);
+            }
         }
     }
 
@@ -103,7 +107,7 @@ void EggJanken_Create(void *data)
     self->stateEyes              = EggJanken_Eyes_None;
     self->eyeFrames[0]           = 3;
     self->eyeFrames[1]           = 4;
-    self->health                 = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+    self->health                 = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
     self->buttonAnimator.frameID = 1;
 
     for (int32 a = 0; a < EGGJANKEN_ARM_COUNT; ++a) self->stateArm[a] = EggJanken_Arm_None;
@@ -155,6 +159,7 @@ void EggJanken_StageLoad(void)
     EggJanken->sfxDrop      = RSDK.GetSfx("Stage/Drop.wav");
     EggJanken->sfxImpact4   = RSDK.GetSfx("Stage/Impact4.wav");
     EggJanken->sfxImpact3   = RSDK.GetSfx("Stage/Impact3.wav");
+    EggJanken->sfxFlail     = RSDK.GetSfx("SSZ1/Flail.wav");
 }
 
 void EggJanken_CheckPlayerCollisions(void)
@@ -417,7 +422,7 @@ void EggJanken_State_AwaitButtonPress(void)
 
         CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), self->position.x, self->position.y)->drawGroup = Zone->objectDrawGroup[1];
         RSDK.PlaySfx(Explosion->sfxDestroy, false, 255);
-        Music_TransitionTrack(TRACK_MINIBOSS, 0.0125);
+        Music_TransitionTrack(TRACK_EGGMAN2, 0.0125);
     }
 }
 
@@ -548,17 +553,14 @@ void EggJanken_State_Destroyed(void)
 
         case 120:
             self->stateDraw = EggJanken_Draw_Destroyed;
+            WeatherTV_ShutdownTV();
             Music_TransitionTrack(TRACK_STAGE, 0.0125);
+            SPZ2Setup->skipBoss = true;
             break;
 
         case 180: {
-            RSDK.PlaySfx(SignPost->sfxTwinkle, false, 255);
-
-            EntitySignPost *signPost = RSDK_GET_ENTITY(SceneInfo->entitySlot + 1, SignPost);
-            signPost->position.x     = self->position.x;
-            signPost->state          = SignPost_State_Falling;
-
             self->state = EggJanken_State_None;
+            Zone->cameraBoundsR[0] += WIDE_SCR_XSIZE * 2;
             break;
         }
 
@@ -760,6 +762,7 @@ void EggJanken_State_PrepareArmAttack(void)
             self->armRadiusSpeed[self->attackingArmID] += 0x180 * (distY + distX - 120);
         }
 
+        RSDK.PlaySfx(EggJanken->sfxFlail, false, 255);
         self->state = EggJanken_State_ArmAttack;
     }
     else if (self->attackingArmID) {

@@ -1943,6 +1943,15 @@
     <ClInclude Include="Objects\HCZ\Fan.h">
       <Filter>Sources\Objects\HCZ</Filter>
     </ClInclude>
+    <ClInclude Include="Objects\Global\SuperFlicky.h">
+      <Filter>Sources\Objects\Global</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\LRZ\HPZCutscene.h">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Menu\AddendumToggles.h">
+      <Filter>Sources\Objects\Menu</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Objects\Global\ActClear.c">
@@ -3774,6 +3783,15 @@
     </ClCompile>
     <ClCompile Include="Objects\HCZ\Jawz.c">
       <Filter>Sources\Objects\HCZ</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Global\SuperFlicky.c">
+      <Filter>Sources\Objects\Global</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\LRZ\HPZCutscene.c">
+      <Filter>Sources\Objects\LRZ</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Menu\AddendumToggles.c">
+      <Filter>Sources\Objects\Menu</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -16,6 +16,7 @@ struct ObjectFlasherMKII {
     uint16 aniFrames;
     uint16 sfxFlop;
     uint16 sfxZap;
+    uint16 sfxZap2;
 };
 
 // Entity Class

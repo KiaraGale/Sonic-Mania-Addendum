@@ -82,26 +82,41 @@ void MSZCutsceneK_SetupP2(int32 x, int32 y)
     Player->superFrames = RSDK.LoadSpriteAnimation("Players/SuperSonic.bin", SCOPE_STAGE);
 
     RSDK.ResetEntitySlot(SLOT_PLAYER2, Player->classID, NULL);
+    RSDK.ResetEntitySlot(SLOT_PLAYER3, TYPE_BLANK, NULL);
+    RSDK.ResetEntitySlot(SLOT_PLAYER4, TYPE_BLANK, NULL);
 
     EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
     ++Player->playerCount;
     player2->characterID  = ID_SONIC;
     player2->position.x   = x;
     player2->position.y   = y;
-    player2->aniFrames    = Player->sonicFrames;
+
+    // if all emeralds, setup Super Sonic S2 ending reference
+    if (SaveGame_GetSaveRAM()->collectedEmeralds >= 0b01111111) {
+        player2->rings = 100;
+        Player_TryTransform(player2, 0xFF, Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_SUPEREMERALD ? Addendum_GetSaveRAM()->collectedSuperEmeralds : 0x00,
+            Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE ? Addendum_GetSaveRAM()->collectedTimeStones : 0x00);
+        RSDK.SetSpriteAnimation(player2->aniFrames, ANI_RUN, &player2->animator, true, 0);
+    }
+    else {
+        player2->aniFrames = Player->sonicFrames;
+        RSDK.SetSpriteAnimation(player2->aniFrames, ANI_RIDE, &player2->animator, true, 0);
+    }
+    
     player2->tailFrames   = -1;
     player2->jumpOffset   = 0x50000;
     player2->stateAbility = Player_JumpAbility_Sonic;
     player2->sensorY      = 0x140000;
     player2->stateInput   = StateMachine_None;
     player2->state        = Player_State_Static;
-    RSDK.SetSpriteAnimation(Player->sonicFrames, ANI_RIDE, &player2->animator, true, 0);
 }
 
 bool32 MSZCutsceneK_Cutscene_RidingTornado(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     EntityHeavyMystic *mystic = MSZCutsceneK->mystic;
@@ -115,7 +130,10 @@ bool32 MSZCutsceneK_Cutscene_RidingTornado(EntityCutsceneSeq *host)
         player1->velocity.x = 0;
         player1->velocity.y = 0;
         RSDK.SetSpriteAnimation(MSZCutsceneK->playerFrames, 6, &player1->animator, true, 0);
-        MSZCutsceneK_SetupP2(0xCC0000, 0x29E0000);
+        if (SaveGame_GetSaveRAM()->collectedEmeralds >= 0b01111111)
+            MSZCutsceneK_SetupP2(0xF10000, 0x2E00000);
+        else
+            MSZCutsceneK_SetupP2(0xCC0000, 0x29E0000);
     }
 
     if (mystic->position.x > tornado->position.x - 0x100000) {
@@ -131,7 +149,7 @@ bool32 MSZCutsceneK_Cutscene_RidingTornado(EntityCutsceneSeq *host)
 
 bool32 MSZCutsceneK_Cutscene_KnockedOffTornado(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
     UNUSED(camera);
 

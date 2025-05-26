@@ -207,6 +207,27 @@ void EggPrison_StageLoad(void)
 
     EggPrison->sfxDestroy = RSDK.GetSfx("Global/Destroy.wav");
     EggPrison->sfxSpring  = RSDK.GetSfx("Global/Spring.wav");
+
+    DEBUGMODE_ADD_OBJ(EggPrison);
+}
+
+void EggPrison_DebugSpawn(void)
+{
+    RSDK_THIS(DebugMode);
+
+    EntityEggPrison *eggPrison    = CREATE_ENTITY(EggPrison, NULL, self->position.x, self->position.y);
+    eggPrison->spawnedByDebugMode = true;
+}
+void EggPrison_DebugDraw(void)
+{
+    RSDK.SetSpriteAnimation(EggPrison->aniFrames, 0, &DebugMode->animator, true, 0);
+    RSDK.DrawSprite(&DebugMode->animator, NULL, false);
+
+    RSDK.SetSpriteAnimation(EggPrison->aniFrames, 1, &DebugMode->animator, true, 0);
+    RSDK.DrawSprite(&DebugMode->animator, NULL, false);
+
+    RSDK.SetSpriteAnimation(EggPrison->aniFrames, 2, &DebugMode->animator, true, 0);
+    RSDK.DrawSprite(&DebugMode->animator, NULL, false);
 }
 
 void EggPrison_HandleMovement(void)

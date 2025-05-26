@@ -114,6 +114,9 @@ void UIButtonPrompt_StaticUpdate(void)
 void UIButtonPrompt_Draw(void)
 {
     RSDK_THIS(UIButtonPrompt);
+    Vector2 drawPos;
+    drawPos.x = self->position.x + TO_FIXED(12);
+    drawPos.y = self->position.y;
 
     UIButtonPrompt_SetButtonSprites();
 
@@ -123,8 +126,12 @@ void UIButtonPrompt_Draw(void)
     RSDK.DrawSprite(&self->buttonAnimator, NULL, false);
 
     self->drawFX = FX_NONE;
-    if (self->textVisible)
-        RSDK.DrawSprite(&self->promptAnimator, NULL, false);
+    if (self->textVisible) {
+        if (self->string.length > 0)
+            RSDK.DrawText(&self->textAnimator, &drawPos, &self->string, 0, self->buttonCharCount, 0, 0, 0, 0, false);
+        else
+            RSDK.DrawSprite(&self->promptAnimator, NULL, false);
+    }
 }
 
 void UIButtonPrompt_Create(void *data)
@@ -145,9 +152,20 @@ void UIButtonPrompt_Create(void *data)
         self->updateRange.y = 0x800000;
         self->textVisible   = true;
 
-        RSDK.SetSpriteAnimation(UIButtonPrompt->aniFrames, 0, &self->decorAnimator, true, 0);
-        RSDK.SetSpriteAnimation(UIWidgets->textFrames, 0, &self->promptAnimator, true, self->promptID);
+        Localization_GetString(&self->string, self->stringID);
 
+        if (self->string.length > 0) {
+            for (int32 c = 0; c < self->string.length; ++c)
+                self->buttonCharCount = c + 1;
+
+            RSDK.SetSpriteAnimation(UIWidgets->dynTextFrames, self->textType, &self->textAnimator, true, 0);
+            RSDK.SetSpriteString(UIWidgets->dynTextFrames, self->textType, &self->string);
+        }
+        else {
+            RSDK.SetSpriteAnimation(UIWidgets->textFrames, 0, &self->promptAnimator, true, self->promptID);
+        }
+
+        RSDK.SetSpriteAnimation(UIButtonPrompt->aniFrames, 0, &self->decorAnimator, true, 0);
         UIButtonPrompt_SetButtonSprites();
 
         self->textSprite  = UIWidgets->textFrames;
@@ -555,6 +573,13 @@ void UIButtonPrompt_EditorLoad(void)
     RSDK_ENUM_VAR("Top-Right (Row 1)", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW1);
     RSDK_ENUM_VAR("Top-Left (Row 2)", UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW2);
     RSDK_ENUM_VAR("Top-Right (Row 2)", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW2);
+
+    RSDK_ACTIVE_VAR(UIButtonPrompt, textType);
+    RSDK_ENUM_VAR("Heading Text", UIBUTTONPROMPT_ANCHOR_NONE);
+    RSDK_ENUM_VAR("Large Text", UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW1);
+    RSDK_ENUM_VAR("Small Text", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW1);
+    RSDK_ENUM_VAR("Slim Small Text", UIBUTTONPROMPT_ANCHOR_TOPLEFT_ROW2);
+    RSDK_ENUM_VAR("Tiny Text", UIBUTTONPROMPT_ANCHOR_TOPRIGHT_ROW2);
 }
 #endif
 
@@ -563,4 +588,6 @@ void UIButtonPrompt_Serialize(void)
     RSDK_EDITABLE_VAR(UIButtonPrompt, VAR_ENUM, promptID);
     RSDK_EDITABLE_VAR(UIButtonPrompt, VAR_ENUM, buttonID);
     RSDK_EDITABLE_VAR(UIButtonPrompt, VAR_UINT8, headingAnchor);
+    RSDK_EDITABLE_VAR(UIButtonPrompt, VAR_INT32, textType);
+    RSDK_EDITABLE_VAR(UIButtonPrompt, VAR_INT32, stringID);
 }

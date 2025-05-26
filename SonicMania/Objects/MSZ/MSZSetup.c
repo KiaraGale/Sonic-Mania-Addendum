@@ -265,8 +265,13 @@ void MSZSetup_StageLoad(void)
     MSZSetup->sfxLocoChugga = RSDK.GetSfx("MSZ/LocoChugga.wav");
 #endif
 
-    Animals->animalTypes[0] = ANIMAL_LOCKY;
-    Animals->animalTypes[1] = ANIMAL_POCKY;
+    if (!Zone->actID) {
+        Animals->animalTypes[0] = ANIMAL_TOCKY;
+    }
+    else {
+        Animals->animalTypes[0] = ANIMAL_POCKY;
+    }
+    Animals->animalTypes[1] = ANIMAL_CUCKY;
 }
 
 void MSZSetup_SetBGScrollOrigin(int32 x, int32 y)
@@ -490,6 +495,12 @@ void MSZSetup_State_CheckTrainStart(void)
 
         Zone->cameraBoundsL[0] = 10624;
         Zone->playerBoundsL[0] = 10624 << 16;
+        Zone->cameraBoundsL[1] = 10624;
+        Zone->playerBoundsL[1] = 10624 << 16;
+        Zone->cameraBoundsL[2] = 10624;
+        Zone->playerBoundsL[2] = 10624 << 16;
+        Zone->cameraBoundsL[3] = 10624;
+        Zone->playerBoundsL[3] = 10624 << 16;
 
         MSZSetup->chuggaChannel = RSDK.PlaySfx(MSZSetup->sfxLocoChugga, 1, 255);
         RSDK.SetChannelAttributes(MSZSetup->chuggaChannel, 0.0, 0.0, 1.0);
@@ -572,6 +583,12 @@ void MSZSetup_State_AwaitActClearFinish(void)
         self->timer                 = 0;
         Zone->cameraBoundsR[0]      = 17064;
         Zone->playerBoundActiveR[0] = false;
+        Zone->cameraBoundsR[1]      = 17064;
+        Zone->playerBoundActiveR[1] = false;
+        Zone->cameraBoundsR[2]      = 17064;
+        Zone->playerBoundActiveR[2] = false;
+        Zone->cameraBoundsR[3]      = 17064;
+        Zone->playerBoundActiveR[3] = false;
 
         EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
         player1->stateInput   = StateMachine_None;
@@ -695,7 +712,7 @@ void MSZSetup_PlayerState_Pilot(void)
     self->stateInput     = StateMachine_None;
     self->position.x     = ScreenInfo->position.x << 16;
     self->position.y     = ScreenInfo->position.y << 16;
-    Player->respawnTimer = 0;
+    self->respawnTimer   = 0;
 }
 
 void MSZSetup_PlayerState_PostCrashJumpIn(void)
@@ -705,7 +722,7 @@ void MSZSetup_PlayerState_PostCrashJumpIn(void)
     self->active         = ACTIVE_NORMAL;
     self->visible        = true;
     self->stateInput     = Player_Input_P2_AI;
-    Player->respawnTimer = 240;
+    self->respawnTimer   = 240;
 
     Player_HandleSidekickRespawn();
 }

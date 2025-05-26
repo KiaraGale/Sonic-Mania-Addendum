@@ -74,6 +74,8 @@ void Armadiloid_StageLoad(void)
     DEBUGMODE_ADD_OBJ(Armadiloid);
 
     Armadiloid->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
+
+    Zone_SetupHyperAttackList(Armadiloid->classID, true, true, true, true, true, true);
 }
 void Armadiloid_DebugSpawn(void)
 {
@@ -200,8 +202,11 @@ void Armadiloid_State_PlatformShoot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &projectile->hitbox))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
 

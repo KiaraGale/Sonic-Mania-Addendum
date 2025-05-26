@@ -569,6 +569,7 @@ bool32 TMZ2Outro_Cutscene_OuttaHere(EntityCutsceneSeq *host)
 bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
 {
     RSDK_THIS(TMZ2Outro);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
 
     if (!(Zone->timer & 7))
         Camera_ShakeScreen(0, 0, 4);
@@ -622,12 +623,30 @@ bool32 TMZ2Outro_Cutscene_TeamEscape(EntityCutsceneSeq *host)
 
         SceneInfo->timeEnabled = true;
 
-        Player_TryTransform(player1, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(player2, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(player3, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(player4, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(player5, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
-        Player_TryTransform(player6, 0xFF, Addendum_GetSaveRAM()->collectedTimeStones);
+        if (addendumOptions->secondaryGems == SECONDGEMS_SUPEREMERALD) {
+            Player_TryTransform(player1, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+            Player_TryTransform(player2, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+            Player_TryTransform(player3, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+            Player_TryTransform(player4, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+            Player_TryTransform(player5, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+            Player_TryTransform(player6, 0xFF, Addendum_GetSaveRAM()->collectedSuperEmeralds, 0x00);
+        }
+        else if (addendumOptions->secondaryGems == SECONDGEMS_TIMESTONE) {
+            Player_TryTransform(player1, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(player2, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(player3, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(player4, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(player5, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+            Player_TryTransform(player6, 0xFF, 0x00, Addendum_GetSaveRAM()->collectedTimeStones);
+        }
+        else {
+            Player_TryTransform(player1, 0xFF, 0x00, 0x00);
+            Player_TryTransform(player2, 0xFF, 0x00, 0x00);
+            Player_TryTransform(player3, 0xFF, 0x00, 0x00);
+            Player_TryTransform(player4, 0xFF, 0x00, 0x00);
+            Player_TryTransform(player5, 0xFF, 0x00, 0x00);
+            Player_TryTransform(player6, 0xFF, 0x00, 0x00);
+        }
 
         Player->playerCount = 7;
         int32 offsetX       = 0;

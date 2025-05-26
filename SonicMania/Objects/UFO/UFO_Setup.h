@@ -76,5 +76,6 @@ void UFO_Setup_State_ShowStartMessage(void);
 void UFO_Setup_State_FinishFadeout(void);
 void UFO_Setup_State_HandleRingDrain(void);
 void UFO_Setup_State_TimedOver(void);
+void SetupHPZResults(void *data);
 
 #endif //! OBJ_UFO_SETUP_H

@@ -55,13 +55,15 @@ void SSZ1Intro_SetupCutscene(void)
 #endif
 }
 
-void SSZ1Intro_HandleRubyHover(EntityCutsceneSeq *host, EntityPlayer *player1, EntityPlayer *player2, int32 offset)
+void SSZ1Intro_HandleRubyHover(EntityCutsceneSeq *host, EntityPlayer *player1, EntityPlayer *player2, EntityPlayer *player3, EntityPlayer *player4, int32 offset)
 {
-    EntityPlayer *players[2];
+    EntityPlayer *players[4];
     players[0] = player1;
     players[1] = player2;
+    players[2] = player3;
+    players[3] = player4;
 
-    for (int32 i = 0, angle = 0; angle < 0x80; angle += 0x40, ++i) {
+    for (int32 i = 0, angle = 0; angle < 0x80; angle += 0x20, ++i) {
         EntityPlayer *playerPtr = players[i];
         if (!playerPtr)
             break;
@@ -75,7 +77,7 @@ void SSZ1Intro_HandleRubyHover(EntityCutsceneSeq *host, EntityPlayer *player1, E
 
 bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     Entity *cutEntity    = host->activeEntity;
     EntityFXRuby *fxRuby = SSZ1Intro->fxRuby;
@@ -95,16 +97,30 @@ bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
             player2->onGround   = false;
             player2->stateInput = StateMachine_None;
         }
+        if (player3->classID == Player->classID) {
+            player3->position.x -= 0x80000;
+            player3->velocity.x = 0;
+            player3->velocity.y = 0;
+            player3->onGround   = false;
+            player3->stateInput = StateMachine_None;
+        }
+        if (player4->classID == Player->classID) {
+            player4->position.x -= 0x80000;
+            player4->velocity.x = 0;
+            player4->velocity.y = 0;
+            player4->onGround   = false;
+            player4->stateInput = StateMachine_None;
+        }
     }
     camera->state = StateMachine_None;
 
     if (fxRuby->fadeBlack > 0) {
         fxRuby->fadeBlack -= 16;
-        SSZ1Intro_HandleRubyHover(host, player1, player2, cutEntity->position.y - 0x200000);
+        SSZ1Intro_HandleRubyHover(host, player1, player2, player3, player4, cutEntity->position.y - 0x200000);
     }
     else if (fxRuby->fadeWhite > 0) {
         fxRuby->fadeWhite -= 16;
-        SSZ1Intro_HandleRubyHover(host, player1, player2, cutEntity->position.y - 0x200000);
+        SSZ1Intro_HandleRubyHover(host, player1, player2, player3, player4, cutEntity->position.y - 0x200000);
     }
     else {
         if (!host->values[0]) {
@@ -114,12 +130,16 @@ bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
         }
 
         if (fxRuby->outerRadius) {
-            SSZ1Intro_HandleRubyHover(host, player1, player2, cutEntity->position.y - 0x200000);
+            SSZ1Intro_HandleRubyHover(host, player1, player2, player3, player4, cutEntity->position.y - 0x200000);
         }
         else {
             player1->state = Player_State_Air;
             if (player2->classID == Player->classID)
                 player2->state = Player_State_Air;
+            if (player3->classID == Player->classID)
+                player3->state = Player_State_Air;
+            if (player4->classID == Player->classID)
+                player4->state = Player_State_Air;
             fxRuby->active = ACTIVE_NEVER;
             return true;
         }
@@ -128,12 +148,24 @@ bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host)
 }
 bool32 SSZ1Intro_Cutscene_HandleLanding(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (player2->classID == Player->classID) {
-        if (player1 && player2->onGround)
-            return true;
+        if (player3->classID == Player->classID) {
+            if (player4->classID == Player->classID) {
+                if (player1 && player2->onGround && player3->onGround && player4->onGround)
+                    return true;
+            }
+            else {
+                if (player1 && player2->onGround && player3->onGround)
+                    return true;
+            }
+        }
+        else {
+            if (player1 && player2->onGround)
+                return true;
+        }
     }
     else if (player1->onGround)
         return true;
@@ -142,13 +174,21 @@ bool32 SSZ1Intro_Cutscene_HandleLanding(EntityCutsceneSeq *host)
 }
 bool32 SSZ1Intro_Cutscene_BeginAct1(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         RSDK.SetSpriteAnimation(player1->aniFrames, ANI_IDLE, &player1->animator, true, 0);
         if (player2->classID == Player->classID) {
             RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
             player2->up = false;
+        }
+        if (player3->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, true, 0);
+            player3->up = false;
+        }
+        if (player4->classID == Player->classID) {
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, true, 0);
+            player4->up = false;
         }
     }
 
@@ -165,6 +205,18 @@ bool32 SSZ1Intro_Cutscene_BeginAct1(EntityCutsceneSeq *host)
             player2->tileCollisions = TILECOLLISION_DOWN;
             player2->onGround       = true;
             player2->state          = Player_State_Ground;
+        }
+        if (player3->classID == Player->classID) {
+            player3->stateInput     = Player_Input_P2_AI;
+            player3->tileCollisions = TILECOLLISION_DOWN;
+            player3->onGround       = true;
+            player3->state          = Player_State_Ground;
+        }
+        if (player4->classID == Player->classID) {
+            player4->stateInput     = Player_Input_P2_AI;
+            player4->tileCollisions = TILECOLLISION_DOWN;
+            player4->onGround       = true;
+            player4->state          = Player_State_Ground;
         }
 
         foreach_all(TitleCard, titleCard)

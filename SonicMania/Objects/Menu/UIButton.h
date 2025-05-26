@@ -41,8 +41,15 @@ struct EntityUIButton {
     void (*choiceChangeCB)(void);
     Animator animator;
     uint16 textFrames;
+    uint16 dynTextFrames;
     int32 startListID;
     int32 startFrameID;
+    bool32 allowVerticalScroll;
+    int32 textType;
+    String string;
+    int32 stringID;
+    int32 buttonCharCount;
+    Animator textAnimator;
 };
 
 // Object Struct
@@ -69,6 +76,7 @@ void UIButton_SetChoiceSelection(EntityUIButton *button, int32 selection);
 void *UIButton_GetActionCB(void);
 void UIButton_FailCB(void);
 void UIButton_ProcessButtonCB_Scroll(void);
+void UIButton_ProcessButtonCB_Scroll_UIChar(void);
 bool32 UIButton_ProcessTouchCB_Multi(void);
 bool32 UIButton_ProcessTouchCB_Single(void);
 void UIButton_ProcessButtonCB(void);

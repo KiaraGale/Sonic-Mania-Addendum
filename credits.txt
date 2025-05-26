@@ -12,6 +12,10 @@ Mefiresu/Mephiles - assistant programmer, playtester, debugger
 
 JunkeyBot - lead palettist, assistant artist
 
+Braven - quality assurance, assistant palettist
+
+ProdNW - playtesting
+
 Asset Contributers:
 smb123w64gb - Special Stage Time Stone models
 
@@ -19,9 +23,11 @@ Maro - Tails animation file re-work
 
 DNLeal - Unified Endings Plus
 
+Jd1206 - programming assistance
+
 Special Thanks:
-Chuli/stxtic/RMGRich - lead Mania decomp developer
+Chuli/stxtic/RMGRich - lead Mania decomp developer, lead UltrawideMania developer
 
-Rubberduckycooly - lead Mania decomp developer
+Rubberduckycooly - lead Mania decomp developer, lead ManiaTouchControls developer
 
-Retro Engine Modding Server - hosted Addendum's development thread, as well as positive feedback for the project
+Retro Engine Modding Server - hosted Addendum's development thread, as well as positive feedback and support for the project

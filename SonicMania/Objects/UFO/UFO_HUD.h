@@ -7,6 +7,14 @@
 struct ObjectUFO_HUD {
     RSDK_OBJECT
     uint16 aniFrames;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 actionPos;
+    Vector2 pausePos;
+    int32 pauseAlpha;
 };
 
 // Entity Class
@@ -41,5 +49,7 @@ void UFO_HUD_Serialize(void);
 void UFO_HUD_CheckLevelUp(void);
 void UFO_HUD_LevelUpMach(void);
 void UFO_HUD_DrawNumbers(Vector2 *drawPos, int32 value);
+void UFO_HUD_DrawTouchControls(void);
+int32 UFO_HUD_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
 
 #endif //! OBJ_UFO_HUD_H

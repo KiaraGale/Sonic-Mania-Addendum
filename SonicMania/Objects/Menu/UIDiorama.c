@@ -81,6 +81,10 @@ void UIDiorama_Draw(void)
 void UIDiorama_Create(void *data)
 {
     RSDK_THIS(UIDiorama);
+    bool32 ultraWide = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &ultraWide);
+#endif
 
     if (!SceneInfo->inEditor) {
         self->lastDioramaID = -1;
@@ -92,31 +96,54 @@ void UIDiorama_Create(void *data)
         self->visible   = true;
         self->drawGroup = 2;
     }
+
+    if (ultraWide) {
+        int32 extraWidth = (ScreenInfo->size.x - 424) / 2;
+        self->position.x -= extraWidth << 16;
+    }
 }
 
 void UIDiorama_StageLoad(void)
 {
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
+
     UIDiorama->active = ACTIVE_ALWAYS;
 
     RSDK.SetPaletteMask(0x00FF00);
 
     UIDiorama->aniFrames       = RSDK.LoadSpriteAnimation("UI/Diorama.bin", SCOPE_STAGE);
-    UIDiorama->capsuleFrames   = RSDK.LoadSpriteAnimation("AIZ/SchrodingersCapsule.bin", SCOPE_STAGE);
-    UIDiorama->sonicFrames     = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
-    UIDiorama->tailsFrames     = RSDK.LoadSpriteAnimation("Players/Tails.bin", SCOPE_STAGE);
-    UIDiorama->knuxFrames      = RSDK.LoadSpriteAnimation("Players/Knuckles.bin", SCOPE_STAGE);
-    UIDiorama->knuxFramesAIZ   = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
-    UIDiorama->knuxFramesHCZ   = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
-    UIDiorama->mightyFrames    = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
-    UIDiorama->rayFrames       = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
-    UIDiorama->sonicCEFrames   = RSDK.LoadSpriteAnimation("CE/Sonic.bin", SCOPE_STAGE);
-    UIDiorama->tailsCEFrames   = RSDK.LoadSpriteAnimation("CE/Tails.bin", SCOPE_STAGE);
-    UIDiorama->knuxCEFrames    = RSDK.LoadSpriteAnimation("CE/Knuckles.bin", SCOPE_STAGE);
-    UIDiorama->knuxCEFramesAIZ = RSDK.LoadSpriteAnimation("CE/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
-    UIDiorama->knuxCEFramesHCZ = RSDK.LoadSpriteAnimation("CE/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
-    UIDiorama->mightyCEFrames  = RSDK.LoadSpriteAnimation("CE/Mighty.bin", SCOPE_STAGE);
-    UIDiorama->rayCEFrames     = RSDK.LoadSpriteAnimation("CE/Ray.bin", SCOPE_STAGE);
-    UIDiorama->amyFrames       = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
+    if (addendumOptions->spriteStyle == SPRITESTYLE_MANIA) {
+        UIDiorama->capsuleFrames  = RSDK.LoadSpriteAnimation("AIZ/SchrodingersCapsule.bin", SCOPE_STAGE);
+        UIDiorama->sonicFrames    = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
+        UIDiorama->tailsFrames    = RSDK.LoadSpriteAnimation("Players/Tails.bin", SCOPE_STAGE);
+        UIDiorama->knuxFrames     = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesAIZ  = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesHCZ  = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
+        UIDiorama->mightyFrames   = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+        UIDiorama->rayFrames      = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+        UIDiorama->amyFrames      = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
+    }
+    else if (addendumOptions->spriteStyle == SPRITESTYLE_CHAREDITSPLUS) {
+        UIDiorama->capsuleFrames  = RSDK.LoadSpriteAnimation("CE+/SchrodingersCapsule.bin", SCOPE_STAGE);
+        UIDiorama->sonicFrames    = RSDK.LoadSpriteAnimation("CE+/Sonic.bin", SCOPE_STAGE);
+        UIDiorama->tailsFrames    = RSDK.LoadSpriteAnimation("CE+/Tails.bin", SCOPE_STAGE);
+        UIDiorama->knuxFrames     = RSDK.LoadSpriteAnimation("CE+/Knux.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesAIZ  = RSDK.LoadSpriteAnimation("CE+/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesHCZ  = RSDK.LoadSpriteAnimation("CE+/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
+        UIDiorama->mightyFrames   = RSDK.LoadSpriteAnimation("CE+/Mighty.bin", SCOPE_STAGE);
+        UIDiorama->rayFrames      = RSDK.LoadSpriteAnimation("CE+/Ray.bin", SCOPE_STAGE);
+        UIDiorama->amyFrames      = RSDK.LoadSpriteAnimation("CE+/Amy.bin", SCOPE_STAGE);
+    }
+    else {
+        UIDiorama->sonicFrames    = RSDK.LoadSpriteAnimation("Players/Sonic.bin", SCOPE_STAGE);
+        UIDiorama->tailsFrames    = RSDK.LoadSpriteAnimation("Players/Tails.bin", SCOPE_STAGE);
+        UIDiorama->knuxFrames     = RSDK.LoadSpriteAnimation("Players/Knux.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesAIZ  = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneAIZ.bin", SCOPE_STAGE);
+        UIDiorama->knuxFramesHCZ  = RSDK.LoadSpriteAnimation("Players/KnuxCutsceneHPZ.bin", SCOPE_STAGE);
+        UIDiorama->mightyFrames   = RSDK.LoadSpriteAnimation("Players/Mighty.bin", SCOPE_STAGE);
+        UIDiorama->rayFrames      = RSDK.LoadSpriteAnimation("Players/Ray.bin", SCOPE_STAGE);
+        UIDiorama->amyFrames      = RSDK.LoadSpriteAnimation("Players/Amy.bin", SCOPE_STAGE);
+    }
     UIDiorama->ringFrames      = RSDK.LoadSpriteAnimation("Global/Ring.bin", SCOPE_STAGE);
     UIDiorama->speedGateFrames = RSDK.LoadSpriteAnimation("Global/SpeedGate.bin", SCOPE_STAGE);
     UIDiorama->bssSonicFrames  = RSDK.LoadSpriteAnimation("SpecialBS/Sonic.bin", SCOPE_STAGE);

@@ -51,7 +51,7 @@ void HotaruHiWatt_Create(void *data)
                 case HHW_BOSS:
                     self->visible = false;
                     self->drawFX  = FX_FLIP;
-                    self->health  = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+                    self->health  = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
                     RSDK.SetSpriteAnimation(HotaruHiWatt->aniFrames, 0, &self->headAnimator, true, 0);
                     RSDK.SetSpriteAnimation(HotaruHiWatt->aniFrames, 1, &self->bulbAnimator, true, 0);
 
@@ -69,7 +69,7 @@ void HotaruHiWatt_Create(void *data)
 
                     self->inkEffect = INK_ADD;
                     self->visible   = true;
-                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+                    self->health    = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     self->position.x += RSDK.Rand(-0x500000, 0x500000);
                     self->position.y += RSDK.Rand(-0x800000, 0x800000);
                     self->state         = HotaruHiWatt_StateHotaru_DimScreen;
@@ -85,7 +85,7 @@ void HotaruHiWatt_Create(void *data)
                     self->originPos             = self->position;
                     self->inkEffect             = INK_ADD;
                     self->visible               = true;
-                    self->health                = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+                    self->health                = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     self->formationCircleRadius = 0x800;
                     self->alpha                 = -0x200;
                     self->state                 = HotaruHiWatt_StateHotaruPair_DimScreen;
@@ -101,7 +101,7 @@ void HotaruHiWatt_Create(void *data)
                     self->targetPos = self->position;
                     self->inkEffect = INK_ADD;
                     self->visible   = true;
-                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+                    self->health    = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     self->alpha     = 0x100;
                     self->state     = HotaruHiWatt_StateHotaru_MoveToTarget;
                     break;
@@ -111,7 +111,7 @@ void HotaruHiWatt_Create(void *data)
 
                     self->inkEffect = INK_ADD;
                     self->visible   = true;
-                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+                    self->health    = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     self->alpha     = 0x100;
                     self->state     = HotaruHiWatt_StateBoss_FlashFadeOut;
                     break;

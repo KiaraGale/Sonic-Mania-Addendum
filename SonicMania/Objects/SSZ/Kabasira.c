@@ -113,6 +113,8 @@ void Kabasira_StageLoad(void)
     Kabasira->sfxExplosion2 = RSDK.GetSfx("Stage/Explosion2.wav");
 
     DEBUGMODE_ADD_OBJ(Kabasira);
+
+    Zone_SetupHyperAttackList(Kabasira->classID, true, true, true, true, true, true);
 }
 
 void Kabasira_DebugSpawn(void)

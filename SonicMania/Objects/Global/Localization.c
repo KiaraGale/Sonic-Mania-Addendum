@@ -8,6 +8,9 @@
 #include "Game.h"
 
 ObjectLocalization *Localization;
+static Localization2 localization2;
+static Localization3 localization3;
+static Localization4 localization4;
 
 void Localization_Update(void) {}
 
@@ -38,38 +41,38 @@ void Localization_LoadStrings(void)
 
     switch (Localization->language) {
         case LANGUAGE_EN:
-            LogHelpers_Print("Loading EN strings...");
+            LogHelpers_Print("Loading English strings...");
             RSDK.LoadStringList(&Localization->text, "StringsEN.txt", 16);
             break;
 
         case LANGUAGE_FR:
-            LogHelpers_Print("Loading FR strings...");
+            LogHelpers_Print("Loading French strings...");
             RSDK.LoadStringList(&Localization->text, "StringsFR.txt", 16);
             break;
 
         case LANGUAGE_IT:
-            LogHelpers_Print("Loading IT strings...");
+            LogHelpers_Print("Loading Italian strings...");
             RSDK.LoadStringList(&Localization->text, "StringsIT.txt", 16);
             break;
 
         case LANGUAGE_GE:
-            LogHelpers_Print("Loading GE strings...");
+            LogHelpers_Print("Loading German strings...");
             RSDK.LoadStringList(&Localization->text, "StringsGE.txt", 16);
             break;
 
         case LANGUAGE_SP:
-            LogHelpers_Print("Loading SP strings...");
+            LogHelpers_Print("Loading Spanish strings...");
             RSDK.LoadStringList(&Localization->text, "StringsSP.txt", 16);
             break;
 
         case LANGUAGE_JP:
-            LogHelpers_Print("Loading JP strings...");
+            LogHelpers_Print("Loading Japanese strings...");
             RSDK.LoadStringList(&Localization->text, "StringsJP.txt", 16);
             break;
 
 #if GAME_VERSION != VER_100
         case LANGUAGE_KO:
-            LogHelpers_Print("Loading KO strings...");
+            LogHelpers_Print("Loading Korean strings...");
             RSDK.LoadStringList(&Localization->text, "StringsKO.txt", 16);
             break;
 
@@ -82,12 +85,20 @@ void Localization_LoadStrings(void)
             LogHelpers_Print("Loading Trad Chinese strings...");
             RSDK.LoadStringList(&Localization->text, "StringsTC.txt", 16);
             break;
+
+        case LANGUAGE_EUS:
+            LogHelpers_Print("Loading Euskaran strings...");
+            RSDK.LoadStringList(&Localization->text, "StringsEUS.txt", 16);
+            break;
 #endif
 
         default: break;
     }
 
-    RSDK.SplitStringList(Localization->strings, &Localization->text, 0, STR_STRING_COUNT);
+    RSDK.SplitStringList(Localization->strings, &Localization->text, 0, 61);
+    RSDK.SplitStringList(localization2.strings, &Localization->text, 62, 126);
+    RSDK.SplitStringList(localization3.strings, &Localization->text, 127, 190);
+    RSDK.SplitStringList(localization4.strings, &Localization->text, 191, 203);
     Localization->loaded = true;
 
 #if MANIA_USE_EGS
@@ -106,7 +117,16 @@ void Localization_GetString(String *string, uint8 id)
 {
     memset(string, 0, sizeof(String));
     RSDK.InitString(string, "", 0);
-    RSDK.CopyString(string, &Localization->strings[id]);
+
+    if (id >= 190)
+        RSDK.CopyString(string, &localization4.strings[id - 190]);
+    else if (id >= 125 && id <= 189)
+        RSDK.CopyString(string, &localization3.strings[id - 126]);
+    else if (id >= 61 && id <= 125)
+        RSDK.CopyString(string, &localization2.strings[id - 62]);
+    else if (id <= 61)
+        RSDK.CopyString(string, &Localization->strings[id]);
+
     for (int32 c = 0; c < string->length; ++c) {
         if (string->chars[c] == '\\')
             string->chars[c] = '\n';

@@ -118,9 +118,15 @@ void AIZSetup_Create(void *data) {}
 void AIZSetup_StageLoad(void)
 {
 #if MANIA_USE_PLUS
-    if (Zone->actID != 3)
+    if (Zone->actID != 3) {
 #endif
         Zone->cameraBoundsB[0] = SCREEN_YSIZE;
+        Zone->cameraBoundsB[1] = SCREEN_YSIZE;
+        Zone->cameraBoundsB[2] = SCREEN_YSIZE;
+        Zone->cameraBoundsB[3] = SCREEN_YSIZE;
+#if MANIA_USE_PLUS
+    }
+#endif
 
     AIZSetup->hasSetupCutscene = false;
 
@@ -239,7 +245,7 @@ void AIZSetup_PlayerState_P2Enter(void)
     self->active         = ACTIVE_NORMAL;
     self->visible        = true;
     self->stateInput     = Player_Input_P2_AI;
-    Player->respawnTimer = 240;
+    self->respawnTimer   = 240;
     Player_HandleSidekickRespawn();
 }
 
@@ -343,27 +349,52 @@ void AIZSetup_CutsceneST_Setup(void)
 
 bool32 AIZSetup_CutsceneSonic_EnterAIZ(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     EntityAIZTornado *tornado = AIZSetup->tornado;
+    EntityCamera* camera2 = RSDK_GET_ENTITY(SLOT_CAMERA2, Camera);
+    EntityCamera* camera3 = RSDK_GET_ENTITY(SLOT_CAMERA3, Camera);
+    EntityCamera* camera4 = RSDK_GET_ENTITY(SLOT_CAMERA4, Camera);
 
     if (!host->timer) {
         CutsceneSeq_LockAllPlayerControl();
         player1->stateInput = StateMachine_None;
     }
+
     Zone->playerBoundActiveL[0] = false;
 
-    if (player2->classID == Player->classID)
+    if (player2->classID == Player->classID) {
         player2->state = AIZSetup_PlayerState_Static;
+        Zone->playerBoundActiveL[1] = false;
+    }
 
-    if (tornado->position.x < ScreenInfo->size.x << 16)
+    if (player3->classID == Player->classID) {
+        player3->state = AIZSetup_PlayerState_Static;
+        Zone->playerBoundActiveL[2] = false;
+    }
+
+    if (player4->classID == Player->classID) {
+        player4->state = AIZSetup_PlayerState_Static;
+        Zone->playerBoundActiveL[3] = false;
+    }
+
+    if (tornado->position.x < ScreenInfo->size.x << 16) {
         camera->position.x = ScreenInfo->size.x << 16;
+        if (player2->classID == Player->classID)
+            camera2->position.x = camera->position.x;
+        if (player3->classID == Player->classID)
+            camera3->position.x = camera->position.x;
+        if (player4->classID == Player->classID)
+            camera4->position.x = camera->position.x;
+    }
 
     return tornado->disableInteractions;
 }
 bool32 AIZSetup_CutsceneSonic_EnterAIZJungle(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
 
     if (player1->position.x >= 0x27100000) {
@@ -376,11 +407,12 @@ bool32 AIZSetup_CutsceneSonic_EnterAIZJungle(EntityCutsceneSeq *host)
     else {
         player1->right = true;
     }
+
     return false;
 }
 bool32 AIZSetup_CutsceneSonic_EnterHeavies(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (player1->position.x >= 0x2A300000) {
@@ -393,10 +425,23 @@ bool32 AIZSetup_CutsceneSonic_EnterHeavies(EntityCutsceneSeq *host)
         }
         else {
             if (player2->classID == Player->classID) {
-                player2->stateInput = StateMachine_None;
+                CutsceneSeq_LockPlayerControl(player2);
+                Player->targetLeaderPosition[1].x = player1->position.x - 0x200000;
+                Player->targetLeaderPosition[1].y = player1->position.y;
             }
-            Player->targetLeaderPosition.x = player1->position.x - 0x200000;
-            Player->targetLeaderPosition.y = player1->position.y;
+
+            if (player3->classID == Player->classID) {
+                CutsceneSeq_LockPlayerControl(player3);
+                Player->targetLeaderPosition[2].x = player2->position.x - 0x200000;
+                Player->targetLeaderPosition[2].y = player2->position.y;
+            }
+
+            if (player4->classID == Player->classID) {
+                CutsceneSeq_LockPlayerControl(player4);
+                Player->targetLeaderPosition[3].x = player3->position.x - 0x200000;
+                Player->targetLeaderPosition[3].y = player3->position.y;
+            }
+
             player1->state                 = Player_State_Ground;
             player1->right                 = false;
             player1->left                  = true;
@@ -409,8 +454,20 @@ bool32 AIZSetup_CutsceneSonic_EnterHeavies(EntityCutsceneSeq *host)
         player1->velocity.x = host->storedValue;
         player1->right      = false;
         player1->left       = false;
-        if (player2 && player2->state == AIZSetup_PlayerState_Static)
+        if (player2 && player2->state == AIZSetup_PlayerState_Static) {
             player2->state = AIZSetup_PlayerState_P2Enter;
+            CutsceneSeq_LockPlayerControl(player2);
+        }
+
+        if (player3 && player3->state == AIZSetup_PlayerState_Static) {
+            player3->state = AIZSetup_PlayerState_P2Enter;
+            CutsceneSeq_LockPlayerControl(player3);
+        }
+
+        if (player4 && player4->state == AIZSetup_PlayerState_Static) {
+            player4->state = AIZSetup_PlayerState_P2Enter;
+            CutsceneSeq_LockPlayerControl(player4);
+        }
     }
 
     if (host->storedTimer > 0 && host->timer > host->storedTimer + 15) {
@@ -422,33 +479,74 @@ bool32 AIZSetup_CutsceneSonic_EnterHeavies(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneSonic_P2FlyIn(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (player2->classID == Player->classID) {
         if (player2->onGround) {
-            player2->stateInput = StateMachine_None;
+            CutsceneSeq_LockPlayerControl(player2);
             player2->direction  = FLIP_NONE;
+            player2->velocity.x = 0;
+            player2->velocity.y = 0;
+            player2->groundVel  = 0;
             RSDK.SetSpriteAnimation(player2->aniFrames, 0, &player2->animator, true, 0);
             player2->state = Player_State_Static;
             return true;
         }
         else {
-            Player->targetLeaderPosition.x = player1->position.x - 0x200000;
-            Player->targetLeaderPosition.y = player1->position.y + 0x80000;
-            player2->position.x            = Player->targetLeaderPosition.x;
+            Player->targetLeaderPosition[1].x = player1->position.x - 0x200000;
+            Player->targetLeaderPosition[1].y = player1->position.y + 0x80000;
+            player2->position.x            = Player->targetLeaderPosition[1].x;
             player2->direction             = FLIP_NONE;
         }
     }
-    else {
+    else { // should still be fine to keep this here, since if you don't have P2, you can't have a P3 or P4
         return host->timer > 10;
+    }
+
+    if (player3->classID == Player->classID) {
+        if (player3->onGround) {
+            CutsceneSeq_LockPlayerControl(player3);
+            player3->direction  = FLIP_NONE;
+            player3->velocity.x = 0;
+            player3->velocity.y = 0;
+            player3->groundVel  = 0;
+            RSDK.SetSpriteAnimation(player3->aniFrames, 0, &player3->animator, true, 0);
+            player3->state = Player_State_Static;
+            return true;
+        }
+        else {
+            Player->targetLeaderPosition[2].x = player2->position.x - 0x200000;
+            Player->targetLeaderPosition[2].y = player2->position.y;
+            player3->position.x            = Player->targetLeaderPosition[2].x;
+            player3->direction             = FLIP_NONE;
+        }
+    }
+
+    if (player4->classID == Player->classID) {
+        if (player4->onGround) {
+            CutsceneSeq_LockPlayerControl(player4);
+            player4->velocity.x = 0;
+            player4->velocity.y = 0;
+            player4->groundVel  = 0;
+            player4->direction  = FLIP_NONE;
+            RSDK.SetSpriteAnimation(player4->aniFrames, 0, &player4->animator, true, 0);
+            player4->state = Player_State_Static;
+            return true;
+        }
+        else {
+            Player->targetLeaderPosition[3].x = player3->position.x - 0x200000;
+            Player->targetLeaderPosition[3].y = player3->position.y;
+            player4->position.x            = Player->targetLeaderPosition[3].x;
+            player4->direction             = FLIP_NONE;
+        }
     }
 
     return false;
 }
 bool32 AIZSetup_CutsceneSonic_EnterClaw(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         player1->camera = NULL;
@@ -456,6 +554,27 @@ bool32 AIZSetup_CutsceneSonic_EnterClaw(EntityCutsceneSeq *host)
         player1->stateInput = StateMachine_None;
         player1->state      = Player_State_Ground;
         player1->up         = true;
+
+        if (player2->classID == Player->classID) {
+            player2->camera     = NULL;
+            player2->stateInput = StateMachine_None;
+            player2->state      = Player_State_Ground;
+            player2->up = true;
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->camera     = NULL;
+            player3->stateInput = StateMachine_None;
+            player3->state      = Player_State_Ground;
+            player3->up = true;
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->camera     = NULL;
+            player4->stateInput = StateMachine_None;
+            player4->state      = Player_State_Ground;
+            player4->up = true;
+        }
     }
     else {
         if (camera->position.x >= camera->endLerpPos.x) {
@@ -470,7 +589,13 @@ bool32 AIZSetup_CutsceneSonic_EnterClaw(EntityCutsceneSeq *host)
         else {
             player1->up = true;
             if (player2->classID == Player->classID) {
-                player2->state = Player_State_Static;
+                player2->up = true;
+            }
+            if (player3->classID == Player->classID) {
+                player3->up = true;
+            }
+            if (player4->classID == Player->classID) {
+                player4->up = true;
             }
         }
     }
@@ -498,8 +623,7 @@ bool32 AIZSetup_CutsceneSonic_WatchClaw(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneSonic_RubyGrabbed(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player1);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityAIZKingClaw *claw  = AIZSetup->claw;
@@ -558,8 +682,16 @@ bool32 AIZSetup_CutsceneSonic_RubyGrabbed(EntityCutsceneSeq *host)
             AIZSetup->decorations[0]->rotSpeed = 0;
             AIZSetup->decorations[1]->rotSpeed = 0;
 
-            if (CHECK_CHARACTER_ID(ID_TAILS, 2))
-                RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, true, 0);
+            player1->up = false;
+
+            if (player2->classID == Player->classID)
+                player2->up = false;
+
+            if (player3->classID == Player->classID)
+                player3->up = false;
+
+            if (player4->classID == Player->classID)
+                player4->up = false;
 
             RSDK.PlaySfx(AIZSetup->sfxBreak, false, 0x00);
 
@@ -580,7 +712,7 @@ bool32 AIZSetup_CutsceneSonic_RubyAppear(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneSonic_RubyFX(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityPhantomRuby *ruby = AIZSetup->phantomRuby;
@@ -595,8 +727,26 @@ bool32 AIZSetup_CutsceneSonic_RubyFX(EntityCutsceneSeq *host)
         AIZSetup->fxRuby  = fxRuby;
         Camera_ShakeScreen(0, 4, 4);
         player1->drawGroup = Zone->playerDrawGroup[1] + 1;
-        if (player2->classID == Player->classID)
+        player1->state = Player_State_Static;
+        RSDK.SetSpriteAnimation(player1->aniFrames, ANI_SKID, &player1->animator, true, 0);
+
+        if (player2->classID == Player->classID) {
             player2->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player2->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_SKID, &player2->animator, true, 0);
+        }
+        
+        if (player3->classID == Player->classID) {
+            player3->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player3->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_SKID, &player3->animator, true, 0);
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->drawGroup = Zone->playerDrawGroup[1] + 1;
+            player4->state = Player_State_Static;
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_SKID, &player4->animator, true, 0);
+        }
     }
 
     if (!host->values[0]) {
@@ -624,7 +774,7 @@ bool32 AIZSetup_CutsceneSonic_RubyFX(EntityCutsceneSeq *host)
 
             if (host->timer >= host->storedTimer + 32) {
                 int32 id = 0;
-                for (int32 angle = 0; angle < 0x80; angle += 0x40) {
+                for (int32 angle = 0; angle < 0x80; angle += 0x20) {
                     EntityPlayer *player = RSDK_GET_ENTITY(id++, Player);
                     if (!player || player->classID == TYPE_BLANK)
                         break;
@@ -673,8 +823,7 @@ void AIZSetup_CutsceneK_Setup(void)
 
 bool32 AIZSetup_CutsceneKnux_Chillin(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     if (!host->timer) {
@@ -682,15 +831,68 @@ bool32 AIZSetup_CutsceneKnux_Chillin(EntityCutsceneSeq *host)
         player1->stateInput = StateMachine_None;
         player1->direction  = FLIP_X;
         player1->drawFX     = FX_FLIP;
-        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 1, &player1->animator, true, 0);
+        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_RELAX, &player1->animator, true, 0);
+
+        if (player2->classID == Player->classID) {
+            player2->state      = Player_State_Static;
+            player2->stateInput = StateMachine_None;
+            player2->position.x = player1->position.x + 0x275000;
+            player2->direction  = FLIP_X;
+            player2->drawFX     = FX_FLIP;
+            switch (player2->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_RELAX, &player2->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_RELAX, &player2->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_RELAX, &player2->animator, true, 0); break;
+    #if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_RELAX, &player2->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_RELAX, &player2->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_RELAX, &player2->animator, true, 0); break;
+    #endif
+            }
+        }
+
+        if (player3->classID == Player->classID) {
+            player3->state      = Player_State_Static;
+            player3->stateInput = StateMachine_None;
+            player3->position.x = player2->position.x + 0x275000;
+            player3->direction  = FLIP_X;
+            player3->drawFX     = FX_FLIP;
+            switch (player3->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_RELAX, &player3->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_RELAX, &player3->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_RELAX, &player3->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_RELAX, &player3->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_RELAX, &player3->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_RELAX, &player3->animator, true, 0); break;
+#endif
+            }
+        }
+
+        if (player4->classID == Player->classID) {
+            player4->state      = Player_State_Static;
+            player4->stateInput = StateMachine_None;
+            player4->position.x = player3->position.x + 0x275000;
+            player4->direction  = FLIP_X;
+            player4->drawFX     = FX_FLIP;
+            switch (player4->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_RELAX, &player4->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_RELAX, &player4->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_RELAX, &player4->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_RELAX, &player4->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_RELAX, &player4->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_RELAX, &player4->animator, true, 0); break;
+#endif
+            }
+        }
     }
 
     return host->timer == 180;
 }
 bool32 AIZSetup_CutsceneKnux_StartDrillin(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     switch (host->timer) {
@@ -698,8 +900,49 @@ bool32 AIZSetup_CutsceneKnux_StartDrillin(EntityCutsceneSeq *host)
 
         case 10:
             RSDK.PlaySfx(AIZKingClaw->sfxWalkerLegs, false, 0);
-            RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 2, &player1->animator, true, 0);
+            RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_SURPRISE, &player1->animator, true, 0);
+
+            if (player2->classID == Player->classID) {
+                switch (player2->characterID) {
+                    case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_SURPRISE, &player2->animator, true, 0); break;
+                    case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_SURPRISE, &player2->animator, true, 0); break;
+                    case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_SURPRISE, &player2->animator, true, 0); break;
+#if MANIA_USE_PLUS
+                    case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_SURPRISE, &player2->animator, true, 0); break;
+                    case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_SURPRISE, &player2->animator, true, 0); break;
+                    case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_SURPRISE, &player2->animator, true, 0); break;
+#endif
+                }
             break;
+            }
+
+            if (player3->classID == Player->classID) {
+                switch (player3->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_SURPRISE, &player3->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_SURPRISE, &player3->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_SURPRISE, &player3->animator, true, 0); break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_SURPRISE, &player3->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_SURPRISE, &player3->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_SURPRISE, &player3->animator, true, 0); break;
+#endif
+                }
+                break;
+            }
+
+            if (player4->classID == Player->classID) {
+                switch (player4->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_SURPRISE, &player4->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_SURPRISE, &player4->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_SURPRISE, &player4->animator, true, 0); break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_SURPRISE, &player4->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_SURPRISE, &player4->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_SURPRISE, &player4->animator, true, 0); break;
+#endif
+                }
+                break;
+            }
 
         case 40: return true;
 
@@ -726,16 +969,87 @@ bool32 AIZSetup_CutsceneKnux_Drillin(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneKnux_PrepareForTrouble(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
-    if (player1->animator.animationID == 3 && player1->animator.frameID == player1->animator.frameCount - 1) {
-        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 0, &player1->animator, true, 0);
+    if (player1->animator.animationID == CUTSCENE_KNUX_STANDUP && player1->animator.frameID == player1->animator.frameCount - 1) {
+        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_FIGHT, &player1->animator, true, 0);
+        if (player2->classID == Player->classID) {
+            switch (player2->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_FIGHT, &player2->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_FIGHT, &player2->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_FIGHT, &player2->animator, true, 0); break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_FIGHT, &player2->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_FIGHT, &player2->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_FIGHT, &player2->animator, true, 0); break;
+#endif
+            }
+        }
+        if (player3->classID == Player->classID) {
+            switch (player3->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_FIGHT, &player3->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_FIGHT, &player3->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_FIGHT, &player3->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_FIGHT, &player3->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_FIGHT, &player3->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_FIGHT, &player3->animator, true, 0); break;
+#endif
+            }
+        }
+        if (player4->classID == Player->classID) {
+            switch (player4->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_FIGHT, &player4->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_FIGHT, &player4->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_FIGHT, &player4->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_FIGHT, &player4->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_FIGHT, &player4->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_FIGHT, &player4->animator, true, 0); break;
+#endif
+            }
+        }
     }
 
     if (!host->timer) {
-        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 3, &player1->animator, true, 0);
+        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_STANDUP, &player1->animator, true, 0);
+        if (player2->classID == Player->classID) {
+            switch (player2->characterID) {
+                case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_STANDUP, &player2->animator, true, 0); break;
+                case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_STANDUP, &player2->animator, true, 0); break;
+                case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_STANDUP, &player2->animator, true, 0); break;
+#if MANIA_USE_PLUS
+                case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_STANDUP, &player2->animator, true, 0); break;
+                case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_STANDUP, &player2->animator, true, 0); break;
+                case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_STANDUP, &player2->animator, true, 0); break;
+#endif
+            }
+        }
+        if (player3->classID == Player->classID) {
+            switch (player3->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_STANDUP, &player3->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_STANDUP, &player3->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_STANDUP, &player3->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_STANDUP, &player3->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_STANDUP, &player3->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_STANDUP, &player3->animator, true, 0); break;
+#endif
+            }
+        }
+        if (player4->classID == Player->classID) {
+            switch (player4->characterID) {
+            case ID_SONIC: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_SONIC_STANDUP, &player4->animator, true, 0); break;
+            case ID_TAILS: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_TAILS_STANDUP, &player4->animator, true, 0); break;
+            case ID_KNUCKLES: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_STANDUP, &player4->animator, true, 0); break;
+#if MANIA_USE_PLUS
+            case ID_MIGHTY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_MIGHTY_STANDUP, &player4->animator, true, 0); break;
+            case ID_RAY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_RAY_STANDUP, &player4->animator, true, 0); break;
+            case ID_AMY: RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_AMY_STANDUP, &player4->animator, true, 0); break;
+#endif
+            }
+        }
         foreach_active(Animals, animal)
         {
             animal->active    = ACTIVE_NORMAL;
@@ -747,8 +1061,7 @@ bool32 AIZSetup_CutsceneKnux_PrepareForTrouble(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneKnux_EnterThreat(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
 
     if (!host->timer) {
         player1->camera = NULL;
@@ -765,13 +1078,18 @@ bool32 AIZSetup_CutsceneKnux_EnterThreat(EntityCutsceneSeq *host)
     }
     else {
         player1->state = Player_State_Static;
+        if (player2->classID == Player->classID)
+            player2->state = Player_State_Static;
+        if (player3->classID == Player->classID)
+            player3->state = Player_State_Static;
+        if (player4->classID == Player->classID)
+            player4->state = Player_State_Static;
     }
     return false;
 }
 bool32 AIZSetup_CutsceneKnux_HeaviesAppear(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityAIZKingClaw *claw = AIZSetup->claw;
@@ -796,7 +1114,7 @@ bool32 AIZSetup_CutsceneKnux_HeaviesAppear(EntityCutsceneSeq *host)
 }
 bool32 AIZSetup_CutsceneKnux_RubyImpact(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityPhantomRuby *ruby = AIZSetup->phantomRuby;
@@ -817,9 +1135,6 @@ bool32 AIZSetup_CutsceneKnux_RubyImpact(EntityCutsceneSeq *host)
         player1->onGround        = false;
         player1->drawGroup       = Zone->playerDrawGroup[1] + 1;
 
-        if (player2->classID == Player->classID)
-            player2->drawGroup = Zone->playerDrawGroup[1] + 1;
-
         Camera_ShakeScreen(0, 4, 4);
     }
 
@@ -830,9 +1145,14 @@ bool32 AIZSetup_CutsceneKnux_RubyImpact(EntityCutsceneSeq *host)
             player1->velocity.x -= 0x2000;
         if (player1->velocity.x < 0)
             player1->velocity.x = 0;
+
+        if (player1->velocity.y != 0)
+            player1->velocity.y = 0;
+
         player1->state = Player_State_Static;
-        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 5, &player1->animator, false, 0);
-        return true;
+        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_IMPACT, &player1->animator, false, 0);
+        if (player2->classID != Player->classID)
+            return true;
     }
     else {
         player1->velocity.y += 0x3800;
@@ -843,14 +1163,133 @@ bool32 AIZSetup_CutsceneKnux_RubyImpact(EntityCutsceneSeq *host)
         if (player1->velocity.x < 0)
             player1->velocity.x = 0;
 
-        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, 4, &player1->animator, true, 0);
+        RSDK.SetSpriteAnimation(AIZSetup->knuxFrames, CUTSCENE_KNUX_HURT, &player1->animator, true, 0);
+    }
+
+    if (player2->classID == Player->classID) {
+        if (host->timer == 11) {
+            RSDK.PlaySfx(AIZSetup->sfxImpact, false, 0x00);
+
+            player2->velocity.x      = 0x20000;
+            player2->velocity.y      = -0x40000;
+            player2->nextGroundState = StateMachine_None;
+            player2->nextAirState    = StateMachine_None;
+            player2->state           = Player_State_Static;
+            player2->onGround        = false;
+            player2->drawGroup       = Zone->playerDrawGroup[1] + 1;
+
+            RSDK.SetSpriteAnimation(player2->aniFrames, ANI_HURT, &player2->animator, false, 0);
+
+            Camera_ShakeScreen(0, 4, 4);
+        }
+
+        if (host->timer > 11) {
+            if (player2->onGround) {
+                if (player2->velocity.x > 0)
+                    player2->velocity.x -= 0x2000;
+                if (player2->velocity.x < 0)
+                    player2->velocity.x = 0;
+                player2->state = Player_State_Static;
+
+                RSDK.SetSpriteAnimation(player2->aniFrames, ANI_IDLE, &player2->animator, true, 0);
+                if (player3->classID != Player->classID)
+                    return true;
+            }
+            else {
+                player2->velocity.y += 0x3800;
+
+                if (player2->velocity.x > 0)
+                    player2->velocity.x -= 0x1000;
+
+                if (player2->velocity.x < 0)
+                    player2->velocity.x = 0;
+            }
+        }
+    }
+    if (player3->classID == Player->classID) {
+        if (host->timer == 22) {
+            RSDK.PlaySfx(AIZSetup->sfxImpact, false, 0x00);
+
+            player3->velocity.x      = 0x20000;
+            player3->velocity.y      = -0x40000;
+            player3->nextGroundState = StateMachine_None;
+            player3->nextAirState    = StateMachine_None;
+            player3->state           = Player_State_Static;
+            player3->onGround        = false;
+            player3->drawGroup       = Zone->playerDrawGroup[1] + 1;
+
+            RSDK.SetSpriteAnimation(player3->aniFrames, ANI_HURT, &player3->animator, false, 0);
+
+            Camera_ShakeScreen(0, 4, 4);
+        }
+
+        if (host->timer > 22) {
+            if (player3->onGround) {
+                if (player3->velocity.x > 0)
+                    player3->velocity.x -= 0x2000;
+                if (player3->velocity.x < 0)
+                    player3->velocity.x = 0;
+                player3->state = Player_State_Static;
+
+                RSDK.SetSpriteAnimation(player3->aniFrames, ANI_IDLE, &player3->animator, true, 0);
+                if (player4->classID != Player->classID)
+                    return true;
+            }
+            else {
+                player3->velocity.y += 0x3800;
+
+                if (player3->velocity.x > 0)
+                    player3->velocity.x -= 0x1000;
+
+                if (player3->velocity.x < 0)
+                    player3->velocity.x = 0;
+            }
+        }
+    }
+    if (player4->classID == Player->classID) {
+        if (host->timer == 33) {
+            RSDK.PlaySfx(AIZSetup->sfxImpact, false, 0x00);
+
+            player4->velocity.x      = 0x20000;
+            player4->velocity.y      = -0x40000;
+            player4->nextGroundState = StateMachine_None;
+            player4->nextAirState    = StateMachine_None;
+            player4->state           = Player_State_Static;
+            player4->onGround        = false;
+            player4->drawGroup       = Zone->playerDrawGroup[1] + 1;
+
+            RSDK.SetSpriteAnimation(player4->aniFrames, ANI_HURT, &player4->animator, false, 0);
+
+            Camera_ShakeScreen(0, 4, 4);
+        }
+
+        if (host->timer > 33) {
+            if (player4->onGround) {
+                if (player4->velocity.x > 0)
+                    player4->velocity.x -= 0x2000;
+                if (player4->velocity.x < 0)
+                    player4->velocity.x = 0;
+                player4->state = Player_State_Static;
+
+                RSDK.SetSpriteAnimation(player4->aniFrames, ANI_IDLE, &player4->animator, true, 0);
+                return true;
+            }
+            else {
+                player4->velocity.y += 0x3800;
+
+                if (player4->velocity.x > 0)
+                    player4->velocity.x -= 0x1000;
+
+                if (player4->velocity.x < 0)
+                    player4->velocity.x = 0;
+            }
+        }
     }
     return false;
 }
 bool32 AIZSetup_CutsceneKnux_RubyFX(EntityCutsceneSeq *host)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
-    UNUSED(player2);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(camera);
 
     EntityFXRuby *fxRuby = AIZSetup->fxRuby;
@@ -860,6 +1299,31 @@ bool32 AIZSetup_CutsceneKnux_RubyFX(EntityCutsceneSeq *host)
 
     if (player1->velocity.x < 0)
         player1->velocity.x = 0;
+
+    if (player1->velocity.y != 0)
+        player1->velocity.y = 0;
+
+    if (player2->classID == Player->classID) {
+        if (player2->velocity.x > 0)
+            player2->velocity.x -= 0x1000;
+
+        if (player2->velocity.x < 0)
+            player2->velocity.x = 0;
+    }
+    if (player3->classID == Player->classID) {
+        if (player3->velocity.x > 0)
+            player3->velocity.x -= 0x1000;
+
+        if (player3->velocity.x < 0)
+            player3->velocity.x = 0;
+    }
+    if (player4->classID == Player->classID) {
+        if (player4->velocity.x > 0)
+            player4->velocity.x -= 0x1000;
+
+        if (player4->velocity.x < 0)
+            player4->velocity.x = 0;
+    }
 
     if (host->timer == 180) {
         fxRuby->delay = 32;

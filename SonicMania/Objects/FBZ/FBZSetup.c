@@ -47,6 +47,8 @@ void FBZSetup_StaticUpdate(void)
     }
 
     RSDK.GetTileLayer(FBZSetup->backgroundOutside)->scrollPos = (RSDK.Sin512(Zone->persistentTimer) + 512) << 10;
+    if (Zone->actID)
+        RSDK.GetTileLayer(FBZSetup->bgStorm)->scrollPos = (RSDK.Sin512(Zone->persistentTimer) + 512) << 10;
 }
 
 void FBZSetup_Draw(void) {}
@@ -58,6 +60,7 @@ void FBZSetup_StageLoad(void)
     FBZSetup->aniTiles = RSDK.LoadSpriteSheet("FBZ/AniTiles.gif", SCOPE_STAGE);
 
     FBZSetup->backgroundOutside = RSDK.GetTileLayerID("Background Outside");
+    FBZSetup->bgStorm = RSDK.GetTileLayerID("BG Storm");
 
     Animals->animalTypes[0] = ANIMAL_FLICKY;
     Animals->animalTypes[1] = ANIMAL_RICKY;

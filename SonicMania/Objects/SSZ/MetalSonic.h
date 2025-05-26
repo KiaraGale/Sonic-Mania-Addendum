@@ -50,6 +50,7 @@ struct ObjectMetalSonic {
     uint16 sfxMSTransform;
     uint16 sfxTransform2;
     uint16 sfxAmySqueal;
+    uint16 sfxElecPulse;
 #endif
     Hitbox hitboxHover;
     Hitbox hitboxDash;

@@ -9,8 +9,6 @@
 
 ObjectInkWipe *InkWipe;
 
-// This object doesn't look like it was ever fully finished, a bummer indeed
-
 void InkWipe_Update(void)
 {
     RSDK_THIS(InkWipe);

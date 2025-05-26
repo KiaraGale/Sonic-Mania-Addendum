@@ -41,7 +41,7 @@ bool32 CutsceneRules_IsAct1(void)
 }
 bool32 CutsceneRules_IsAct2(void)
 {
-    if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1) || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || RSDK.CheckSceneFolder("SPZ2")
+    if ((RSDK.CheckSceneFolder("GHZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("GHZE") && Zone->actID == 1) || ((RSDK.CheckSceneFolder("CPZ") || RSDK.CheckSceneFolder("CPZE")) && Zone->actID == 1) || (RSDK.CheckSceneFolder("SPZ2") || RSDK.CheckSceneFolder("SPZ2E"))
         || (RSDK.CheckSceneFolder("FBZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("PSZ2") || RSDK.CheckSceneFolder("SSZ2")
         || (RSDK.CheckSceneFolder("HCZ") && Zone->actID == 1) || (RSDK.CheckSceneFolder("MSZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("OOZ2")
         || RSDK.CheckSceneFolder("LRZ3") || (RSDK.CheckSceneFolder("MMZ") && Zone->actID == 1) || RSDK.CheckSceneFolder("TMZ2")) {

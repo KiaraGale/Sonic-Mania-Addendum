@@ -32,7 +32,7 @@ void SSZ1Intro_Serialize(void);
 
 // Extra Entity Functions
 void SSZ1Intro_SetupCutscene(void);
-void SSZ1Intro_HandleRubyHover(EntityCutsceneSeq *host, EntityPlayer *player1, EntityPlayer *player2, int32 offset);
+void SSZ1Intro_HandleRubyHover(EntityCutsceneSeq *host, EntityPlayer *player1, EntityPlayer *player2, EntityPlayer *player3, EntityPlayer *player4, int32 offset);
 
 bool32 SSZ1Intro_Cutscene_FinishRubyWarp(EntityCutsceneSeq *host);
 bool32 SSZ1Intro_Cutscene_HandleLanding(EntityCutsceneSeq *host);

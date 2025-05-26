@@ -21,6 +21,15 @@ struct ObjectPBL_HUD {
     RSDK_OBJECT
     uint16 aniFrames;
     uint16 unused1;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 actionPos;
+    Vector2 pausePos;
+    int32 pauseAlpha;
+    bool32 craneControlsActive;
 };
 
 // Entity Class
@@ -69,6 +78,9 @@ void PBL_HUD_Draw_Score(void);
 
 void PBL_HUD_State_RevealCrane(void);
 void PBL_HUD_State_HideCrane(void);
+
+void PBL_HUD_DrawTouchControls(bool32 craneControls);
+int32 PBL_HUD_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
 #endif
 
 #endif //! OBJ_PBL_HUD_H

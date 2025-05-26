@@ -110,6 +110,7 @@ void PhantomGunner_StageLoad(void)
     PhantomGunner->hitboxDud.bottom = 8;
 
     PhantomGunner->sfxCannonFire = RSDK.GetSfx("Stage/CannonFire.wav");
+    PhantomGunner->sfxPinata = RSDK.GetSfx("MSZ/Pinata.wav");
 }
 
 void PhantomGunner_HandleDudExhaust(void)
@@ -207,6 +208,7 @@ void PhantomGunner_CheckPlayerMissileCollisions(void)
             && player->animator.animationID != ANI_HURT) {
             RSDK.SetSpriteAnimation(-1, 0, &self->parachuteAnimator, true, 0);
             player->velocity.y = -0x60000;
+            RSDK.PlaySfx(PhantomGunner->sfxPinata, false, 255);
             PhantomGunner_SpawnDust();
             self->state = PhantomGunner_State_Napalm;
         }
@@ -500,17 +502,10 @@ void PhantomGunner_State_Mortar(void)
 
     PhantomGunner_CheckPlayerMissileCollisions();
     if (self->classID) {
-        if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x100000, true)) {
-            if (self->type == PHANTOMGUNNER_NAPALM) {
-                EntityPhantomGunner *napalm =
-                    CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_NAPALM_EXPLOSION), self->position.x, self->position.y);
-                napalm->velocity.x = self->velocity.y > 0x20000 ? 0x80000 : 0x40000;
-                destroyEntity(self);
-            }
-            else {
-                CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_MORTAR_EXPLOSION), self->position.x, self->position.y);
-                destroyEntity(self);
-            }
+        if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x160000, true)) {
+            CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_MORTAR_EXPLOSION), self->position.x, self->position.y + 8);
+            RSDK.PlaySfx(PhantomEgg->sfxMissile, false, 255);
+            destroyEntity(self);
         }
     }
 }
@@ -528,17 +523,12 @@ void PhantomGunner_State_Napalm(void)
 
     PhantomGunner_CheckPlayerMissileCollisions();
     if (self->classID) {
-        if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x100000, true)) {
-            if (self->type == PHANTOMGUNNER_NAPALM) {
-                EntityPhantomGunner *napalm =
-                    CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_NAPALM_EXPLOSION), self->position.x, self->position.y);
-                napalm->velocity.x = self->velocity.y > 0x20000 ? 0x80000 : 0x40000;
-                destroyEntity(self);
-            }
-            else {
-                CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_MORTAR_EXPLOSION), self->position.x, self->position.y);
-                destroyEntity(self);
-            }
+        if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x160000, true)) {
+            EntityPhantomGunner *napalm =
+            CREATE_ENTITY(PhantomGunner, INT_TO_VOID(PHANTOMGUNNER_NAPALM_EXPLOSION), self->position.x, self->position.y + 10);
+            napalm->velocity.x = self->velocity.y > 0x20000 ? 0x80000 : 0x40000;
+            RSDK.PlaySfx(PhantomEgg->sfxExplosion3, false, 255);
+            destroyEntity(self);
         }
     }
 }

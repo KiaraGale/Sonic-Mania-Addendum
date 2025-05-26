@@ -50,9 +50,11 @@ void GHZCutsceneK_StageLoad(void) {}
 
 bool32 GHZCutsceneK_Cutscene_None(void)
 {
-    MANIA_GET_PLAYER(player1, player2, camera);
+    MANIA_GET_PLAYER(player1, player2, player3, player4, camera);
     UNUSED(player1);
     UNUSED(player2);
+    UNUSED(player3);
+    UNUSED(player4);
     UNUSED(camera);
     return false;
 }

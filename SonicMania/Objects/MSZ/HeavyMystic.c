@@ -74,7 +74,7 @@ void HeavyMystic_Create(void *data)
                     self->visible   = false;
                     self->drawGroup = Zone->objectDrawGroup[0] + 2;
                     self->drawFX    = FX_FLIP;
-                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+                    self->health    = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
 
                     RSDK.SetSpriteAnimation(HeavyMystic->aniFrames, 0, &self->animator, true, 0);
 
@@ -96,7 +96,7 @@ void HeavyMystic_Create(void *data)
                         self->hitbox.right  = 22;
                         self->hitbox.bottom = 22;
 
-                        self->health                = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
+                        self->health                = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 6 : 8;
                         HeavyMystic->curtainLinePos = 0xD00000;
 
                         RSDK.SetSpriteAnimation(HeavyMystic->aniFrames, 0, &self->animator, true, 0);
@@ -435,7 +435,6 @@ void HeavyMystic_StateBoss_AwaitPlayer(void)
 
     if (self->timer) {
         if (++self->timer == 120) {
-            Zone->cameraBoundsT[0] = Zone->cameraBoundsB[0] - ScreenInfo->size.y;
             MSZSetup_SetBGScrollOrigin(self->position.x + 0x4000000, 0);
 
             self->position.y += 0x500000;
@@ -460,6 +459,7 @@ void HeavyMystic_StateBoss_AwaitPlayer(void)
             Zone->cameraBoundsL[0] = (self->position.x >> 16) - ScreenInfo->center.x;
             Zone->cameraBoundsR[0] = (self->position.x >> 16) + ScreenInfo->center.x;
             Zone->cameraBoundsB[0] = (self->position.y >> 16) + 256;
+            Zone->cameraBoundsT[0] = Zone->cameraBoundsB[0] - ScreenInfo->size.y;
 
             ++self->timer;
             self->active = ACTIVE_NORMAL;
@@ -696,6 +696,8 @@ void HeavyMystic_StateBoss_Finish(void)
     RSDK_THIS(HeavyMystic);
 
     RSDK.ProcessAnimation(&self->animator);
+
+    HeavyMystic_Explode();
 
     HeavyMystic_HandleParticleFX();
 
@@ -1136,13 +1138,14 @@ void HeavyMystic_StateBoss_RogueHit(void)
             self->velocity.x = 0;
     }
 
-    self->visible ^= true;
+    self->timer--;
+    self->visible = !(self->timer & 3);
     RSDK.ProcessAnimation(&self->animator);
 
     if (self->velocity.y > 0) {
         if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0x240000, true)) {
             RSDK.PlaySfx(HeavyMystic->sfxPowerDown, false, 255);
-            CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_BOSS), self->position.x, self->position.y)->drawGroup = Zone->objectDrawGroup[1];
+            CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), self->position.x, self->position.y)->drawGroup = Zone->objectDrawGroup[1];
             self->direction ^= FLIP_X;
             self->timer       = 90;
             self->attackID    = 0;
@@ -1415,8 +1418,11 @@ void HeavyMystic_StateCork_Fired(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (!RSDK.CheckOnScreen(self, &self->updateRange))
@@ -1465,7 +1471,13 @@ void HeavyMystic_State_Bomb(void)
         }
     }
 
-    if (!RSDK.CheckOnScreen(self, &self->updateRange))
+    if (RSDK.ObjectTileCollision(self, Zone->collisionLayers, CMODE_FLOOR, 0, 0, 0, true)) {
+        RSDK.PlaySfx(HeavyMystic->sfxExplosion, false, 255);
+        CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_BOSSPUFF), self->position.x, self->position.y - 0x60000)->drawGroup = Zone->objectDrawGroup[1] + 2;
+        destroyEntity(self);
+    }
+
+    else if (!RSDK.CheckOnScreen(self, &self->updateRange))
         destroyEntity(self);
 }
 
@@ -1490,8 +1502,11 @@ void HeavyMystic_State_BarkDebris(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 
     if (!RSDK.CheckOnScreen(self, &self->updateRange))

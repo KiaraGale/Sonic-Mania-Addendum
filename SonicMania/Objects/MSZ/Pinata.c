@@ -57,7 +57,7 @@ void Pinata_StageLoad(void)
 
 void Pinata_DebugDraw(void)
 {
-    RSDK.SetSpriteAnimation(Pinata->aniFrames, 0, &DebugMode->animator, true, 0);
+    RSDK.SetSpriteAnimation(Pinata->aniFrames, 3, &DebugMode->animator, true, 0);
     RSDK.DrawSprite(&DebugMode->animator, NULL, false);
 }
 

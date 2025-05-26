@@ -42,14 +42,14 @@ void BladePole_Create(void *data)
 
     // Why is this initialized here?? wouldn't StageLoad be better?
     BladePole->hitboxBottom.left   = -24;
-    BladePole->hitboxBottom.top    = 20;
+    BladePole->hitboxBottom.top    = 36;
     BladePole->hitboxBottom.right  = 24;
-    BladePole->hitboxBottom.bottom = BladePole->hitboxBottom.top + 24;
+    BladePole->hitboxBottom.bottom = BladePole->hitboxBottom.top + 8;
 
     BladePole->hitboxTop.left   = -24;
     BladePole->hitboxTop.top    = -32;
     BladePole->hitboxTop.right  = 24;
-    BladePole->hitboxTop.bottom = BladePole->hitboxTop.top + 24;
+    BladePole->hitboxTop.bottom = BladePole->hitboxTop.top + 8;
 
     self->state = BladePole_State_TopBladeActive;
 }

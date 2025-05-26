@@ -67,6 +67,8 @@ void Rhinobot_StageLoad(void)
     Rhinobot->sfxHuff = RSDK.GetSfx("Stage/Huff.wav");
 
     DEBUGMODE_ADD_OBJ(Rhinobot);
+
+    Zone_SetupHyperAttackList(Rhinobot->classID, true, true, true, true, true, true);
 }
 
 void Rhinobot_DebugSpawn(void)

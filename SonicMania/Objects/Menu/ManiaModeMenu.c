@@ -20,7 +20,7 @@ void ManiaModeMenu_Draw(void) {}
 
 void ManiaModeMenu_Create(void *data) {}
 
-void ManiaModeMenu_StageLoad(void) { Addendum_LoadFile(Addendum_SaveLoadedCB); }
+void ManiaModeMenu_StageLoad(void) {}
 
 void ManiaModeMenu_Initialize(void)
 {
@@ -72,6 +72,7 @@ bool32 ManiaModeMenu_InitAPI(void)
                 UIWaitSpinner_StartWait();
                 Options_LoadFile(Options_LoadCallback);
                 SaveGame_LoadFile(SaveGame_SaveLoadedCB);
+                Addendum_LoadFile(Addendum_SaveLoadedCB);
                 ReplayDB_LoadDB(ReplayDB_LoadCallback);
 
                 MenuSetup->initializedSaves = true;
@@ -144,10 +145,9 @@ int32 ManiaModeMenu_GetActiveMenu(void)
         return MAINMENU_MAIN;
     }
 
-    if (control == TimeAttackMenu->timeAttackControl || control == TimeAttackMenu->timeAttackControl_Legacy
-        || control == TimeAttackMenu->taZoneSelControl || control == TimeAttackMenu->taDetailsControl
-        || control == TimeAttackMenu->leaderboardsControl || control == TimeAttackMenu->replaysControl
-        || control == CompetitionMenu->competitionControl || control == CompetitionMenu->competitionControl_Legacy
+    if (control == TimeAttackMenu->timeAttackControl || control == TimeAttackMenu->taZoneSelControl 
+        || control == TimeAttackMenu->taDetailsControl || control == TimeAttackMenu->leaderboardsControl 
+        || control == TimeAttackMenu->replaysControl || control == CompetitionMenu->competitionControl 
         || control == CompetitionMenu->compRulesControl || control == CompetitionMenu->compZoneControl) {
         return MAINMENU_TIMEATTACK;
     }
@@ -160,6 +160,10 @@ int32 ManiaModeMenu_GetActiveMenu(void)
 
     if (control == ManiaModeMenu->encoreSaveSelect || control == ManiaModeMenu->noSaveMenuEncore)
         return MAINMENU_SAVESELECT_ENCORE;
+
+    if (control == MainMenu->addendumControl || control == MainMenu->gameplayOptsControl || control == MainMenu->styleOptsControl 
+        || control == MainMenu->musicOptsControl || control == MainMenu->multiplayerOptsControl)
+        return MAINMENU_ADDENDUM;
 
     return MAINMENU_MAIN;
 }
@@ -204,6 +208,8 @@ void ManiaModeMenu_SetBGColors(void)
         case MAINMENU_SAVESELECT: UIBackground->activeColors = &UIBackground->bgColors[6]; break;
 
         case MAINMENU_SAVESELECT_ENCORE: UIBackground->activeColors = &UIBackground->bgColors[15]; break;
+
+        case MAINMENU_ADDENDUM: UIBackground->activeColors = &UIBackground->bgColors[21]; break;
 
         default: break;
     }
@@ -255,7 +261,8 @@ void ManiaModeMenu_SetupActions(void)
 
 void ManiaModeMenu_HandleMenuReturn(void)
 {
-    EntityMenuParam *param = MenuParam_GetParam();
+    EntityMenuParam *param   = MenuParam_GetParam();
+    EntityUIControl *saveMenu = ManiaModeMenu->saveSelectMenu;
 
     char buffer[0x100];
     memset(buffer, 0, 0x100);
@@ -279,7 +286,6 @@ void ManiaModeMenu_HandleMenuReturn(void)
         }
     }
 
-    UISubHeading_HandleMenuReturn(0);
     TimeAttackMenu_HandleMenuReturn();
     CompetitionMenu_HandleMenuReturn();
     OptionsMenu_HandleMenuReturn();

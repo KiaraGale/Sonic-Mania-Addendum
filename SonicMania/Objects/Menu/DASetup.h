@@ -20,6 +20,16 @@ struct ObjectDASetup {
     uint16 sfxMedal;
     uint16 sfxSSExit;
     uint16 sfxScoreTotal;
+    uint8 touchDir;
+    uint8 touchConfirm;
+    uint8 touchBack;
+    uint16 dpadFrames;
+    Animator dpadAnimator;
+    Animator dpadTouchAnimator;
+    Vector2 dpadPos;
+    int32 dpadAlpha;
+    Vector2 playPos;
+    int32 playAlpha;
 };
 
 // Entity Class
@@ -48,5 +58,8 @@ void DASetup_DisplayTrack(int32 trackID);
 bool32 DASetup_HandleMedallionDebug(void);
 void DASetup_SetupUI(void);
 void DASetup_State_ManageControl(void);
+void DASetup_HandleTouchInput(void);
+void DASetup_DrawUI(void);
+int32 DASetup_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy);
 
 #endif //! OBJ_DASETUP_H

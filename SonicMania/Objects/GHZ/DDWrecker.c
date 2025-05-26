@@ -53,7 +53,7 @@ void DDWrecker_Create(void *data)
 {
     RSDK_THIS(DDWrecker);
     if (!SceneInfo->inEditor) {
-        if (globals->gameMode == MODE_TIMEATTACK || globals->gameMode >= MODE_TIMEATTACK) {
+        if (globals->gameMode >= MODE_TIMEATTACK) {
             destroyEntity(self);
         }
         else if (data) {
@@ -68,7 +68,7 @@ void DDWrecker_Create(void *data)
                     self->hitbox.top    = -20;
                     self->hitbox.right  = 20;
                     self->hitbox.bottom = 20;
-                    self->health        = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
+                    self->health        = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 2 : 3;
                     break;
 
                 case DDWRECKER_CHAIN: // chains
@@ -77,6 +77,14 @@ void DDWrecker_Create(void *data)
 
                 case DDWRECKER_CORE: // core
                     RSDK.SetSpriteAnimation(DDWrecker->aniFrames, 5, &self->animator, true, 0);
+                    if (globals->gameMode == MODE_ENCORE) {
+                        self->drawFX        = FX_FLIP | FX_ROTATE;
+                        self->hitbox.left   = -8;
+                        self->hitbox.top    = -8;
+                        self->hitbox.right  = 8;
+                        self->hitbox.bottom = 8;
+                        self->health        = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 1 : 2;
+                    }
                     break;
 
                 default: break;
@@ -111,6 +119,8 @@ void DDWrecker_StageLoad(void)
 void DDWrecker_State_SetupArena(void)
 {
     RSDK_THIS(DDWrecker);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
+
     if (++self->timer >= 8) {
         self->timer = 0;
 
@@ -120,6 +130,20 @@ void DDWrecker_State_SetupArena(void)
         Zone->cameraBoundsL[0]      = FROM_FIXED(self->position.x) - ScreenInfo->center.x;
         Zone->cameraBoundsR[0]      = FROM_FIXED(self->position.x) + ScreenInfo->center.x;
         Zone->cameraBoundsB[0]      = FROM_FIXED(self->position.y);
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Zone->playerBoundActiveL[i] = true;
+                    Zone->playerBoundActiveR[i] = true;
+                    Zone->playerBoundActiveB[i] = true;
+                    Zone->cameraBoundsL[i]      = FROM_FIXED(self->position.x) - ScreenInfo->center.x;
+                    Zone->cameraBoundsR[i]      = FROM_FIXED(self->position.x) + ScreenInfo->center.x;
+                    Zone->cameraBoundsB[i]      = FROM_FIXED(self->position.y);
+                }
+            }
+        }
 
         DDWrecker->camBoundL  = self->position.x + ((160 - ScreenInfo->center.x) << 16);
         DDWrecker->camBoundR  = self->position.x + ((ScreenInfo->center.x - 160) << 16);
@@ -139,6 +163,8 @@ void DDWrecker_State_SetupArena(void)
 void DDWrecker_State_InitChildren(void)
 {
     RSDK_THIS(DDWrecker);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
+
     if (self->timer) {
         self->timer++;
         if (self->timer == 60) {
@@ -215,11 +241,28 @@ void DDWrecker_State_InitChildren(void)
         }
     }
     else {
-        EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *leader = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
-        if (player->position.x > self->position.x) {
+        if (leader->position.x > self->position.x) {
             Music_TransitionTrack(TRACK_MINIBOSS, 0.0125);
             ++self->timer;
+        }
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    if (leader->position.x > self->position.x) {
+                        if (player->position.x < DDWrecker->bossBoundL) {
+                            EntityExplosion *explosion = CREATE_ENTITY(Explosion, INT_TO_VOID(EXPLOSION_ENEMY), leader->position.x, leader->position.y);
+                            player->position.x = leader->position.x;
+                            player->position.y = leader->position.y;
+                            player->camera->position.x = leader->camera->position.x;
+                            player->camera->position.y = leader->camera->position.y;
+                        }
+                    }
+                }
+            }
         }
     }
 }

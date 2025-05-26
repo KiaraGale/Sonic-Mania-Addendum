@@ -177,7 +177,7 @@ void CrashTest_CheckPlayerCollisionsSolid(void)
     foreach_active(Player, player)
     {
         RSDK.GetEntitySlot(player);
-        if (self->state != CrashTest_State_Crashed) {
+        if (self->state != CrashTest_State_Crashed || self->state != CrashTest_State_Move ) {
             self->position.y = carY;
             self->position.x = carX;
             self->direction  = storeDir;

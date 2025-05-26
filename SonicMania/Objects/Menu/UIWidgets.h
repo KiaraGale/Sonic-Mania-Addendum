@@ -31,6 +31,8 @@ struct ObjectUIWidgets {
     uint16 sfxFail;
 #if MANIA_USE_PLUS
     color buttonColor;
+    uint16 dynTextFrames;
+    Animator dynTextAnimator;
 #endif
 };
 

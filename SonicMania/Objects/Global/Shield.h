@@ -72,7 +72,7 @@ void Shield_State_BubbleBounced(void);
 void Shield_State_FireDash(void);
 void Shield_State_LightningSparks(void);
 void Shield_State_Insta(void);
-bool32 Shield_State_Reflect(EntityShield *shield, void *p);
+bool32 Shield_State_Reflect(EntityPlayer *player, EntityShield *shield, void *p);
 bool32 Shield_CheckCollisionTouch(EntityShield *shield, void *e, Hitbox *entityHitbox);
 
 #endif //! OBJ_SHIELD_H

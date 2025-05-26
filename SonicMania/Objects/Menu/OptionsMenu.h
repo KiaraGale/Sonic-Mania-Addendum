@@ -8,7 +8,6 @@
 struct ObjectOptionsMenu {
     RSDK_OBJECT
     EntityUIControl *optionsControl;
-    EntityUIButtonPrompt *helpPrompt;
     EntityUIControl *videoControl;
     EntityUIControl *videoControl_Windows;
     EntityUIControl *soundControl;
@@ -22,7 +21,6 @@ struct ObjectOptionsMenu {
     EntityUIControl *controlsControl_NXJoycon;
     EntityUIControl *controlsControl_NXPro;
     EntityUIControl *languageControl;
-    EntityUIControl *languageControl_Legacy;
     EntityUIDiorama *diorama;
     EntityUIInfoLabel *selectDataToEraseLabel;
 };
@@ -30,6 +28,9 @@ struct ObjectOptionsMenu {
 // Entity Class
 struct EntityOptionsMenu {
     RSDK_ENTITY
+    int32 timer;
+    int32 fadeTimer;
+    bool32 shouldFadeOut;
 };
 
 // Object Struct
@@ -62,6 +63,7 @@ void OptionsMenu_ApplyChangesDlg_BackPress_YesCB(void);
 void OptionsMenu_ApplyChangesDlg_Win_NoCB(void);
 void OptionsMenu_ApplyChangesDlg_NoCB(void);
 void OptionsMenu_ApplyChangesDlg_Win_YesCB(void);
+void OptionsMenu_ApplyChangesDlg_YesCB(void);
 void OptionsMenu_ApplyChangesDlg_BackPress_NoCB(void);
 void OptionsMenu_VideoMenuButton_ActionCB(void);
 void OptionsMenu_SoundMenuButton_ActionCB(void);
@@ -98,6 +100,7 @@ void OptionsMenu_AreYouSureDlg_YesCB_EraseReplays(void);
 void OptionsMenu_EraseReplaysCB(bool32 success);
 void OptionsMenu_EraseReplaysButton_ActionCB(void);
 void OptionsMenu_EraseAllButton_ActionCB(void);
+void OptionsMenu_HandleScreenFade(void);
 
 #endif
 

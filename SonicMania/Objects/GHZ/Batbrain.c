@@ -53,6 +53,8 @@ void Batbrain_StageLoad(void)
     Batbrain->sfxFlap = RSDK.GetSfx("Stage/Flap.wav");
 
     DEBUGMODE_ADD_OBJ(Batbrain);
+
+    Zone_SetupHyperAttackList(Batbrain->classID, true, true, true, true, true, true);
 }
 
 void Batbrain_DebugDraw(void)

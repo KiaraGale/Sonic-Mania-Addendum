@@ -16,9 +16,10 @@ struct ObjectERZStart {
     uint16 sfxRumble;
     EntityFXRuby *fxRuby;
     EntityPhantomRuby *ruby;
-    EntityChaosEmerald *emeralds[14];
+    EntityChaosEmerald *emeralds[16];
     EntityPhantomKing *king;
     EntityKleptoMobile *eggman;
+    bool32 pinchMusic;
 };
 
 // Entity Class

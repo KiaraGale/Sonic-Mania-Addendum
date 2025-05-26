@@ -145,45 +145,66 @@ void WaterGush_Create(void *data)
 {
     RSDK_THIS(WaterGush);
 
-    self->active     = ACTIVE_BOUNDS;
-    self->drawGroup  = Zone->objectDrawGroup[0];
-    self->startPos.x = self->position.x;
-    self->startPos.y = self->position.y;
-    self->visible    = true;
-    self->drawFX     = FX_FLIP;
+    if (data) {
+        self->active          = ACTIVE_NEVER;
+        self->drawGroup       = Zone->objectDrawGroup[0];
+        self->startPos.x      = self->position.x;
+        self->startPos.y      = self->position.y;
+        self->visible         = true;
+        self->drawFX          = FX_FLIP;
+        self->length          = 16;
+        self->speed           = 16;
+        self->updateRange.x   = 0x800000;
+        self->updateRange.y   = (self->length + 2) << 22;
+        self->gravityStrength = false;
 
-    self->updateRange.x = 0x800000;
-    if (self->orientation == WATERGUSH_LEFT || self->orientation == WATERGUSH_RIGHT)
-        self->updateRange.x = (self->length + 2) << 22;
+        WaterGush_SetupHitboxes();
 
-    self->updateRange.y = 0x800000;
-    if (self->orientation == WATERGUSH_UP)
-        self->updateRange.y = (self->length + 2) << 22;
+        self->direction = FLIP_NONE;
+        RSDK.SetSpriteAnimation(WaterGush->aniFrames, 0, &self->plumeAnimator, true, 0);
+        RSDK.SetSpriteAnimation(WaterGush->aniFrames, 2, &self->topAnimator, true, 0);
+    }
+    else {
+        self->active     = ACTIVE_BOUNDS;
+        self->drawGroup  = Zone->objectDrawGroup[0];
+        self->startPos.x = self->position.x;
+        self->startPos.y = self->position.y;
+        self->visible    = true;
+        self->drawFX     = FX_FLIP;
 
-    if (!self->speed)
-        self->speed = 16;
+        self->updateRange.x = 0x800000;
+        if (self->orientation == WATERGUSH_LEFT || self->orientation == WATERGUSH_RIGHT)
+            self->updateRange.x = (self->length + 2) << 22;
 
-    WaterGush_SetupHitboxes();
+        self->updateRange.y = 0x800000;
+        if (self->orientation == WATERGUSH_UP)
+            self->updateRange.y = (self->length + 2) << 22;
 
-    switch (self->orientation) {
-        default: break;
+        if (!self->speed)
+            self->speed = 16;
 
-        case WATERGUSH_UP:
-            self->direction = FLIP_NONE;
-            RSDK.SetSpriteAnimation(WaterGush->aniFrames, 0, &self->plumeAnimator, true, 0);
-            RSDK.SetSpriteAnimation(WaterGush->aniFrames, 2, &self->topAnimator, true, 0);
-            break;
+        WaterGush_SetupHitboxes();
 
-        case WATERGUSH_RIGHT:
-        case WATERGUSH_LEFT:
-            if (self->orientation == WATERGUSH_LEFT)
-                self->direction = FLIP_X;
-            else
+        switch (self->orientation) {
+            default: break;
+
+            case WATERGUSH_UP:
                 self->direction = FLIP_NONE;
+                RSDK.SetSpriteAnimation(WaterGush->aniFrames, 0, &self->plumeAnimator, true, 0);
+                RSDK.SetSpriteAnimation(WaterGush->aniFrames, 2, &self->topAnimator, true, 0);
+                break;
 
-            RSDK.SetSpriteAnimation(WaterGush->aniFrames, 1, &self->plumeAnimator, true, 0);
-            RSDK.SetSpriteAnimation(WaterGush->aniFrames, 3, &self->topAnimator, true, 0);
-            break;
+            case WATERGUSH_RIGHT:
+            case WATERGUSH_LEFT:
+                if (self->orientation == WATERGUSH_LEFT)
+                    self->direction = FLIP_X;
+                else
+                    self->direction = FLIP_NONE;
+
+                RSDK.SetSpriteAnimation(WaterGush->aniFrames, 1, &self->plumeAnimator, true, 0);
+                RSDK.SetSpriteAnimation(WaterGush->aniFrames, 3, &self->topAnimator, true, 0);
+                break;
+}
     }
 }
 

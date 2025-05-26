@@ -321,6 +321,8 @@ void Rattlekiller_StageLoad(void)
     // Idk where it would've been used but "MSZ/RKillerRattle.wav" was prolly intended for this object
 
     DEBUGMODE_ADD_OBJ(Rattlekiller);
+
+    Zone_SetupHyperAttackList(Rattlekiller->classID, true, true, true, true, true, true);
 }
 
 void Rattlekiller_DebugSpawn(void)

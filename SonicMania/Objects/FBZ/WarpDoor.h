@@ -46,6 +46,7 @@ struct EntityWarpDoor {
     int32 fadeTimer;
     bool32 fadeOut;
     Hitbox hitbox;
+    bool32 secretExit;
 };
 
 // Object Struct

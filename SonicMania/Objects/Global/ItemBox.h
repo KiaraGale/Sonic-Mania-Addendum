@@ -24,8 +24,7 @@ typedef enum {
     ITEMBOX_1UP_RAY,
     ITEMBOX_1UP_AMY,
     ITEMBOX_STOCK,
-    // ITEMBOX_EMERALD,
-    // ITEMBOX_TIMESTONE,
+    ITEMBOX_SHIELDCYCLE,
 #endif
     ITEMBOX_COUNT
 } ItemBoxTypes;
@@ -67,7 +66,6 @@ struct EntityItemBox {
     Animator debrisAnimator;
 #if MANIA_USE_PLUS
     Entity *parent;
-    bool32 sidekickBreak;
 #endif
 };
 
@@ -96,6 +94,7 @@ void ItemBox_Break(EntityItemBox *itemBox, EntityPlayer *player);
 bool32 ItemBox_HandleFallingCollision(void);
 bool32 ItemBox_HandlePlatformCollision(void *platform);
 void ItemBox_HandleObjectCollisions(void);
+void ItemBox_HandleSwapMonitorColors(void);
 
 // Entity States
 void ItemBox_State_Broken(void);

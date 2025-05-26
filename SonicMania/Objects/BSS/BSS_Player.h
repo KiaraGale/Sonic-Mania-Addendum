@@ -16,6 +16,8 @@ struct ObjectBSS_Player {
     uint16 rayFrames;
     uint16 amyFrames;
     uint16 sfxJump;
+    uint8 touchJump;
+    uint8 touchPause;
 };
 
 // Entity Class
@@ -57,5 +59,6 @@ void BSS_Player_Serialize(void);
 // Extra Entity Functions
 void BSS_Player_Input_P1(void);
 void BSS_Player_Input_P2(void);
+void BSS_Player_HandleTouchInput(void);
 
 #endif //! OBJ_BSS_PLAYER_H

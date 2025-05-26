@@ -21,6 +21,7 @@ struct ObjectGHZSetup {
     int32 extendFlowerFrame;
     TABLE(int32 extendFlowerDurationTable[16], { 120, 2, 2, 2, 8, 2, 2, 2, 120, 2, 2, 2, 8, 2, 2, 2 });
     uint16 aniTiles;
+    bool32 hasSpeedAchievement;
 };
 
 // Entity Class

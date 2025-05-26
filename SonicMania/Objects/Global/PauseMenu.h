@@ -10,6 +10,7 @@ struct ObjectPauseMenu {
     RSDK_OBJECT
     uint16 sfxBleep;
     uint16 sfxAccept;
+    uint16 aniFrames;
     bool32 disableEvents;
     bool32 controllerDisconnect;
     bool32 forcedDisconnect;
@@ -44,6 +45,7 @@ struct EntityPauseMenu {
     bool32 (*disconnectCheck)(void);
     int32 forcePaused;
     Animator animator;
+    Animator emeraldAnimator;
     void (*fadeoutCB)(void);
     int32 unused1;
     int32 unused2; // these may possibly be leftover or editor things

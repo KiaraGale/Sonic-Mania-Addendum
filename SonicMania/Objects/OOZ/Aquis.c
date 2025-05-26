@@ -86,6 +86,8 @@ void Aquis_StageLoad(void)
     Aquis->sfxShot = RSDK.GetSfx("Stage/Shot.wav");
 
     DEBUGMODE_ADD_OBJ(Aquis);
+
+    Zone_SetupHyperAttackList(Aquis->classID, true, true, true, true, true, true);
 }
 
 void Aquis_DebugSpawn(void)
@@ -367,8 +369,11 @@ void Aquis_State_Shot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Aquis->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Aquis->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

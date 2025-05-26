@@ -175,6 +175,13 @@ void PBL_Player_StageLoad(void)
 void PBL_Player_Input_P1(void)
 {
     RSDK_THIS(PBL_Player);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        PBL_Player_HandleTouchInput();
 
     if (self->controllerID < PLAYER_COUNT) {
         RSDKControllerState *controller = &ControllerInfo[self->controllerID];
@@ -287,6 +294,56 @@ void PBL_Player_State_Air(void)
             self->collisionPlane = 0;
 
         self->state = PBL_Player_State_Ground;
+    }
+}
+
+void PBL_Player_HandleTouchInput(void)
+{
+    RSDK_THIS(PBL_Player);
+
+    if (self->controllerID < PLAYER_COUNT && !PBL_Crane->isActive) {
+        RSDKControllerState *controller = &ControllerInfo[self->controllerID];
+
+        int32 tx = 0, ty = 0;
+        if (PBL_HUD_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+            tx -= 56;
+            ty -= 184;
+
+            switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+                case 0:
+                    ControllerInfo->keyRight.down |= true;
+                    controller->keyRight.down = true;
+                    break;
+
+                case 1:
+                    ControllerInfo->keyDown.down |= true;
+                    controller->keyDown.down = true;
+                    break;
+
+                case 2:
+                    ControllerInfo->keyLeft.down |= true;
+                    controller->keyLeft.down = true;
+                    break;
+
+                case 3:
+                    ControllerInfo->keyUp.down |= true;
+                    controller->keyUp.down = true;
+                    break;
+            }
+        }
+
+        bool32 touchedPause = false;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->size.x - 0x80, 0, ScreenInfo->size.x, 0x40, NULL, NULL) >= 0) {
+            ControllerInfo->keyStart.down |= true;
+            controller->keyStart.down = true;
+            touchedPause              = true;
+        }
+
+        if (!PBL_Player->touchPause && touchedPause) {
+            ControllerInfo->keyStart.press |= ControllerInfo->keyStart.down;
+            controller->keyStart.press |= controller->keyStart.down;
+        }
+        PBL_Player->touchPause = controller->keyStart.down;
     }
 }
 

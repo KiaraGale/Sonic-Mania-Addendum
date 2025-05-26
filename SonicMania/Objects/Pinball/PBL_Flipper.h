@@ -16,6 +16,9 @@ struct ObjectPBL_Flipper {
     uint16 sceneIndex;
     uint16 sfxFlipper;
     uint16 sfxFlipperStage;
+    int32 touchL;
+    int32 touchR;
+    int32 touchB;
 };
 
 // Entity Class
@@ -56,7 +59,7 @@ void PBL_Flipper_HandlePlayerInteractions(void);
 void PBL_Flipper_State_AwaitFlip(void);
 void PBL_Flipper_State_RiseFlipper(void);
 void PBL_Flipper_State_LowerFlipper(void);
-
+void PBL_Flipper_HandleTouchInput(void);
 #endif
 
 #endif //! OBJ_PBL_FLIPPER_H

@@ -13,8 +13,19 @@ ObjectPBL_Crane *PBL_Crane;
 void PBL_Crane_Update(void)
 {
     RSDK_THIS(PBL_Crane);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        PBL_Crane_HandleTouchInput();
 
     StateMachine_Run(self->state);
+
+    if (self->type == PBL_CRANE_CRANE && !self->state) {
+        PBL_Crane->isActive = false;
+    }
 }
 
 void PBL_Crane_LateUpdate(void) {}
@@ -24,6 +35,13 @@ void PBL_Crane_StaticUpdate(void) {}
 void PBL_Crane_Draw(void)
 {
     RSDK_THIS(PBL_Crane);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        PBL_HUD_DrawTouchControls(true);
 
     if (self->stateDraw) {
         StateMachine_Run(self->stateDraw);
@@ -107,6 +125,11 @@ void PBL_Crane_StageLoad(void)
     PBL_Crane->sfxCraneRise = RSDK.GetSfx("Pinball/CraneRise.wav");
     PBL_Crane->sfxPrizeGood = RSDK.GetSfx("Pinball/PrizeGood.wav");
     PBL_Crane->sfxPrizeBad  = RSDK.GetSfx("Pinball/PrizeBad.wav");
+
+    PBL_Crane->dpadFrames = RSDK.LoadSpriteAnimation("Global/TouchControls.bin", SCOPE_STAGE);
+
+    RSDK.SetSpriteAnimation(PBL_Crane->dpadFrames, 0, &PBL_Crane->dpadAnimator, true, 0);
+    RSDK.SetSpriteAnimation(PBL_Crane->dpadFrames, 1, &PBL_Crane->dpadTouchAnimator, true, 0);
 }
 
 void PBL_Crane_HandlePrizes(void)
@@ -147,12 +170,13 @@ void PBL_Crane_HandlePrizes(void)
             break;
 
         case PBL_CRANE_PRIZE_RINGS:
-            globals->restartRings += PBL_Setup->rings;
-
-            if (globals->gameMode == MODE_MANIA && globals->restartRings >= globals->restart1UP) {
-                PBL_Setup_GiveLife();
-                globals->restart1UP += 100;
+            for (int32 p = 0; p < 4; ++p) {
+                globals->restartRings[p] += PBL_Setup->rings;
+                if (globals->gameMode == MODE_MANIA && globals->restartRings[p] >= globals->restart1UP)
+                    PBL_Setup_GiveLife();
             }
+
+            globals->restart1UP += 100;
 
             PBL_Setup->rings   = 0;
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_RINGS;
@@ -162,9 +186,8 @@ void PBL_Crane_HandlePrizes(void)
         case PBL_CRANE_PRIZE_SHIELD_BUBBLE:
         case PBL_CRANE_PRIZE_SHIELD_FIRE:
         case PBL_CRANE_PRIZE_SHIELD_ELECTRIC:
-            globals->restartShield   = self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE;
-            globals->restartShieldP2 = self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE;
-
+            for (int32 p = 0; p < 4; ++p)
+                globals->restartShield[p] = self->displayAnimator.frameID - PBL_CRANE_PRIZE_SHIELD_BLUE + SHIELD_BLUE;
             PBL_Crane->prizeID = PBL_CRANE_PRIZEID_ITEM;
             break;
 
@@ -590,6 +613,69 @@ void PBL_Crane_StatePrize_PrizeGet(void)
 
         if ((self->timer & 3) == 1)
             ++camera->rotationY;
+    }
+}
+
+void PBL_Crane_HandleTouchInput(void)
+{
+    RSDK_THIS(PBL_Crane);
+
+    if (self->type == PBL_CRANE_CRANE && self->state) {
+        PBL_Crane->isActive = true;
+
+        RSDKControllerState *controller = &ControllerInfo[CONT_P1];
+        uint8 dir                       = -1;
+
+        int32 tx = 0, ty = 0;
+        if (PBL_HUD_CheckTouchRect(0, 96, ScreenInfo->center.x, ScreenInfo->size.y, &tx, &ty) >= 0) {
+            tx -= 56;
+            ty -= 184;
+
+            switch (((RSDK.ATan2(tx, ty) + 32) & 0xFF) >> 6) {
+                case 0:
+                    ControllerInfo->keyRight.down |= true;
+                    controller->keyRight.down = true;
+                    dir                       = 0;
+                    break;
+
+                case 1: break;
+
+                case 2:
+                    ControllerInfo->keyLeft.down |= true;
+                    controller->keyLeft.down = true;
+                    dir                      = 2;
+                    break;
+
+                case 3: break;
+            }
+        }
+
+        if (dir != PBL_Crane->touchDir && ControllerInfo->keyLeft.down) {
+            ControllerInfo->keyLeft.press |= ControllerInfo->keyLeft.down;
+            controller->keyLeft.press |= controller->keyLeft.down;
+        }
+
+        if (dir != PBL_Crane->touchDir && ControllerInfo->keyRight.down) {
+            ControllerInfo->keyRight.press |= ControllerInfo->keyRight.down;
+            controller->keyRight.press |= controller->keyRight.down;
+        }
+
+        PBL_Crane->touchDir = dir;
+
+        // fixes a bug with button vs touch
+        bool32 touchedJump = false;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+            ControllerInfo->keyDown.down |= true;
+            controller->keyDown.down = true;
+            touchedJump              = true;
+        }
+
+        if (!PBL_Crane->touchDown && touchedJump) {
+            ControllerInfo->keyDown.press |= ControllerInfo->keyDown.down;
+            controller->keyDown.press |= controller->keyDown.down;
+        }
+
+        PBL_Crane->touchDown = controller->keyDown.down;
     }
 }
 

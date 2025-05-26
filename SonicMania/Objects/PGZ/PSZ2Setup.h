@@ -15,6 +15,8 @@ struct ObjectPSZ2Setup {
     int16 petalTimer;
     uint16 aniTiles1;
     uint16 aniTiles2;
+    bool32 beenFrozen;
+    bool32 unlockedAchievement;
 };
 
 // Entity Class

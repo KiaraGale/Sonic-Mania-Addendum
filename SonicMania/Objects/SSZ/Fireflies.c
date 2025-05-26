@@ -50,7 +50,12 @@ void Fireflies_Create(void *data)
     }
 }
 
-void Fireflies_StageLoad(void) { Fireflies->aniFrames = RSDK.LoadSpriteAnimation("SSZ1/Fireflies.bin", SCOPE_STAGE); }
+void Fireflies_StageLoad(void)
+{
+    Fireflies->aniFrames = RSDK.LoadSpriteAnimation("SSZ1/Fireflies.bin", SCOPE_STAGE);
+
+    Zone_SetupHyperAttackList(Fireflies->classID, true, true, true, true, true, true);
+}
 
 void Fireflies_State_Spawner(void)
 {

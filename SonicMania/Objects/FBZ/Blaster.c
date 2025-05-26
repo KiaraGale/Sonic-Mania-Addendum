@@ -79,6 +79,8 @@ void Blaster_StageLoad(void)
     Blaster->hitboxProjectile.bottom = 4;
 
     DEBUGMODE_ADD_OBJ(Blaster);
+
+    Zone_SetupHyperAttackList(Blaster->classID, true, true, true, true, true, true);
 }
 
 void Blaster_DebugSpawn(void)
@@ -307,8 +309,11 @@ void Blaster_State_Shot(void)
 
         foreach_active(Shield, shield)
         {
-            if (Shield_CheckCollisionTouch(shield, self, &Blaster->hitboxProjectile))
-                Shield_State_Reflect(shield, self);
+            foreach_active(Player, player)
+            {
+                if (Shield_CheckCollisionTouch(shield, self, &Blaster->hitboxProjectile))
+                    Shield_State_Reflect(player, shield, self);
+            }
         }
     }
     else {

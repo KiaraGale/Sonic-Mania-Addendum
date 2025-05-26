@@ -26,6 +26,11 @@ void WarpDoor_Update(void)
                 if (Player_CheckCollisionTouch(player, self, &self->hitbox)) {
                     warped = true;
 
+                    if (TMZ2Setup) {
+                        if (self->secretExit)
+                            TMZ2Setup->secretExitsTaken++;
+                    }
+
                     if (!self->hasWarped) {
                         EntityCamera *camera = player->camera;
                         int32 camRelPosX     = 0;
@@ -187,7 +192,7 @@ void WarpDoor_Draw(void)
     if (self->fadeTimer > 0) {
         if (RSDK.CheckSceneFolder("FBZ")) {
             if (self->fadeOut)
-                RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer, self->fadeTimer);
+                RSDK.FillScreen(0x000000, self->fadeTimer, self->fadeTimer - 128, self->fadeTimer - 256);
             else
                 RSDK.FillScreen(0x800080, self->fadeTimer, self->fadeTimer - 256, self->fadeTimer);
         }
@@ -482,4 +487,5 @@ void WarpDoor_Serialize(void)
     RSDK_EDITABLE_VAR(WarpDoor, VAR_UINT8, effect);
     RSDK_EDITABLE_VAR(WarpDoor, VAR_BOOL, warpToCenter);
     RSDK_EDITABLE_VAR(WarpDoor, VAR_UINT8, forcePlayerState);
+    RSDK_EDITABLE_VAR(WarpDoor, VAR_BOOL, secretExit);
 }

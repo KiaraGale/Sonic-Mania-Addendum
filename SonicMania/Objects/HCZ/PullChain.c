@@ -82,13 +82,10 @@ void PullChain_Update(void)
                 player->position.x = self->position.x;
                 player->position.y = self->position.y + 0x1C0000;
 
-                // R.I.P dunkey mode, you are very missed :(
-#if GAME_VERSION == VER_100
                 if (!player->sidekick && PullChain_HandleDunkeyCode(player)) {
                     HandLauncher->dunkeyMode = true;
                     RSDK.PlaySfx(Ring->sfxRing, false, 0xFF);
                 }
-#endif
 
                 if (player->jumpPress || player->animator.animationID != ANI_HANG || player->velocity.x || player->velocity.y) {
                     self->activePlayers &= ~(1 << playerID);
@@ -181,7 +178,6 @@ void PullChain_StageLoad(void)
     PullChain->sfxPullChain = RSDK.GetSfx("HCZ/PullChain.wav");
 }
 
-#if GAME_VERSION == VER_100
 bool32 PullChain_HandleDunkeyCode(EntityPlayer *player)
 {
     RSDK_THIS(PullChain);
@@ -223,7 +219,6 @@ bool32 PullChain_HandleDunkeyCode(EntityPlayer *player)
 
     return activatedCheatCode;
 }
-#endif
 
 #if GAME_INCLUDE_EDITOR
 void PullChain_EditorDraw(void)

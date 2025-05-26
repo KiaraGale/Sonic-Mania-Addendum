@@ -63,6 +63,8 @@ void Wisp_StageLoad(void)
     Wisp->hitboxBadnik.bottom = 8;
 
     DEBUGMODE_ADD_OBJ(Wisp);
+
+    Zone_SetupHyperAttackList(Wisp->classID, true, true, true, true, true, true);
 }
 
 void Wisp_DebugSpawn(void)

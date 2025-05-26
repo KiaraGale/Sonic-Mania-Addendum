@@ -13,6 +13,13 @@ ObjectPBL_Flipper *PBL_Flipper;
 void PBL_Flipper_Update(void)
 {
     RSDK_THIS(PBL_Flipper);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
+
+    if (touchControls)
+        PBL_Flipper_HandleTouchInput();
 
     if (self->direction) {
         self->buttonPress = TriggerInfoL[CONT_P1].keyBumper.press || ControllerInfo[CONT_P1].keyA.press || ControllerInfo[CONT_P1].keyX.press
@@ -329,6 +336,54 @@ void PBL_Flipper_State_LowerFlipper(void)
     }
 
     PBL_Flipper_HandlePlayerInteractions();
+}
+
+void PBL_Flipper_HandleTouchInput(void)
+{
+    if (!PBL_Crane->isActive) {
+        RSDKControllerState *controller = &ControllerInfo[CONT_P1];
+
+        int32 div = ScreenInfo->center.x / 3;
+
+        bool32 touchedL = true;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->center.x, 96, ScreenInfo->center.x + div, ScreenInfo->size.y, NULL, NULL) >= 0) {
+            TriggerInfoL[CONT_P1].keyBumper.down |= true;
+            TriggerInfoL->keyBumper.down = true;
+            touchedL                     = true;
+        }
+
+        bool32 touchedB = true;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->center.x + div, 96, ScreenInfo->center.x + (div * 2), ScreenInfo->size.y, NULL, NULL) >= 0) {
+            ControllerInfo[CONT_P1].keyA.down |= true;
+            ControllerInfo->keyA.down = true;
+            touchedB                  = true;
+        }
+
+        bool32 touchedR = true;
+        if (PBL_HUD_CheckTouchRect(ScreenInfo->center.x + (div * 2), 96, ScreenInfo->size.x, ScreenInfo->size.y, NULL, NULL) >= 0) {
+            TriggerInfoR[CONT_P1].keyBumper.down |= true;
+            TriggerInfoR->keyBumper.down = true;
+            touchedR                     = true;
+        }
+
+        if (!PBL_Flipper->touchL && touchedL) {
+            TriggerInfoL[CONT_P1].keyBumper.press |= TriggerInfoL[CONT_P1].keyBumper.down;
+            TriggerInfoL->keyBumper.press |= TriggerInfoL->keyBumper.down;
+        }
+        PBL_Flipper->touchL = TriggerInfoL[CONT_P1].keyBumper.down;
+
+        if (!PBL_Flipper->touchB && touchedB) {
+            ControllerInfo[CONT_P1].keyA.press |= ControllerInfo[CONT_P1].keyA.down;
+            ControllerInfo->keyA.press |= ControllerInfo->keyA.down;
+        }
+        PBL_Flipper->touchB = ControllerInfo[CONT_P1].keyStart.down;
+
+        if (!PBL_Flipper->touchR && touchedL) {
+            TriggerInfoR[CONT_P1].keyBumper.press |= TriggerInfoR[CONT_P1].keyBumper.down;
+            TriggerInfoR->keyBumper.press |= TriggerInfoR->keyBumper.down;
+        }
+        PBL_Flipper->touchR = TriggerInfoR[CONT_P1].keyBumper.down;
+    }
 }
 
 #if GAME_INCLUDE_EDITOR

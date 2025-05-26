@@ -9,7 +9,17 @@
 
 ObjectDashLift *DashLift;
 
-void DashLift_Update(void) { Platform_Update(); }
+void DashLift_Update(void)
+{
+    RSDK_THIS(DashLift);
+    AddendumOptions *addendumOptions = Addendum_GetOptionsRAM();
+
+    Platform_Update();
+
+    if (addendumOptions->spindashType == SPINDASHTYPE_NONE) {
+        destroyEntity(self);
+    }
+}
 
 void DashLift_LateUpdate(void) {}
 

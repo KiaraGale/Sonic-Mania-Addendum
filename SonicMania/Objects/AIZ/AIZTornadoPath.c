@@ -188,25 +188,43 @@ void AIZTornadoPath_State_DisablePlayerInteractions(void)
 
 void AIZTornadoPath_State_ExitTornadoSequence(void)
 {
+    RSDK_THIS(AIZTornadoPath);
     foreach_active(AIZTornado, tornado) { tornado->drawGroup = Zone->objectDrawGroup[0]; }
 
     if (!tornado->disableInteractions) {
-        EntityPlayer *player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *player1 = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+        EntityPlayer *player2 = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
         EntityCamera *camera = AIZTornadoPath->camera;
 
         if (camera) {
-            camera->state          = Camera_State_FollowXY;
-            player->camera         = camera;
-            player->collisionPlane = 0;
-            player->interaction    = true;
-            player->applyJumpCap   = false;
-            player->drawGroup      = Zone->playerDrawGroup[0];
-            AIZTornadoPath->camera = NULL;
+            camera->state           = Camera_State_FollowXY;
+            player1->camera         = camera;
+            player1->collisionPlane = 0;
+            player1->interaction    = true;
+            player1->applyJumpCap   = false;
+            player1->drawGroup      = Zone->playerDrawGroup[0];
+            AIZTornadoPath->camera  = NULL;
         }
-        player->groundVel = AIZTornadoPath->moveVel.x;
-        Player_Action_Jump(player);
-        player->right                = true;
+        player1->groundVel = AIZTornadoPath->moveVel.x;
+        Player_Action_Jump(player1);
+        player1->right               = true;
         tornado->disableInteractions = true;
+
+        if (player2->characterID == ID_KNUCKLES && RSDK.CheckSceneFolder("AIZ")) {
+            self->knuxTimer = 0;
+            self->knuxTimer++;
+
+            player2->groundVel = AIZTornadoPath->moveVel.x;
+            player2->jumpAbilityState = 1;
+            Player_Action_Jump(player2);
+            player2->right = true;
+            player2->visible = true;
+
+            if (++self->knuxTimer == 5) {
+                player2->jumpHold = true;
+                player2->state    = Player_State_KnuxGlideRight;
+            }
+        }
     }
 
     AIZTornadoPath_State_SetTornadoSpeed();

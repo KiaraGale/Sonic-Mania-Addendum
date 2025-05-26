@@ -107,6 +107,8 @@ void Ring_StageLoad(void)
     DEBUGMODE_ADD_OBJ(Ring);
 
     Ring->sfxRing = RSDK.GetSfx("Global/Ring.wav");
+    Ring->sfxAntiRing = RSDK.GetSfx("Global/AntiRing.wav");
+    Ring->sfxEmblem = RSDK.GetSfx("Global/Emblem.wav");
 }
 
 void Ring_DebugSpawn(void)
@@ -125,6 +127,7 @@ void Ring_DebugDraw(void)
 void Ring_Collect(void)
 {
     RSDK_THIS(Ring);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     int32 storeX = self->position.x;
     int32 storeY = self->position.y;
@@ -136,15 +139,37 @@ void Ring_Collect(void)
     {
         if (Player_CheckCollisionTouch(player, self, &Ring->hitbox)) {
             if (!self->planeFilter || player->collisionPlane == (((uint8)self->planeFilter - 1) & 1)) {
-                if (player->sidekick)
-                    player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
+                if (self->type <= RING_TYPE_SPARKLE3) {
+                    if (addendumOptions->coopStyle == COOPSTYLE_TOGETHER) {
+                        for (int32 p = 0; p < 4; ++p) {
+                            EntityPlayer* players = RSDK_GET_ENTITY(SLOT_PLAYER1 + p, Player);
+                            int32 ringAmount = 1;
+                            if (self->type == RING_TYPE_BIG) {
+                                players->ringExtraLife += 100 * (self->ringAmount / 100);
+                                ringAmount = self->ringAmount;
+                            }
+                            Player_GiveRings(players, ringAmount, true);
+                        }
+                    }
+                    else {
+                        if (player->sidekick)
+                            player = RSDK_GET_ENTITY(SLOT_PLAYER1, Player);
 
-                int32 ringAmount = 1;
-                if (self->type == RING_TYPE_BIG) {
-                    player->ringExtraLife += 100 * (self->ringAmount / 100);
-                    ringAmount = self->ringAmount;
+                        int32 ringAmount = 1;
+                        if (self->type == RING_TYPE_BIG) {
+                            player->ringExtraLife += 100 * (self->ringAmount / 100);
+                            ringAmount = self->ringAmount;
+                        }
+                        Player_GiveRings(player, ringAmount, true);
+                    }
                 }
-                Player_GiveRings(player, ringAmount, true);
+                else {
+                    RSDK.PlaySfx(Ring->sfxEmblem, false, 255);
+                    EntityScoreBonus* scoreBonus = CREATE_ENTITY(ScoreBonus, NULL, self->position.x, self->position.y);
+                    scoreBonus->drawGroup = Zone->objectDrawGroup[1];
+                    scoreBonus->animator.frameID = 3;
+                    Player_GiveScore(player, 1000);
+                }
 
                 int32 max = TO_FIXED(8);
                 if (self->type == RING_TYPE_BIG)
@@ -183,13 +208,48 @@ void Ring_Collect(void)
             }
         }
         else if (self->state != Ring_State_Attracted && player->shield == SHIELD_LIGHTNING
-                 && RSDK.CheckObjectCollisionTouchCircle(self, TO_FIXED(80), player, TO_FIXED(1))) {
+            && RSDK.CheckObjectCollisionTouchCircle(self, TO_FIXED(80), player, TO_FIXED(1)) && self->type < RING_TYPE_RED_EMBLEM) {
             self->drawPos.x    = 0;
             self->state        = Ring_State_Attracted;
             self->stateDraw    = Ring_Draw_Normal;
             self->active       = ACTIVE_NORMAL;
             self->storedPlayer = player;
             foreach_return;
+        }
+    }
+
+    if (self->type >= RING_TYPE_RED_EMBLEM) {
+        self->state     = Ring_State_Emblem;
+        self->stateDraw = Ring_Draw_Emblem;
+
+        if (!(--self->timer & 7)) {
+            int32 max = TO_FIXED(12);
+
+            int32 min = -max;
+            int32 x = self->position.x + RSDK.Rand(min, max);
+            int32 y = self->position.y + RSDK.Rand(min + 4, max - 4);
+            EntityRing* sparkle = CREATE_ENTITY(Ring, NULL, x, y);
+
+            sparkle->state     = Ring_State_Sparkle;
+            sparkle->stateDraw = Ring_Draw_Sparkle;
+            sparkle->active    = ACTIVE_NORMAL;
+            sparkle->visible   = false;
+            if (self->drawGroup == 1)
+                sparkle->drawGroup = 1;
+            else
+                sparkle->drawGroup = Zone->objectDrawGroup[1];
+
+            RSDK.SetSpriteAnimation(Ring->aniFrames, RING_TYPE_SPARKLE1 + RSDK.Rand(0,2), &sparkle->animator, true, 0);
+            int32 frameCount = sparkle->animator.frameCount;
+            if (sparkle->animator.animationID == 2) {
+                sparkle->alpha = 0xE0;
+                frameCount >>= 1;
+            }
+            sparkle->maxFrameCount = frameCount - 1;
+            sparkle->animator.speed = RSDK.Rand(6, 8);
+            sparkle->timer = 2;
+
+            self->timer = 0;
         }
     }
 
@@ -762,6 +822,7 @@ void Ring_State_Sparkle(void)
         self->timer--;
     }
 }
+void Ring_State_Emblem(void) { Ring_Collect(); }
 
 void Ring_Draw_Normal(void)
 {
@@ -790,6 +851,15 @@ void Ring_Draw_Sparkle(void)
         self->animator.frameID -= 16;
     }
     RSDK.DrawSprite(&self->animator, NULL, false);
+}
+void Ring_Draw_Emblem(void)
+{
+    RSDK_THIS(Ring);
+
+    self->drawPos.x = self->position.x;
+    self->drawPos.y = BadnikHelpers_Oscillate(self->position.y, 2, 10);
+
+    RSDK.DrawSprite(&self->animator, &self->drawPos, false);
 }
 
 #if GAME_INCLUDE_EDITOR
@@ -889,6 +959,14 @@ void Ring_EditorLoad(void)
     RSDK_ACTIVE_VAR(Ring, type);
     RSDK_ENUM_VAR("Normal", RING_TYPE_NORMAL);
     RSDK_ENUM_VAR("Big", RING_TYPE_BIG);
+    RSDK_ENUM_VAR("Sparkle 1", RING_TYPE_SPARKLE1);
+    RSDK_ENUM_VAR("Sparkle 2", RING_TYPE_SPARKLE2);
+    RSDK_ENUM_VAR("Sparkle 3", RING_TYPE_SPARKLE3);
+    RSDK_ENUM_VAR("Red Emblem", RING_TYPE_RED_EMBLEM);
+    RSDK_ENUM_VAR("Green Emblem", RING_TYPE_GREEN_EMBLEM);
+    RSDK_ENUM_VAR("Purple Emblem", RING_TYPE_PURPLE_EMBLEM);
+    RSDK_ENUM_VAR("Silver Emblem", RING_TYPE_SILVER_EMBLEM);
+    RSDK_ENUM_VAR("Gold Emblem", RING_TYPE_GOLD_EMBLEM);
 
     RSDK_ACTIVE_VAR(Ring, moveType);
     RSDK_ENUM_VAR("Fixed", RING_MOVE_FIXED);

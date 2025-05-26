@@ -102,7 +102,7 @@ void PhantomMystic_CheckPlayerCollisions(void)
             PhantomMystic_Hit();
         }
 
-        if (self->cupBlastAnimator.frameID > 8 && self->cupBlastAnimator.frameID < 26) {
+        if (self->cupBlastAnimator.frameID > 9 && self->cupBlastAnimator.frameID < 27) {
             for (int32 i = 0; i < 3; ++i) {
                 if (i != self->correctCup) {
                     self->position.x = storeX + self->cupPos[i];
@@ -435,6 +435,10 @@ void PhantomMystic_State_CupBlast(void)
     self->cupAlpha[0] -= self->cupAlpha[0] >> 4;
     self->cupAlpha[1] -= self->cupAlpha[1] >> 4;
     self->cupAlpha[2] -= self->cupAlpha[2] >> 4;
+
+    if (self->cupBlastAnimator.frameID == 8) {
+        RSDK.PlaySfx(PhantomMystic->sfxBigLaser, false, 255);
+    }
 
     if (self->cupBlastAnimator.frameID == self->cupBlastAnimator.frameCount - 1) {
         self->mysticVelY = 0;

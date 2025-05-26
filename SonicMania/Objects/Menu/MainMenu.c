@@ -16,6 +16,33 @@ void MainMenu_LateUpdate(void) {}
 
 void MainMenu_StaticUpdate(void)
 {
+    bool32 ultraWide = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &ultraWide);
+#endif
+
+    if (ultraWide) {
+        int32 extraWidth = (ScreenInfo->size.x - 424) / 2;
+        if (MainMenu->menuControl) {
+            foreach_all(UIDiorama, diorama)
+            {
+                int32 x = MainMenu->menuControl->startPos.x - MainMenu->menuControl->cameraOffset.x;
+                int32 y = MainMenu->menuControl->startPos.y - MainMenu->menuControl->cameraOffset.y;
+
+                Hitbox hitbox;
+                hitbox.right  = (((MainMenu->menuControl->size.x) >> 17) + extraWidth);
+                hitbox.left   = -(((MainMenu->menuControl->size.x) >> 17) + extraWidth);
+                hitbox.bottom = (MainMenu->menuControl->size.y >> 17);
+                hitbox.top    = -(MainMenu->menuControl->size.y >> 17);
+
+                if (MathHelpers_PointInHitbox(x, y, diorama->position.x, diorama->position.y, FLIP_NONE, &hitbox)) {
+                    MainMenu->diorama = diorama;
+                    diorama->parent   = MainMenu->menuControl;
+                }
+            }
+        }
+    }
+
     EntityUIControl *control = MainMenu->menuControl;
 
     if (control && control->active) {
@@ -53,15 +80,25 @@ void MainMenu_Initialize(void)
 {
     String tag;
     INIT_STRING(tag);
-    RSDK.SetString(&tag, "Main Menu");
 
     foreach_all(UIControl, control)
     {
+        RSDK.SetString(&tag, "Main Menu");
         if (RSDK.CompareStrings(&tag, &control->tag, false)) {
             MainMenu->menuControl = control;
             control->backPressCB  = MainMenu_BackPressCB_ReturnToTitle;
         }
+
+        RSDK.SetString(&tag, "Addendum Options");
+        if (RSDK.CompareStrings(&tag, &control->tag, false)) {
+            MainMenu->addendumControl = control;
+            control->menuUpdateCB     = MainMenu_AddendumMenu_MenuUpdateCB;
+        }
     }
+
+    // Make sure the toggles are initialized without being forced to go into the toggles menu
+    CREATE_ENTITY(AddendumToggles, NULL, MainMenu->menuControl->position.x, MainMenu->menuControl->position.y);
+    AddendumToggles_Initialize();
 
     EntityUIControl *menuControl = MainMenu->menuControl;
 
@@ -80,30 +117,17 @@ void MainMenu_Initialize(void)
     }
 
 #if MANIA_USE_PLUS
-    int32 button1Frame = 1; // Time Attack
-    int32 button2Frame = 2; // Competition
-    // int32 button3Frame = 8; Achievements
-    int32 button3Frame = 3; // Options
-    int32 button4Frame = 4; // Extras
-    int32 button5Frame = 6; // Buy Plus
+    int32 button1Frame = 5; // Encore Mode
+    int32 button2Frame = 1; // Time Attack
+    int32 button3Frame = 2; // Competition
+    // int32 button4Frame = 8; Achievements
+    int32 button4Frame = 3; // Options
+    int32 button5Frame = 4; // Extras
 
     // bool32 button3StopMus = false; Achievements button does NOT stop music
-    bool32 button3StopMus    = false; // Options button does NOT stop music
-    bool32 button4Transition = true;  // Extras does a transition
-    bool32 button5Transition = false; // Buy Plus Does NOT do a transition
-
-    if (API.CheckDLC(DLC_PLUS)) {
-        button1Frame = 5; // Encore Mode
-        button2Frame = 1; // Time Attack
-        button3Frame = 2; // Competition
-        // button4Frame = 8; Achievements
-        button4Frame = 3; // Options
-        button5Frame = 4; // Extras
-
-        button3StopMus    = true; // Competition button stops music
-        button4Transition = true;
-        button5Transition = true; // Extras Does a transition
-    }
+    bool32 button3StopMus    = true; // Competition button stops music
+    bool32 button4Transition = true; // Options does a transition
+    bool32 button5Transition = true; // Extras does a transition
 
     EntityUIButton *buttonManiaMode = menuControl->buttons[0];
     buttonManiaMode->frameID        = 0;
@@ -149,12 +173,139 @@ void MainMenu_Initialize(void)
 #endif
 }
 
+void MainMenu_YPressCB_GoToAddendumOptions(void)
+{
+    EntityUIControl *control = MainMenu->menuControl;
+
+    if (control->active == ACTIVE_ALWAYS) {
+        if (!MainMenu->inAddendumMenu) {
+            AddendumToggles_SetToggleButtons_Gameplay();
+            AddendumToggles_SetToggleButtons_Style();
+            AddendumToggles_SetToggleButtons_Music();
+            AddendumToggles_SetToggleButtons_Multiplayer();
+            MainMenu->inAddendumMenu = true;
+        }
+
+        RSDK.PlaySfx(UIWidgets->sfxAccept, false, 255);
+        UIControl->inputLocked = true;
+
+        UITransition_StartTransition(MainMenu_HandleToAddendumTransitionCB, 0);
+    }
+}
+
+void MainMenu_HandleToAddendumTransitionCB(void)
+{
+    EntityUIControl *control = MainMenu->menuControl;
+    control->childHasFocus   = true;
+    UIControl_MatchMenuTag("Addendum Options");
+}
+
+void MainMenu_HandleFromAddendumTransitionCB(void)
+{
+    EntityUIControl *control = MainMenu->menuControl;
+    control->childHasFocus   = false;
+    UIControl_MatchMenuTag("Main Menu");
+}
+
+void MainMenu_HandleToAddendumSubMenuTransitionCB(void)
+{
+    EntityUIControl* control = MainMenu->addendumControl;
+    control->childHasFocus   = true;
+
+    if (control->buttonID == 0)
+        UIControl_MatchMenuTag("Gameplay Options");
+    
+    if (control->buttonID == 1)
+        UIControl_MatchMenuTag("Style Options");
+
+    if (control->buttonID == 2)
+        UIControl_MatchMenuTag("Music Options");
+
+    if (control->buttonID == 3)
+        UIControl_MatchMenuTag("Multiplayer Options");
+}
+
+void MainMenu_HandleFromAddendumSubMenuTransitionCB(void)
+{
+    EntityUIControl *control = MainMenu->addendumControl;
+    control->childHasFocus   = false;
+    UIControl_MatchMenuTag("Addendum Options");
+}
+
 bool32 MainMenu_BackPressCB_ReturnToTitle(void)
 {
     ManiaModeMenu_StartReturnToTitle();
 
     return true;
 }
+
+void MainMenu_AddendumMenu_MenuUpdateCB(void)
+{
+    RSDK_THIS(UIControl);
+    EntityUIControl *control = MainMenu->addendumControl;
+
+    if (control->active == ACTIVE_ALWAYS) {
+        if (UIControl->anyBackPress) {
+            MainMenu_StartReturnToParentScreen();
+        }
+    }
+}
+
+void MainMenu_StartReturnToParentScreen(void)
+{
+    if (MainMenu->inAddendumMenu) {
+        AddendumToggles_GetTogglesFromSelection_Gameplay();
+        AddendumToggles_SetToggleButtons_Gameplay();
+        AddendumToggles_GetTogglesFromSelection_Style();
+        AddendumToggles_SetToggleButtons_Style();
+        AddendumToggles_GetTogglesFromSelection_Music();
+        AddendumToggles_SetToggleButtons_Music();
+        AddendumToggles_GetTogglesFromSelection_Multiplayer();
+        AddendumToggles_SetToggleButtons_Multiplayer();
+        AddendumToggles_ChangeMenuSpriteStyle();
+        MainMenu->inAddendumMenu = false;
+    }
+    else
+        UITransition_StartTransition(MainMenu_HandleFromAddendumTransitionCB, 0);
+}
+
+void MainMenu_AddendumMenu_SubMenuUpdateCB(void)
+{
+    RSDK_THIS(UIControl);
+    String tag;
+    INIT_STRING(tag);
+
+    foreach_all(UIControl, control)
+    {
+        RSDK.SetString(&tag, "Gameplay Options");
+        if (RSDK.CompareStrings(&tag, &control->tag, false)) {
+            MainMenu->gameplayOptsControl = control;
+            control->backPressCB = MainMenu_AddendumSubMenu_ReturnToAddendumMenu;
+        }
+
+        RSDK.SetString(&tag, "Style Options");
+        if (RSDK.CompareStrings(&tag, &control->tag, false)) {
+            MainMenu->styleOptsControl = control;
+            control->backPressCB = MainMenu_AddendumSubMenu_ReturnToAddendumMenu;
+        }
+
+        RSDK.SetString(&tag, "Music Options");
+        if (RSDK.CompareStrings(&tag, &control->tag, false)) {
+            MainMenu->musicOptsControl = control;
+            control->backPressCB = MainMenu_AddendumSubMenu_ReturnToAddendumMenu;
+        }
+
+        RSDK.SetString(&tag, "Multiplayer Options");
+        if (RSDK.CompareStrings(&tag, &control->tag, false)) {
+            MainMenu->multiplayerOptsControl = control;
+            control->backPressCB = MainMenu_AddendumSubMenu_ReturnToAddendumMenu;
+        }
+    }
+}
+
+bool32 MainMenu_AddendumSubMenu_ReturnToAddendumMenu(void) { UITransition_StartTransition(MainMenu_HandleFromAddendumSubMenuTransitionCB, 0); return true; }
+
+void MainMenu_SaveOptionsCB(bool32 success) { UIWaitSpinner_FinishWait(); }
 
 void MainMenu_ExitGame(void) { API.ExitGame(); }
 
@@ -198,31 +349,29 @@ void MainMenu_MenuButton_ActionCB(void)
                     UISaveSlot_HandleSaveIconChange();
                     SceneInfo->entity = store;
                 }
+
+                UISubHeading->assignedControllers = 0;
+
+                int32 id = API_GetFilteredInputDeviceID(true, false, 10);
+                API_ResetInputSlotAssignments();
+                API_AssignInputSlotToDevice(CONT_P1, id);
+                UISubHeading->assignedControllers += 1;
 #endif
                 UIControl_MatchMenuTag("Save Select");
             }
             break;
 
         case 1: // Time Attack
-            if (API.CheckDLC(DLC_PLUS)) {
+            if (true) { // looks pointless but i swear it's here for a reason
                 EntityUIControl *control = TimeAttackMenu->timeAttackControl;
                 control->buttonID        = 0;
                 control->menuWasSetup    = false;
                 UIControl_MatchMenuTag("Time Attack");
             }
-            else {
-                EntityUIControl *control = TimeAttackMenu->timeAttackControl_Legacy;
-                control->buttonID        = 0;
-                control->menuWasSetup    = false;
-                UIControl_MatchMenuTag("Time Attack Legacy");
-            }
             break;
 
         case 2: // Competition
-            if (API.CheckDLC(DLC_PLUS))
-                UIControl_MatchMenuTag("Competition");
-            else
-                UIControl_MatchMenuTag("Competition Legacy");
+            UIControl_MatchMenuTag("Competition");
             break;
 
         case 3: // Options
@@ -291,18 +440,6 @@ void MainMenu_MenuButton_ActionCB(void)
 void MainMenu_BuyPlusDialogCB(void) { API.ShowAltExtensionOverlay(0); }
 #endif
 
-void MainMenu_MenuButton_AddendumCB(void)
-{
-    RSDK_THIS(UIButton);
-    UITransition_StartTransition(MainMenu_MenuButton_AddendumTransition, 0);
-}
-
-void MainMenu_MenuButton_AddendumTransition(void)
-{
-    EntityUIControl *control = MainMenu->menuControl;
-    UIControl_MatchMenuTag("Addendum Options");
-}
-
 void MainMenu_HandleUnlocks(void)
 {
     EntityUIControl *control = MainMenu->menuControl;
@@ -341,10 +478,12 @@ void MainMenu_SetupActions(void)
 
     MainMenu->menuControl->menuSetupCB = MainMenu_MenuSetupCB;
 
-    // MainMenu->menuControl->yPressCB = MainMenu_MenuButton_AddendumCB;
+    MainMenu->menuControl->yPressCB = MainMenu_YPressCB_GoToAddendumOptions;
 }
 
 void MainMenu_MenuSetupCB(void) { MainMenu->diorama->lastDioramaID = -1; }
+
+void MainMenu_AddendumOptionsCB(bool32 success) { UIWaitSpinner_FinishWait(); }
 
 #if GAME_INCLUDE_EDITOR
 void MainMenu_EditorDraw(void) {}

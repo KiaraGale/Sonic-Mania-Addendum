@@ -24,6 +24,10 @@ void PBL_HUD_StaticUpdate(void) {}
 void PBL_HUD_Draw(void)
 {
     RSDK_THIS(PBL_HUD);
+    bool32 touchControls = false;
+#if RETRO_USE_MOD_LOADER
+    Mod.LoadModInfo("AddendumAndroid", NULL, NULL, NULL, &touchControls);
+#endif
 
     self->position.x = ScreenInfo->center.x << 16;
 
@@ -34,6 +38,9 @@ void PBL_HUD_Draw(void)
         RSDK.DrawSprite(&self->displayAnimator, NULL, true);
         RSDK.DrawSprite(&self->baseAnimator, NULL, true);
     }
+
+    if (touchControls)
+        PBL_HUD_DrawTouchControls(false);
 }
 
 void PBL_HUD_Create(void *data)
@@ -61,7 +68,15 @@ void PBL_HUD_Create(void *data)
     }
 }
 
-void PBL_HUD_StageLoad(void) { PBL_HUD->aniFrames = RSDK.LoadSpriteAnimation("Pinball/Backglass.bin", SCOPE_STAGE); }
+void PBL_HUD_StageLoad(void)
+{
+    PBL_HUD->aniFrames = RSDK.LoadSpriteAnimation("Pinball/Backglass.bin", SCOPE_STAGE);
+
+    PBL_HUD->dpadFrames = RSDK.LoadSpriteAnimation("Global/TouchControls.bin", SCOPE_STAGE);
+
+    RSDK.SetSpriteAnimation(PBL_HUD->dpadFrames, 0, &PBL_HUD->dpadAnimator, true, 0);
+    RSDK.SetSpriteAnimation(PBL_HUD->dpadFrames, 1, &PBL_HUD->dpadTouchAnimator, true, 0);
+}
 
 void PBL_HUD_DisplayMessage(EntityPBL_HUD *entity, const char *message, int32 type)
 {
@@ -333,6 +348,251 @@ void PBL_HUD_State_HideCrane(void)
             player->velocity.y = 0;
         }
     }
+}
+
+void PBL_HUD_DrawTouchControls(bool32 craneControls)
+{
+    RSDK_THIS(PBL_HUD);
+
+    int32 alphaStore   = self->alpha;
+    int32 inkStore     = self->inkEffect;
+    int32 fxStore      = self->drawFX;
+    Vector2 scaleStore = self->scale;
+
+    PBL_HUD->dpadPos.x = TO_FIXED(56);
+    PBL_HUD->dpadPos.y = TO_FIXED(184);
+
+    PBL_HUD->actionPos.x = TO_FIXED(ScreenInfo[SceneInfo->currentScreenID].size.x - 56);
+    PBL_HUD->actionPos.y = TO_FIXED(188);
+
+    PBL_HUD->pausePos.x = TO_FIXED(ScreenInfo[SceneInfo->currentScreenID].size.x - 64);
+    PBL_HUD->pausePos.y = TO_FIXED(16);
+
+    self->inkEffect = INK_NONE;
+    self->drawFX    = FX_SCALE;
+
+    int32 opacity = 0x100;
+    self->scale.x = 0x200;
+    self->scale.y = 0x200;
+
+    bool32 enabled = true;
+    if (enabled) {
+        if ((SceneInfo->state & 3) == ENGINESTATE_REGULAR) {
+            if (PBL_HUD->dpadAlpha < opacity) {
+                PBL_HUD->dpadAlpha += 4;
+                PBL_HUD->pauseAlpha = PBL_HUD->dpadAlpha << 1;
+            }
+
+            if (craneControls) {
+                foreach_active(PBL_Crane, crane)
+                {
+                    if (crane->classID == PBL_Crane->classID) {
+                        // Draw DPad
+                        self->alpha                   = PBL_HUD->dpadAlpha;
+                        PBL_HUD->dpadAnimator.frameID = 10;
+                        RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+
+                        if (PBL_Crane->touchDir == 2 || ControllerInfo->keyLeft.down) {
+                            self->alpha                        = opacity;
+                            PBL_HUD->dpadTouchAnimator.frameID = 6;
+                            RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                        }
+                        else {
+                            self->alpha                   = PBL_HUD->dpadAlpha;
+                            PBL_HUD->dpadAnimator.frameID = 6;
+                            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                        }
+
+                        // Down Input else statement; down input isn't used here
+                        self->alpha                   = PBL_HUD->dpadAlpha;
+                        PBL_HUD->dpadAnimator.frameID = 9;
+                        RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+
+                        if (PBL_Crane->touchDir == 0 || ControllerInfo->keyRight.down) {
+                            self->alpha                        = opacity;
+                            PBL_HUD->dpadTouchAnimator.frameID = 7;
+                            RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                        }
+                        else {
+                            self->alpha                   = PBL_HUD->dpadAlpha;
+                            PBL_HUD->dpadAnimator.frameID = 7;
+                            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                        }
+
+                        // Up Input else statement; up input isn't used here
+                        self->alpha                   = PBL_HUD->dpadAlpha;
+                        PBL_HUD->dpadAnimator.frameID = 8;
+                        RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+
+                        if (PBL_Crane->touchDir != 2 && PBL_Crane->touchDir != 0) {
+                            self->alpha                   = PBL_HUD->dpadAlpha;
+                            PBL_HUD->dpadAnimator.frameID = 11;
+                            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                        }
+
+                        if (PBL_Crane->touchDown) {
+                            self->alpha                        = opacity;
+                            PBL_HUD->dpadTouchAnimator.frameID = 1;
+                            RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->actionPos, true);
+                        }
+                        else {
+                            self->alpha                   = PBL_HUD->dpadAlpha;
+                            PBL_HUD->dpadAnimator.frameID = 1;
+                            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->actionPos, true);
+                        }
+                    }
+                }
+            }
+            else {
+                // Draw DPad
+                self->alpha                   = PBL_HUD->dpadAlpha;
+                PBL_HUD->dpadAnimator.frameID = 10;
+                RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+
+                if (ControllerInfo->keyLeft.down) {
+                    self->alpha                        = opacity;
+                    PBL_HUD->dpadTouchAnimator.frameID = 6;
+                    RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                }
+                else {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 6;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                }
+
+                if (ControllerInfo->keyDown.down) {
+                    self->alpha                        = opacity;
+                    PBL_HUD->dpadTouchAnimator.frameID = 9;
+                    RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+
+                    if (ControllerInfo->keyLeft.down) {
+                        PBL_HUD->dpadTouchAnimator.frameID = 14;
+                        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                    }
+                    else if (ControllerInfo->keyRight.down) {
+                        PBL_HUD->dpadTouchAnimator.frameID = 15;
+                        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                    }
+                }
+                else {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 9;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                }
+
+                if (ControllerInfo->keyRight.down) {
+                    self->alpha                        = opacity;
+                    PBL_HUD->dpadTouchAnimator.frameID = 7;
+                    RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                }
+                else {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 7;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                }
+
+                if (ControllerInfo->keyUp.down) {
+                    self->alpha                        = opacity;
+                    PBL_HUD->dpadTouchAnimator.frameID = 8;
+                    RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+
+                    if (ControllerInfo->keyLeft.down) {
+                        PBL_HUD->dpadTouchAnimator.frameID = 12;
+                        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                    }
+                    else if (ControllerInfo->keyRight.down) {
+                        PBL_HUD->dpadTouchAnimator.frameID = 13;
+                        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->dpadPos, true);
+                    }
+                }
+                else {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 8;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                }
+
+                if (!ControllerInfo->keyUp.down && !ControllerInfo->keyDown.down && !ControllerInfo->keyLeft.down
+                    && !ControllerInfo->keyRight.down) {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 11;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+                }
+
+                if (ControllerInfo->keyA.down || ControllerInfo->keyB.down || ControllerInfo->keyC.down || ControllerInfo->keyX.down) {
+                    self->alpha                        = opacity;
+                    PBL_HUD->dpadTouchAnimator.frameID = 1;
+                    RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->actionPos, true);
+                }
+                else {
+                    self->alpha                   = PBL_HUD->dpadAlpha;
+                    PBL_HUD->dpadAnimator.frameID = 1;
+                    RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->actionPos, true);
+                }
+            }
+        }
+        else {
+            PBL_HUD->dpadAlpha  = 0;
+            PBL_HUD->pauseAlpha = 0;
+        }
+
+        self->alpha                        = PBL_HUD->pauseAlpha;
+        PBL_HUD->dpadTouchAnimator.frameID = 5;
+        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->pausePos, true);
+    }
+    else {
+        if (PBL_HUD->dpadAlpha > 0) {
+            PBL_HUD->dpadAlpha -= 4;
+            PBL_HUD->pauseAlpha -= 8;
+        }
+
+        self->alpha = PBL_HUD->dpadAlpha;
+        if (self->alpha > 0) {
+            PBL_HUD->dpadAnimator.frameID = 0;
+            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+
+            PBL_HUD->dpadAnimator.frameID = 1;
+            RSDK.DrawSprite(&PBL_HUD->dpadAnimator, &PBL_HUD->dpadPos, true);
+        }
+
+        if (PBL_HUD->pauseAlpha < 0)
+            self->alpha = 0;
+        else
+            self->alpha = PBL_HUD->pauseAlpha;
+
+        PBL_HUD->dpadTouchAnimator.frameID = 5;
+        RSDK.DrawSprite(&PBL_HUD->dpadTouchAnimator, &PBL_HUD->pausePos, true);
+    }
+
+    self->alpha     = alphaStore;
+    self->inkEffect = inkStore;
+    self->drawFX    = fxStore;
+    self->scale     = scaleStore;
+}
+
+int32 PBL_HUD_CheckTouchRect(int32 x1, int32 y1, int32 x2, int32 y2, int32 *fx, int32 *fy)
+{
+    if (fx)
+        *fx = 0;
+    if (fy)
+        *fy = 0;
+
+    for (int32 t = 0; t < TouchInfo->count; ++t) {
+        int32 tx = (int32)(TouchInfo->x[t] * ScreenInfo->size.x);
+        int32 ty = (int32)(TouchInfo->y[t] * ScreenInfo->size.y);
+
+        if (TouchInfo->down[t]) {
+            if (tx >= x1 && ty >= y1 && tx <= x2 && ty <= y2) {
+                if (fx)
+                    *fx = tx;
+                if (fy)
+                    *fy = ty;
+
+                return t;
+            }
+        }
+    }
+
+    return -1;
 }
 
 #if GAME_INCLUDE_EDITOR

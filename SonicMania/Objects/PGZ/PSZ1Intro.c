@@ -155,7 +155,7 @@ bool32 PSZ1Intro_Cutscene_HandleLanding(EntityCutsceneSeq *host)
                 if (player->stateInput == StateMachine_None) {
                     player->stateInput = Player_Input_P2_AI;
 
-                    for (int32 i = 0; i < 16; ++i) Player->leaderPositionBuffer[i] = player->position;
+                    for (int32 i = 0; i < 16; ++i) Player->leaderPositionBuffer[player->playerID][i] = player->position;
                 }
             }
             else {

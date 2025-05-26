@@ -46,5 +46,6 @@ void DebugMode_Serialize(void);
 // Extra Entity Functions
 void DebugMode_NullState(void);
 void DebugMode_AddObject(uint16 id, void (*draw)(void), void (*spawn)(void));
+void DebugMode_HandleTouchInput(void);
 
 #endif //! OBJ_DEBUGMODE_H

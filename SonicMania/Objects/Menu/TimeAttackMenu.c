@@ -71,10 +71,6 @@ void TimeAttackMenu_Initialize(void)
         if (RSDK.CompareStrings(&tag, &control->tag, false))
             TimeAttackMenu->timeAttackControl = control;
 
-        RSDK.SetString(&tag, "Time Attack Legacy");
-        if (RSDK.CompareStrings(&tag, &control->tag, false))
-            TimeAttackMenu->timeAttackControl_Legacy = control;
-
         RSDK.SetString(&tag, "Time Attack Zones");
         if (RSDK.CompareStrings(&tag, &control->tag, false))
             TimeAttackMenu->taZoneSelControl = control;
@@ -155,8 +151,7 @@ void TimeAttackMenu_SetupActions(void)
 
     foreach_all(UICharButton, charButton)
     {
-        if (charButton->parent == (Entity *)TimeAttackMenu->timeAttackControl
-            || charButton->parent == (Entity *)TimeAttackMenu->timeAttackControl_Legacy)
+        if (charButton->parent == (Entity *)TimeAttackMenu->timeAttackControl)
             charButton->actionCB = TimeAttackMenu_CharButton_ActionCB;
     }
 
@@ -210,14 +205,10 @@ void TimeAttackMenu_HandleMenuReturn(void)
         control->buttons[charID]->isSelected = true;
     }
 
-    EntityUIControl *legacyControl = TimeAttackMenu->timeAttackControl_Legacy;
     if (param->inTimeAttack) {
         int32 charID = param->characterID - 1;
         if (param->characterID - 1 >= UICHARBUTTON_MIGHTY)
             charID = UICHARBUTTON_SONIC;
-
-        legacyControl->buttonID                    = charID;
-        legacyControl->buttons[charID]->isSelected = true;
     }
 
     EntityUIControl *zoneControl = TimeAttackMenu->taZoneSelControl;

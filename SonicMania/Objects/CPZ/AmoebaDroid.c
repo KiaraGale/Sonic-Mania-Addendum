@@ -48,7 +48,7 @@ void AmoebaDroid_Create(void *data)
                     self->visible   = false;
                     self->drawGroup = Zone->objectDrawGroup[0];
                     self->drawFX    = FX_FLIP;
-                    self->health    = Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
+                    self->health    = Addendum_GetOptionsRAM()->secondaryGems == SECONDGEMS_TIMESTONE && Addendum_GetSaveRAM()->collectedTimeStones == 0b01111111 ? 4 : 6;
 
                     self->hitbox.left   = -22;
                     self->hitbox.top    = -22;
@@ -236,8 +236,11 @@ void AmoebaDroid_CheckPlayerHit(void)
 
     foreach_active(Shield, shield)
     {
-        if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
-            Shield_State_Reflect(shield, self);
+        foreach_active(Player, player)
+        {
+            if (Shield_CheckCollisionTouch(shield, self, &self->hitbox))
+                Shield_State_Reflect(player, shield, self);
+        }
     }
 }
 
@@ -299,6 +302,8 @@ void AmoebaDroid_Draw_BigBlob(void)
 void AmoebaDroid_State_SetupArena(void)
 {
     RSDK_THIS(AmoebaDroid);
+    EntityPlayer* sidekick = RSDK_GET_ENTITY(SLOT_PLAYER2, Player);
+    AddendumOptions* addendumOptions = Addendum_GetOptionsRAM();
 
     if (++self->timer >= 8) {
         self->timer                 = 0;
@@ -314,6 +319,20 @@ void AmoebaDroid_State_SetupArena(void)
         AmoebaDroid->boundsT        = (Zone->cameraBoundsT[0] + 48) << 16;
         AmoebaDroid->boundsB        = (Zone->cameraBoundsB[0] - 8) << 16;
         self->state                 = AmoebaDroid_State_SetupWaterLevel;
+
+        if (addendumOptions->coopStyle > COOPSTYLE_MANIA) {
+            for (int32 i = 1; i < 4; ++i) {
+                EntityPlayer* player = RSDK_GET_ENTITY(i, Player);
+                if (player->classID == Player->classID) {
+                    Zone->playerBoundActiveL[i] = true;
+                    Zone->playerBoundActiveR[i] = true;
+                    Zone->cameraBoundsL[i]      = (self->position.x >> 16) - ScreenInfo->center.x;
+                    Zone->cameraBoundsR[i]      = (self->position.x >> 16) + ScreenInfo->center.x;
+                    Zone->cameraBoundsT[i]      = (self->position.y >> 16) - ScreenInfo->size.y;
+                    Zone->cameraBoundsB[i]      = (self->position.y >> 16);
+                }
+            }
+        }
     }
 }
 

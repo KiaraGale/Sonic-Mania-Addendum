@@ -53,10 +53,38 @@ typedef struct {
 
     int32 actID;
     int32 collectedTimeStones;
-    int32 nextSpecialStage;
-    int32 addendumMods;
+    int32 collectedSuperEmeralds;
+    int32 nextTimeStone;
+    bool32 emeraldsTransferred;
+    bool32 superEmeraldStageCompleted;
     int32 saveState;
+    int32 player2ID;
+    int32 player3ID;
+    int32 player4ID;
 } AddendumData;
+
+typedef struct {
+    int8 timeLimit;
+    int8 debugMode;
+    int8 sonicMoveset;
+    int8 tailsMoveset;
+    int8 knuxMoveset;
+    int8 mightyMoveset;
+    int8 rayMoveset;
+    int8 amyMoveset;
+    int8 peeloutAbility;
+    int8 spindashType;
+    int8 lifeSystem;
+    int8 secondaryGems;
+    bool32 shieldTransfer;
+    int8 itemboxShields;
+    int8 spriteStyle;
+    int8 emeraldPalette;
+    bool32 superMusic;
+    bool32 vapeMode;
+    int8 coopStyle;
+    int8 language;
+} AddendumOptions;
 #endif
 
 // Object Class
@@ -69,12 +97,20 @@ struct ObjectSaveGame {
     void (*saveCallback)(void);
 #else
     Entity *loadEntityPtr;
+    Entity *loadEntityPtr2;
+    Entity *loadEntityPtr3;
     void (*loadCallback)(bool32 success);
+    void (*loadCallback2)(bool32 success);
+    void (*loadCallback3)(bool32 success);
     Entity *saveEntityPtr;
+    Entity *saveEntityPtr2;
     void (*saveCallback)(bool32 success);
+    void (*saveCallback2)(bool32 success);
+    void (*saveCallback3)(bool32 success);
 #endif
     SaveRAM *saveRAM;
     AddendumData *addendumData;
+    AddendumOptions *addendumMods;
     int32 unused1;
 };
 
@@ -106,6 +142,7 @@ void SaveGame_Serialize(void);
 SaveRAM *SaveGame_GetSaveRAM(void);
 #if MANIA_USE_PLUS
 AddendumData *Addendum_GetSaveRAM(void);
+AddendumOptions *Addendum_GetOptionsRAM(void);
 #endif
 #if MANIA_USE_PLUS
 int32 *SaveGame_GetDataPtr(int32 slot, bool32 encore);
@@ -114,14 +151,17 @@ int32 *SaveGame_GetDataPtr(int32 slot);
 #endif
 #if MANIA_USE_PLUS
 int32 *Addendum_GetDataPtr(int32 slot, bool32 encore);
+int32 *Addendum_GetOptionsPtr(int32 slot);
 #endif
 void SaveGame_LoadSaveData(void);
 #if MANIA_USE_PLUS
 void Addendum_LoadSaveData(void);
+void Addendum_LoadOptionsData(void);
 #endif
 void SaveGame_LoadFile(void (*callback)(bool32 success));
 #if MANIA_USE_PLUS
 void Addendum_LoadFile(void (*callback)(bool32 success));
+void Addendum_LoadOptions(void (*callback)(bool32 success));
 #endif
 #if MANIA_USE_PLUS
 void SaveGame_SaveFile(void (*callback)(bool32 success));
@@ -130,10 +170,12 @@ void SaveGame_SaveFile(void (*callback)(void));
 #endif
 #if MANIA_USE_PLUS
 void Addendum_SaveFile(void (*callback)(bool32 success));
+void Addendum_SaveOptions(void (*callback)(bool32 success));
 #endif
 void SaveGame_SaveLoadedCB(bool32 success);
 #if MANIA_USE_PLUS
 void Addendum_SaveLoadedCB(bool32 success);
+void Addendum_OptionsLoadedCB(bool32 success);
 #endif
 void SaveGame_SaveGameState(void);
 void SaveGame_SaveProgress(void);
@@ -147,18 +189,26 @@ void SaveGame_ResetPlayerState(void);
 void SaveGame_LoadFile_CB(int32 status);
 #if MANIA_USE_PLUS
 void Addendum_LoadFile_CB(int32 status);
+void Addendum_LoadOptions_CB(int32 status);
 #endif
 void SaveGame_SaveFile_CB(int32 status);
+void Addendum_SaveFile_CB(int32 status);
+#if MANIA_USE_PLUS
+void Addendum_SaveOptions_CB(int32 status);
+#endif
 bool32 SaveGame_AllChaosEmeralds(void);
 #if MANIA_USE_PLUS
+bool32 Addendum_AllSuperEmeralds(void);
 bool32 Addendum_AllTimeStones(void);
 #endif
 bool32 SaveGame_GetEmerald(uint8 emeraldID);
 #if MANIA_USE_PLUS
+bool32 Addendum_GetSuperEmerald(uint8 emeraldID);
 bool32 Addendum_GetTimeStone(uint8 timeStoneID);
 #endif
 void SaveGame_SetEmerald(uint8 emeraldID);
 #if MANIA_USE_PLUS
+void Addendum_SetSuperEmerald(uint8 emeraldID);
 void Addendum_SetTimeStone(uint8 timeStoneID);
 #endif
 void SaveGame_ClearCollectedSpecialRings(void);
