@@ -360,8 +360,8 @@ bool32 SPZ2Outro_Cutscene_AsSeenOnTV(EntityCutsceneSeq *host)
 
     bool32 finished = true;
     for (int32 p = 0; p < 4; ++p) {
-        if (p != 1 || (players[2]->classID == Player->classID && !SPZ2Outro->ignoreP2) || (players[3]->classID == Player->classID && !SPZ2Outro->ignoreP3) ||
-            (players[4]->classID == Player->classID && !SPZ2Outro->ignoreP4)) {
+        if (p != 1 || (players[1]->classID == Player->classID && !SPZ2Outro->ignoreP2) || (players[2]->classID == Player->classID && !SPZ2Outro->ignoreP3) ||
+            (players[3]->classID == Player->classID && !SPZ2Outro->ignoreP4)) {
             EntityPlayer *player = players[p];
 
             if (player->position.x >= weatherTV->position.x && !player->velocity.y && player->animator.animationID == ANI_RUN) {
